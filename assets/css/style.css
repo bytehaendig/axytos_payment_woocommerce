@@ -1,0 +1,24 @@
+/* Center align the Axytos Actions column */
+.column-axytos_actions {
+    text-align: center;
+}
+
+/* Center the buttons */
+.column-axytos_actions .axytos-action-button {
+    display: inline-block;
+    margin: 5px;
+}
+
+.axytos-action-buttons-wrapper {
+    display: inline-grid !important;
+}
+
+.axytos-hidden {
+    display: none !important;
+}
+
+label[for=woocommerce_axytoswc_decision_code_r],
+label[for=woocommerce_axytoswc_decision_code_u] {
+    display: none !important;
+
+}
