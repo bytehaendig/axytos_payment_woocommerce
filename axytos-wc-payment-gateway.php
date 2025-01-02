@@ -2,11 +2,11 @@
 /*
 Plugin Name: Axytos WooCommerce Payment Gateway
 Description: Axytos Payment Gateway for WooCommerce.
-Version: 0.2
+Version: 0.8
 Author: Axon Technologies
 Author URI: https://axontech.pk
 Text Domain: axytos-wc
-Domain Path: /languages
+Domain Path: /languages/
 */
 
 // Exit if accessed directly
@@ -14,12 +14,22 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+require_once __DIR__ . '/blocks-support.php';
+
+
 use Automattic\WooCommerce\Utilities\OrderUtil;
 
+function axytos_textdomain() {
+	load_plugin_textdomain( 'axytos-wc', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+}
+add_action('plugins_loaded', 'axytos_textdomain', 1);
 
-//remove axytos from gateways if denied by admin
+// Remove Axytos from gateways if denied by admin
 add_filter('woocommerce_available_payment_gateways', function ($available_gateways) {
-    if (WC()->session && $order_id = WC()->session->get('order_awaiting_payment')) {
+
+    // Check if order awaiting payment exists in session
+    if (WC()->session && $order_id = WC()->session->get('order_awaiting_payment') ?? WC()->session->get('store_api_draft_order')) {
+        // Check if transient is set to disable Axytos
         if (get_transient('disable_axitos_for_' . $order_id)) {
             $chosen_payment_method = 'axytoswc';
             if (isset($available_gateways[$chosen_payment_method])) {
@@ -93,7 +103,7 @@ function handle_axytos_status_change($order_id, $old_status, $new_status, $order
 
     $unique_id = $order->get_meta('unique_id');
     if (!$unique_id) {
-        error_log("No unique ID found for order #$order_id.");
+        error_log("No unique ID found for order #" .  $order_id);
         return;
     }
     
@@ -167,8 +177,6 @@ function render_axytos_actions_metabox($post) {
         echo '<p>' . __('No Axytos actions available for this order.', 'axytos-wc') . '</p>';
     }
 }
-
-
 
 //Endpoint for statuses
 add_action('wp_ajax_axytos_action', 'handle_axitos_action');
@@ -356,8 +364,9 @@ function handle_axitos_action () {
         $confirm_response = $AxytosClient->orderConfirm($confirm_data);
         
         if (is_wp_error($confirm_response)) {
-            wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
-            return;
+            // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
+            throw new Exception('Could not confirm order with Axytos API.');    
+            return [];
         }
         
         $invoiceData = [
@@ -398,8 +407,9 @@ function handle_axitos_action () {
         $invoice_response = $AxytosClient->createInvoice($invoiceData);
         
         if (is_wp_error($invoice_response)) {
-            wc_add_notice(__('Payment error: Could not create Invoice with Axytos API.', 'axytos-wc'), 'error');
-            return;
+            // wc_add_notice(__('Payment error: Could not create Invoice with Axytos API.', 'axytos-wc'), 'error');
+            throw new Exception('Could not create Invoice with Axytos API.');    
+            return [];
         }
         
         $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
@@ -419,6 +429,19 @@ function handle_axitos_action () {
     }
 }
 
+function axytos_load_agreement() {
+    // Verify the nonce for security
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'axytos_agreement_nonce')) {
+        wp_send_json_error(['message' => 'Invalid nonce']);
+    }
+    $axyos_gateway_obj = new WC_Axytos_Payment_Gateway();
+    $api = $axyos_gateway_obj->AxytosAPIKey;
+    $AxytosClient = new AxytosApiClient($api);
+    $agreement_content = $AxytosClient->getAgreement();
+    wp_send_json_success($agreement_content);
+}
+add_action('wp_ajax_load_axytos_agreement', 'axytos_load_agreement');
+add_action('wp_ajax_nopriv_load_axytos_agreement', 'axytos_load_agreement');
 
 // Check if WooCommerce is active and load the gateway only if it is
 function axytoswc_woocommerce_init() {
@@ -429,21 +452,43 @@ function axytoswc_woocommerce_init() {
             return $gateways;
         }
         add_filter('woocommerce_payment_gateways', 'axytoswc_add_gateway_class');
+        
 
         // Enqueue custom JavaScript and CSS
         add_action('admin_enqueue_scripts', function () {
-
-        wp_enqueue_script('axytos-admin-actions', plugin_dir_url(__FILE__) . '/assets/js/admin-actions.js', ['jquery'], '1.0', true);
-        wp_localize_script('axytos-admin-actions', 'AxytosActions', [
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce'    => wp_create_nonce('axytos_action_nonce'),
-        ]);
-        wp_enqueue_style('axytos-admin-styles', plugin_dir_url(__FILE__) . '/assets/css/style.css', [], '1.0');
-    });
-
-
+            wp_enqueue_script('axytos-admin-actions', plugin_dir_url(__FILE__) . '/assets/admin-actions.js', ['jquery'], '1.0', true);
+            wp_localize_script('axytos-admin-actions', 'AxytosActions', [
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce'    => wp_create_nonce('axytos_action_nonce'),
+            ]);
+            wp_enqueue_style('axytos-admin-styles', plugin_dir_url(__FILE__) . '/assets/css/style.css', [], '1.0');
+        });
+        function axytos_add_agreement_link_to_gateway_description($description, $payment_id) {
+            // Check if the current payment gateway is Axytos
+            if ('axytoswc' === $payment_id) {
+                $agreement_text = get_option('woocommerce_axytoswc_settings')['PrecheckAgreeText'];
+                $description .= ' <br><a href="#" class="axytos-agreement-link">' . esc_html($agreement_text) . '</a>';
+            }
+        
+            return $description;
+        }
+        add_filter('woocommerce_gateway_description', 'axytos_add_agreement_link_to_gateway_description', 10, 2);
+        
+        function axytos_enqueue_checkout_scripts() {
+            if (is_checkout()) {
+                wp_enqueue_style('axytos-admin-styles', plugin_dir_url(__FILE__) . '/assets/css/agreement_popup.css', [], '1.0');
+                wp_enqueue_script('axytos-agreement', plugin_dir_url(__FILE__) . '/assets/axytos-agreement.js', ['jquery'], null, true);
+                wp_localize_script('axytos-agreement', 'axytos_agreement', [
+                    'ajax_url' => admin_url('admin-ajax.php'),
+                    'nonce' => wp_create_nonce('axytos_agreement_nonce')
+                ]);
+            }
+        }
+        add_action('wp_enqueue_scripts', 'axytos_enqueue_checkout_scripts');
         // Define the payment gateway class
         class WC_Axytos_Payment_Gateway extends WC_Payment_Gateway {
+            
+            
 
             public function __construct() {
                 
@@ -467,7 +512,26 @@ function axytoswc_woocommerce_init() {
 
                 // Save settings
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
+                
+                //Setting up the class for Blocks
+                add_filter( 'woocommerce_payment_gateways', [ $this, 'add_gateway_to_block_checkout' ] );
+
             }
+            
+            function add_gateway_to_block_checkout( $gateways ) {
+                    $options = get_option( 'woocommerce_dummy_settings', array() );
+            
+                    if ( isset( $options['hide_for_non_admin_users'] ) ) {
+                        $hide_for_non_admin_users = $options['hide_for_non_admin_users'];
+                    } else {
+                        $hide_for_non_admin_users = 'no';
+                    }
+            
+                    if ( ( 'yes' === $hide_for_non_admin_users && current_user_can( 'manage_options' ) ) || 'no' === $hide_for_non_admin_users ) {
+                        $gateways[] = 'WC_Axytos_Payment_Gateway';
+                    }
+                    return $gateways;
+                }
 
             // Initialize form fields for the admin settings page
             public function init_form_fields() {
@@ -505,7 +569,7 @@ function axytoswc_woocommerce_init() {
                         'desc_tip' => true,
                     ],
                     
-                     'decision_code_r' => [
+                        'decision_code_r' => [
                         'title' => __('Action on decision code "R"', 'axytos-wc'),
                         'type' => 'select',
                         'description' => __('Choose the action when decision code "R" is received.', 'axytos-wc'),
@@ -540,6 +604,13 @@ function axytoswc_woocommerce_init() {
                         'description' => __('Enter your Axytos API Key for authentication.', 'axytos-wc'),
                         'default' => '',
                         'desc_tip' => true,
+                    ],
+                    'PrecheckAgreeText' => [
+                        'title' => __('Precheck Agreement Link Text', 'axytos-wc'),
+                        'type' => 'text',
+                        'description' => __('Enter text you want to as link to get agreement.', 'axytos-wc'),
+                        'default' => __('click to see agreement', 'axytos-wc'),
+                        'desc_tip' => true,
                     ]
                 ];
             }
@@ -548,7 +619,7 @@ function axytoswc_woocommerce_init() {
 
 
             public function process_payment($order_id) {
-                
+
                 $order = wc_get_order($order_id);
 
                 $AxytosClient = new AxytosApiClient($this->AxytosAPIKey);
@@ -613,8 +684,9 @@ function axytoswc_woocommerce_init() {
                 $response = $AxytosClient->invoicePrecheck($data);
 
                 if (is_wp_error($response)) {
-                    wc_add_notice(__('Payment error: Could not connect to Axytos API.', 'axytos-wc'), 'error');
-                    return;
+                    // wc_add_notice(__('Payment error: Could not connect to Axytos API.', 'axytos-wc'), 'error');
+                    throw new Exception('Could not connect to Axytos API.');    
+                    return [];
                 }
 
                 $order->update_meta_data('precheck_response', $response);
@@ -635,7 +707,7 @@ function axytoswc_woocommerce_init() {
                     
                     switch ($action) {
                         case 'proceed':
-                            
+
                             $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
                             $order->update_meta_data( 'unique_id', $unique_id );
                             
@@ -701,8 +773,9 @@ function axytoswc_woocommerce_init() {
                             $confirm_response = $AxytosClient->orderConfirm($confirm_data);
                             
                             if (is_wp_error($confirm_response)) {
-                                wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
-                                return;
+                                // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
+                                throw new Exception('Could not confirm order with Axytos API.');    
+                                return [];
                             }
                             
                             $invoiceData = [
@@ -743,32 +816,33 @@ function axytoswc_woocommerce_init() {
                             $invoice_response = $AxytosClient->createInvoice($invoiceData);
                             
                             if (is_wp_error($invoice_response)) {
-                                wc_add_notice(__('Payment error: Could not create Invoice with Axytos API.', 'axytos-wc'), 'error');
-                                return;
+                                // wc_add_notice(__('Payment error: Could not create Invoice with Axytos API.', 'axytos-wc'), 'error');
+                                throw new Exception('Could not create Invoice with Axytos API.');    
+                                return [];
                             }
                             
                             $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
                             if (empty($invoice_number)){
                                 $invoice_number = null;
-                                 error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
+                                    error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
                             }
                             
                             $order->update_meta_data( 'axytos_invoice_number', $invoice_number );
                             
                             $order->payment_complete();
                             
-                              return [
+                                return [
                                 'result' => 'success',
                                 'redirect' => $this->get_return_url($order),
                             ];
-    
+
                             break;
             
                         case 'cancel':
                             $order->update_status('cancelled', __('Order cancelled based on Axytos decision.', 'axytos-wc'));
-                            wc_add_notice(__('Order cancelled based on Axytos decision.', 'axytos-wc'), 'error');
-
-                            return;
+                            // wc_add_notice(__('Order cancelled based on Axytos decision.', 'axytos-wc'), 'error');
+                            throw new Exception('Order cancelled based on Axytos decision.');    
+                            return [];
             
                         case 'on-hold':
 
@@ -781,17 +855,28 @@ function axytoswc_woocommerce_init() {
             
                         case 'disallow':
                         default:
-                            wc_add_notice(__('This Payment Method is not allowed for this order. Please try a different payment method.', 'axytos-wc'), 'error');
+                            // wc_add_notice(__('This Payment Method is not allowed for this order. Please try a different payment method.', 'axytos-wc'), 'error');
                         
+                            
                             $order_id = $order->get_id(); 
                             set_transient('disable_axitos_for_' . $order_id, true, 3600);
-
-                            return;
+                            
+                            throw new Exception('This Payment Method is not allowed for this order. Please try a different payment method.');    
+                            return [];
 
 
 
                     }
                 }
+                elseif (isset($response_body['errors'])){
+
+                        // wc_add_notice(__('Decision not found, contact administrator.', 'axytos-wc'), 'error');
+                        throw new Exception('Decision not found, contact administrator.');
+
+                    }
+
+                    return [];
+                
                 
             }
 

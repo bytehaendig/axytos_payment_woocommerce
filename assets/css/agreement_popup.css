@@ -1,0 +1,106 @@
+/* Full-page modal */
+#axytos-agreement-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+    z-index: 1000;
+    overflow: hidden; /* Prevent body scroll */
+}
+
+/* Modal content area */
+.axytos-agreement-content {
+    position: relative;
+    background-color: #fff;
+    padding: 20px;
+    width: 100%;
+    max-width: 800px;
+    height: 80%;
+    margin: 5% auto; /* Center the modal */
+    overflow-y: auto; /* Make content scrollable */
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal header */
+.axytos-agreement-header {
+    background-color: #f5f5f5;
+    padding: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 15px;
+}
+
+/* Modal content area */
+.axytos-agreement-body {
+    padding: 15px;
+    font-size: 16px;
+    line-height: 1.5;
+    max-height: 70vh; /* Maximum height of the content area */
+    overflow-y: auto; /* Scrollable content */
+}
+
+/* Close button */
+.axytos-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #000;
+    font-weight: bold;
+}
+
+/* Add some styling for the scroll bar */
+.axytos-agreement-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.axytos-agreement-body::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+}
+
+.axytos-agreement-body::-webkit-scrollbar-thumb:hover {
+    background-color: #555;
+}
+/* Loading indicator styles */
+.axytos-loading {
+    text-align: center;
+    font-size: 18px;
+    color: #333;
+    padding: 20px;
+}
+
+/* Error message style */
+.axytos-error {
+    text-align: center;
+    font-size: 18px;
+    color: red;
+    padding: 20px;
+    font-weight: bold;
+}
+
+/* Optional: A simple spinner for loading */
+.axytos-loading::before {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #000000;
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

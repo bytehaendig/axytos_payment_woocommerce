@@ -86,8 +86,15 @@ class AxytosApiClient
         $response = $this->makeRequest($apiUrl, 'POST', $requestData);
         return $response;
     }
+    public function getAgreement()
+    {
+        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/StaticContent/creditcheckagreement';
+        $response = $this->makeRequest($apiUrl);
+        return $response;
+    }
 }
 
+$AxytosAPIKey = getenv('AXYTOS_API_KEY');
 $AxytosClient = new AxytosApiClient($AxytosAPIKey);
 
 $result = "{}";

@@ -1,0 +1,226 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Axytos WooCommerce Payment Gateway\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-12-09 12:53+0000\n"
+"PO-Revision-Date: 2024-12-09 16:30+0000\n"
+"Last-Translator: but\n"
+"Language-Team: Deutsch\n"
+"Language: de_DE\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.11; wp-6.7.1\n"
+"X-Domain: axytos-wc\n"
+"X-Loco-Fallback: nl_NL\n"
+"X-Loco-Template: languages/axytos-wc-nl_NL.po\n"
+"X-Loco-Template-Mode: PO,JSON"
+
+#: index.php:3
+msgid "Access Denied."
+msgstr "Zugriff verweigert."
+
+#: axytos-wc-payment-gateway.php:569
+msgid "Action on decision code \"R\""
+msgstr "Maßnahmen zum Entscheidungscode „R“"
+
+#: axytos-wc-payment-gateway.php:555
+msgid "Action on decision code \"S\""
+msgstr "Maßnahmen zum Entscheidungscode „S“"
+
+#: axytos-wc-payment-gateway.php:583
+msgid "Action on decision code \"U\""
+msgstr "Maßnahmen zum Entscheidungscode „U“"
+
+#. Author of the plugin
+msgid "Axon Technologies"
+msgstr "Axon Technologies"
+
+#: axytos-wc-payment-gateway.php:497 axytos-wc-payment-gateway.php:545
+msgid "Axytos"
+msgstr "Axytos"
+
+#: axytos-wc-payment-gateway.php:60 axytos-wc-payment-gateway.php:143
+msgid "Axytos Actions"
+msgstr "Axytos Aktionen"
+
+#: axytos-wc-payment-gateway.php:598
+msgid "Axytos API Key"
+msgstr "Axytos API-Schlüssel"
+
+#. Description of the plugin
+msgid "Axytos Payment Gateway for WooCommerce."
+msgstr "Axytos Payment Gateway for WooCommerce."
+
+#: axytos-wc-payment-gateway.php:203
+msgid "Axytos unique ID not found."
+msgstr "Eindeutige Axytos-ID nicht gefunden."
+
+#. Name of the plugin
+msgid "Axytos WooCommerce Payment Gateway"
+msgstr "Axytos WooCommerce Payment Gateway"
+
+#: axytos-wc-payment-gateway.php:81 axytos-wc-payment-gateway.php:168
+msgid "Cancel"
+msgstr "Stornieren"
+
+#: axytos-wc-payment-gateway.php:561 axytos-wc-payment-gateway.php:575
+#: axytos-wc-payment-gateway.php:589
+msgid "Cancel Order"
+msgstr "Bestellung stornieren"
+
+#: axytos-wc-payment-gateway.php:571
+msgid "Choose the action when decision code \"R\" is received."
+msgstr "Wählen Sie die Aktion, wenn der Entscheidungscode „R“ empfangen wird."
+
+#: axytos-wc-payment-gateway.php:557
+msgid "Choose the action when decision code \"S\" is received."
+msgstr "Wählen Sie die Aktion, wenn der Entscheidungscode „S“ empfangen wird."
+
+#: axytos-wc-payment-gateway.php:585
+msgid "Choose the action when decision code \"U\" is received."
+msgstr "Wählen Sie die Aktion, wenn der Entscheidungscode „U“ empfangen wird."
+
+#: axytos-wc-payment-gateway.php:465 axytos-wc-payment-gateway.php:608
+msgid "click to see agreement"
+msgstr "Klicken Sie hier, um die Vereinbarung anzuzeigen"
+
+#: axytos-wc-payment-gateway.php:247
+msgid "Could not cancel order."
+msgstr "Bestellung konnte nicht storniert werden."
+
+#: axytos-wc-payment-gateway.php:283
+msgid "Could not refund order."
+msgstr "Bestellung konnte nicht erstattet werden."
+
+#: axytos-wc-payment-gateway.php:222
+msgid "Could not update report shipping."
+msgstr "Der Berichtsversand konnte nicht aktualisiert werden."
+
+#: axytos-wc-payment-gateway.php:549
+msgid "Description"
+msgstr "Beschreibung"
+
+#: axytos-wc-payment-gateway.php:560 axytos-wc-payment-gateway.php:574
+#: axytos-wc-payment-gateway.php:588
+msgid "Disallow This Payment Method"
+msgstr "Diese Zahlungsmethode nicht zulassen"
+
+#: axytos-wc-payment-gateway.php:538
+msgid "Enable Axytos Payment"
+msgstr "Axytos-Zahlung aktivieren"
+
+#: axytos-wc-payment-gateway.php:536
+msgid "Enable/Disable"
+msgstr "Aktivieren/Deaktivieren"
+
+#: axytos-wc-payment-gateway.php:607
+msgid "Enter text you want to as link to get agreement."
+msgstr ""
+"Geben Sie den gewünschten Text als Link ein, um die Zustimmung zu erhalten."
+
+#: axytos-wc-payment-gateway.php:600
+msgid "Enter your Axytos API Key for authentication."
+msgstr "Geben Sie zur Authentifizierung Ihren Axytos API-Schlüssel ein."
+
+#: axytos-wc-payment-gateway.php:422
+msgid "Error processing action: "
+msgstr "Fehler bei der Verarbeitung der Aktion:"
+
+#. Author URI of the plugin
+msgid "https://axontech.pk"
+msgstr "https://axontech.pk"
+
+#: axytos-wc-payment-gateway.php:419
+msgid "Invalid action."
+msgstr "Ungültige Aktion."
+
+#: axytos-wc-payment-gateway.php:191
+msgid "Invalid order or action."
+msgstr "Ungültiger Befehl oder Aktion."
+
+#: axytos-wc-payment-gateway.php:85
+msgid "N/A"
+msgstr "N/A"
+
+#: axytos-wc-payment-gateway.php:171
+msgid "No Axytos actions available for this order."
+msgstr "Für diese Bestellung sind keine Axytos-Aktionen verfügbar."
+
+#: axytos-wc-payment-gateway.php:258
+msgid "Order canceled successfully."
+msgstr "Bestellung erfolgreich storniert."
+
+#: axytos-wc-payment-gateway.php:257 axytos-wc-payment-gateway.php:838
+msgid "Order cancelled based on Axytos decision."
+msgstr "Bestellung aufgrund der Entscheidung von Axytos storniert."
+
+#: axytos-wc-payment-gateway.php:236
+msgid "Order completed based on Axytos decision."
+msgstr "Bestellung basierend auf der Entscheidung von Axytos abgeschlossen."
+
+#: axytos-wc-payment-gateway.php:157 axytos-wc-payment-gateway.php:196
+msgid "Order not found."
+msgstr "Bestellung nicht gefunden."
+
+#: axytos-wc-payment-gateway.php:847 axytos-wc-payment-gateway.php:848
+msgid "Order on-hold based on Axytos decision."
+msgstr "Bestellung aufgrund der Entscheidung von Axytos zurückgestellt."
+
+#: axytos-wc-payment-gateway.php:293
+msgid "Order refunded based on Axytos decision."
+msgstr "Bestellung aufgrund der Entscheidung von Axytos zurückerstattet."
+
+#: axytos-wc-payment-gateway.php:294
+msgid "Order refunded successfully."
+msgstr "Bestellung erfolgreich erstattet."
+
+#: axytos-wc-payment-gateway.php:552
+msgid "Pay using Axytos."
+msgstr "Bezahlen Sie mit Axytos."
+
+#: axytos-wc-payment-gateway.php:498
+msgid "Payment gateway for Axytos."
+msgstr "Zahlungsgateway für Axytos."
+
+#: axytos-wc-payment-gateway.php:605
+msgid "Precheck Agreement Link Text"
+msgstr "Linktext der Vereinbarung vorab prüfen"
+
+#: axytos-wc-payment-gateway.php:563 axytos-wc-payment-gateway.php:577
+#: axytos-wc-payment-gateway.php:591
+msgid "Proceed Order"
+msgstr "Weiter zur Bestellung"
+
+#: axytos-wc-payment-gateway.php:562 axytos-wc-payment-gateway.php:576
+#: axytos-wc-payment-gateway.php:590
+msgid "Put Order On-hold"
+msgstr "Bestellung zurückstellen"
+
+#: axytos-wc-payment-gateway.php:82 axytos-wc-payment-gateway.php:169
+msgid "Refund"
+msgstr "Erstattung"
+
+#: axytos-wc-payment-gateway.php:80 axytos-wc-payment-gateway.php:167
+msgid "Report Shipping"
+msgstr "Versand melden"
+
+#: axytos-wc-payment-gateway.php:240
+msgid "Shipping status reported successfully."
+msgstr "Versandstatus erfolgreich gemeldet."
+
+#: axytos-wc-payment-gateway.php:551
+msgid "This controls the description which the user sees during checkout."
+msgstr ""
+"Dies steuert die Beschreibung, die der Benutzer während des Bezahlvorgangs "
+"sieht."
+
+#: axytos-wc-payment-gateway.php:544
+msgid "This controls the title which the user sees during checkout."
+msgstr "Dies steuert den Titel, den der Benutzer beim Bezahlvorgang sieht."
+
+#: axytos-wc-payment-gateway.php:542
+msgid "Title"
+msgstr "Titel"
