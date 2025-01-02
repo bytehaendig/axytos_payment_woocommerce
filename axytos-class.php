@@ -1,13 +1,15 @@
 <?php
 
-
 class AxytosApiClient
 {
     private $AxytosAPIKey;
+    private $BaseUrl;
 
     public function __construct($AxytosAPIKey)
     {
         $this->AxytosAPIKey = $AxytosAPIKey;
+        // TODO: switch between sandbox and production
+        $this->BaseUrl = 'https://api-sandbox.axytos.com/api/v1';
     }
     private function makeRequest($url, $method = 'GET', $data = [])
     {
@@ -17,7 +19,7 @@ class AxytosApiClient
             'X-API-Key: '.$this->AxytosAPIKey,
         ];
 
-        $ch = curl_init($url);
+        $ch = curl_init($this->BaseUrl . $url);
 
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
@@ -40,55 +42,55 @@ class AxytosApiClient
     }
     public function invoicePrecheck($requestData)
     {
-        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/Payments/invoice/order/precheck';
+        $apiUrl = '/Payments/invoice/order/precheck';
         $response = $this->makeRequest($apiUrl, 'POST', $requestData);
         return $response;
     }
     public function orderConfirm($requestData)
     {
-        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/Payments/invoice/order/confirm';
+        $apiUrl = '/Payments/invoice/order/confirm';
         $response = $this->makeRequest($apiUrl, 'POST', $requestData);
         return $response;
     }
     public function updateShippingStatus($requestData)
     {
-        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/Payments/invoice/order/reportshipping';
+        $apiUrl = '/Payments/invoice/order/reportshipping';
         $response = $this->makeRequest($apiUrl, 'POST', $requestData);
         return $response;
     }
     public function returnItems($requestData)
     {
-        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/Payments/invoice/order/return';
+        $apiUrl = '/Payments/invoice/order/return';
         $response = $this->makeRequest($apiUrl, 'POST', $requestData);
         return $response;
     }
     public function refundOrder($requestData)
     {
-        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/Payments/invoice/order/refund';
+        $apiUrl = '/Payments/invoice/order/refund';
         $response = $this->makeRequest($apiUrl, 'POST', $requestData);
         return $response;
     }
     public function createInvoice($requestData)
     {
-        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/Payments/invoice/order/createInvoice';
+        $apiUrl = '/Payments/invoice/order/createInvoice';
         $response = $this->makeRequest($apiUrl, 'POST', $requestData);
         return $response;
     }
     public function getPaymentStatus($orderID)
     {
-        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/Payments/invoice/order/paymentstate/'.$orderID;
+        $apiUrl = '/Payments/invoice/order/paymentstate/' . $orderID;
         $response = $this->makeRequest($apiUrl);
         return $response;
     }
     public function cancelOrder($orderID)
     {
-        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/Payments/invoice/order/cancel/'.$orderID;
-        $response = $this->makeRequest($apiUrl, 'POST', $requestData);
+        $apiUrl = '/Payments/invoice/order/cancel/' . $orderID;
+        $response = $this->makeRequest($apiUrl, 'POST');
         return $response;
     }
     public function getAgreement()
     {
-        $apiUrl = 'https://api-sandbox.axytos.com/api/v1/StaticContent/creditcheckagreement';
+        $apiUrl = '/StaticContent/creditcheckagreement';
         $response = $this->makeRequest($apiUrl);
         return $response;
     }
