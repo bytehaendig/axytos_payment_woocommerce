@@ -2,7 +2,7 @@
 /*
 Plugin Name: Axytos WooCommerce Payment Gateway
 Description: Axytos Payment Gateway for WooCommerce.
-Version: 0.8
+Version: 0.9
 Author: Axon Technologies
 Author URI: https://axontech.pk
 Text Domain: axytos-wc
@@ -55,6 +55,23 @@ add_action('wp_footer', function () {
     }
 });
 
+//message on thankyou page in case of on-hold
+add_action('woocommerce_thankyou', 'axytos_thankyou_notice', 10, 1);
+
+function axytos_thankyou_notice($order_id) {
+    $order = wc_get_order($order_id);
+
+    if (!$order) {
+        return;
+    }
+    if ($order->get_payment_method() === 'axytoswc' && $order->get_status() === 'on-hold') {
+        echo '<div class="woocommerce-notice woocommerce-info woocommerce-notice--info woocommerce-thankyou-notice">';
+        echo __('Order on-hold, waiting for admin approval.', 'axytos-wc');
+        echo '</div>';
+    }
+}
+
+
 
 // Add the 'Axytos Actions' column on Orders View page
 
@@ -73,7 +90,7 @@ add_filter('manage_edit-shop_order_columns', 'column_adder' ,20);
 add_action('manage_woocommerce_page_wc-orders_custom_column', 'column_html',20, 2);
 //if HPOS is disabled
 add_action('manage_shop_order_posts_custom_column', 'column_html',20, 2);
-function  column_html($column, $order) {
+function column_html($column, $order) {
     if ($column === 'axytos_actions') {
         $order = is_a($order, 'WC_Order') ? $order : wc_get_order($order);
 
@@ -81,17 +98,31 @@ function  column_html($column, $order) {
 
         if ($unique_id) {
             $nonce = wp_create_nonce('axytos_action_nonce');
-            echo '
-            <div class="axytos-action-buttons-wrapper">
-            <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="report_shipping">' . __('Report Shipping', 'axytos-wc') . '</button>
-            <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="cancel">' . __('Cancel', 'axytos-wc') . '</button>
-            <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="refund">' . __('Refund', 'axytos-wc') . '</button>
-            </div>';
+            $order_status = $order->get_status();
+
+            // Only show buttons if the order is neither completed nor cancelled
+            if (!in_array($order_status, ['completed', 'cancelled'])) {
+                echo '
+                <div class="axytos-action-buttons-wrapper">
+                    <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="report_shipping">' . __('Report Shipping', 'axytos-wc') . '</button>
+                    <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="cancel">' . __('Cancel', 'axytos-wc') . '</button>
+                    <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="refund">' . __('Refund', 'axytos-wc') . '</button>
+                </div>';
+            } elseif ($order_status === 'completed') {
+                echo '<div class="axytos-action-buttons-wrapper">
+                    <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="refund">' . __('Refund', 'axytos-wc') . '</button>
+                </div>';
+            } else {
+                // For cancelled orders, show nothing
+                echo '';
+            }
         } else {
             echo __('N/A', 'axytos-wc');
         }
     }
 }
+
+
 
 // Send Requests on Order Status Change
 add_action('woocommerce_order_status_changed', 'handle_axytos_status_change', 10, 4);
@@ -168,12 +199,27 @@ function render_axytos_actions_metabox($post) {
 
     if ($unique_id) {
         $nonce = wp_create_nonce('axytos_action_nonce');
-
+        $order_status = $order->get_status();
+        
+        if (!in_array($order_status, ['completed', 'cancelled'])) {
         echo '
         <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="report_shipping">' . __('Report Shipping', 'axytos-wc') . '</button>
         <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="cancel">' . __('Cancel', 'axytos-wc') . '</button>
         <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="refund">' . __('Refund', 'axytos-wc') . '</button>';
-    } else {
+    }
+    elseif ($order_status === 'completed') {
+                echo '<div class="axytos-action-buttons-wrapper">
+                    <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="refund">' . __('Refund', 'axytos-wc') . '</button>
+                </div>';
+    } 
+    else {
+                // For cancelled orders, show nothing
+                echo '';
+    }
+    
+    
+    }
+    else {
         echo '<p>' . __('No Axytos actions available for this order.', 'axytos-wc') . '</p>';
     }
 }
@@ -846,7 +892,12 @@ function axytoswc_woocommerce_init() {
                             $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
                             $order->update_meta_data( 'unique_id', $unique_id );
                             $order->update_status('on-hold', __('Order on-hold based on Axytos decision.', 'axytos-wc'));
-                            wc_add_notice(__('Order on-hold based on Axytos decision.', 'axytos-wc'), 'success');
+                            // wc_add_notice(__('Order on-hold based on Axytos decision.', 'axytos-wc'), 'success');
+                            // $order->payment_complete();
+                                return [
+                                'result' => 'success',
+                                'redirect' => $this->get_return_url($order),
+                            ];
 
                             break;
             
@@ -866,6 +917,7 @@ function axytoswc_woocommerce_init() {
                     }
                 }
                 elseif (isset($response_body['errors'])){
+                    //print_r($response_body); exit;
 
                         // wc_add_notice(__('Decision not found, contact administrator.', 'axytos-wc'), 'error');
                         throw new Exception('Decision not found, contact administrator.');
