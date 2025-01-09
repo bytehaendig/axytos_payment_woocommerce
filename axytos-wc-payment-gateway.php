@@ -361,7 +361,7 @@ function handle_axitos_action () {
                                 "mobilePhoneNumber" => $order->get_billing_phone(),
                             ],
                         "invoiceAddress" => [
-                            "company" => $order->get_billing_company() ?: "N/A",
+                            "company" => $order->get_billing_company(),
                             "firstname" => $order->get_billing_first_name(),
                             "lastname" => $order->get_billing_last_name(),
                             "zipCode" => $order->get_billing_postcode(),
@@ -371,7 +371,7 @@ function handle_axitos_action () {
                             "addressLine2" => $order->get_billing_address_2(),
                         ],
                         "deliveryAddress" => [
-                            "company" => $order->get_shipping_company() ?: "N/A",
+                            "company" => $order->get_shipping_company(),
                             "firstname" => $order->get_shipping_first_name(),
                             "lastname" => $order->get_shipping_last_name(),
                             "zipCode" => $order->get_shipping_postcode() ?: "00000",
@@ -607,7 +607,7 @@ function axytoswc_woocommerce_init() {
                         'default' => 'proceed',
                         'options' => [
                             'disallow' => __('Disallow This Payment Method', 'axytos-wc'),
-                            'cancel' => __('Cancel Order', 'axytos-wc'),
+                            // 'cancel' => __('Cancel Order', 'axytos-wc'),
                             'on-hold' => __('Put Order On-hold', 'axytos-wc'),
                             'proceed' => __('Proceed Order', 'axytos-wc'),
                         ],
@@ -682,7 +682,7 @@ function axytoswc_woocommerce_init() {
                     "selectedPaymentType" => "", // Include this field
                     "proofOfInterest" => "AAE", // Include this field
                     "invoiceAddress" => [
-                        "company" => $order->get_billing_company() ?: "N/A",
+                        "company" => $order->get_billing_company(),
                         "firstname" => $order->get_billing_first_name(),
                         "lastname" => $order->get_billing_last_name(),
                         "zipCode" => $order->get_billing_postcode(),
@@ -692,7 +692,7 @@ function axytoswc_woocommerce_init() {
                         "addressLine2" => $order->get_billing_address_2(),
                     ],
                     "deliveryAddress" => [
-                        "company" => $order->get_shipping_company() ?: "N/A",
+                        "company" => $order->get_shipping_company(),
                         "firstname" => $order->get_shipping_first_name(),
                         "lastname" => $order->get_shipping_last_name(),
                         "zipCode" => $order->get_shipping_postcode() ?: "00000",
@@ -768,7 +768,7 @@ function axytoswc_woocommerce_init() {
                                                     "mobilePhoneNumber" => $order->get_billing_phone(),
                                                 ],
                                             "invoiceAddress" => [
-                                                "company" => $order->get_billing_company() ?: "N/A",
+                                                "company" => $order->get_billing_company(),
                                                 "firstname" => $order->get_billing_first_name(),
                                                 "lastname" => $order->get_billing_last_name(),
                                                 "zipCode" => $order->get_billing_postcode(),
@@ -778,7 +778,7 @@ function axytoswc_woocommerce_init() {
                                                 "addressLine2" => $order->get_billing_address_2(),
                                             ],
                                             "deliveryAddress" => [
-                                                "company" => $order->get_shipping_company() ?: "N/A",
+                                                "company" => $order->get_shipping_company(),
                                                 "firstname" => $order->get_shipping_first_name(),
                                                 "lastname" => $order->get_shipping_last_name(),
                                                 "zipCode" => $order->get_shipping_postcode() ?: "00000",
