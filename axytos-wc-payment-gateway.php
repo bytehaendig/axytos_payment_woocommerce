@@ -604,7 +604,7 @@ function axytoswc_woocommerce_init() {
                         'title' => __('Action on decision code "S"', 'axytos-wc'),
                         'type' => 'select',
                         'description' => __('Choose the action when decision code "S" is received.', 'axytos-wc'),
-                        'default' => 'proceed',
+                        'default' => 'disallow',
                         'options' => [
                             'disallow' => __('Disallow This Payment Method', 'axytos-wc'),
                             // 'cancel' => __('Cancel Order', 'axytos-wc'),
