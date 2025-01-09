@@ -3,8 +3,8 @@
 Plugin Name: Axytos WooCommerce Payment Gateway
 Description: Axytos Payment Gateway for WooCommerce.
 Version: 0.9
-Author: Axon Technologies
-Author URI: https://axontech.pk
+Author: Bytehändig Software Manufaktur
+Author URI: https://bytehaendig.de
 Text Domain: axytos-wc
 Domain Path: /languages/
 */
@@ -107,6 +107,7 @@ function column_html($column, $order) {
                     <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="report_shipping">' . __('Report Shipping', 'axytos-wc') . '</button>
                     <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="cancel">' . __('Cancel', 'axytos-wc') . '</button>
                     <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="refund">' . __('Refund', 'axytos-wc') . '</button>
+                    <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="confirm">' . __('Confirm', 'axytos-wc') . '</button>
                 </div>';
             } elseif ($order_status === 'completed') {
                 echo '<div class="axytos-action-buttons-wrapper">
