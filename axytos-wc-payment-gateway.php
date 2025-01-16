@@ -601,49 +601,50 @@ function axytoswc_woocommerce_init() {
                         'description' => __('This controls the description which the user sees during checkout.', 'axytos-wc'),
                         'default' => __('Pay using Axytos.', 'axytos-wc'),
                     ],
-                    'decision_code_s' => [
-                        'title' => __('Action on decision code "S"', 'axytos-wc'),
-                        'type' => 'select',
-                        'description' => __('Choose the action when decision code "S" is received.', 'axytos-wc'),
-                        'default' => 'disallow',
-                        'options' => [
-                            'disallow' => __('Disallow This Payment Method', 'axytos-wc'),
-                            // 'cancel' => __('Cancel Order', 'axytos-wc'),
-                            'on-hold' => __('Put Order On-hold', 'axytos-wc'),
-                            'proceed' => __('Proceed Order', 'axytos-wc'),
-                        ],
-                        'desc_tip' => true,
-                    ],
-                    
-                        'decision_code_r' => [
-                        'title' => __('Action on decision code "R"', 'axytos-wc'),
-                        'type' => 'select',
-                        'description' => __('Choose the action when decision code "R" is received.', 'axytos-wc'),
-                        'default' => 'on-hold',
-                        'options' => [
-                            'disallow' => __('Disallow This Payment Method', 'axytos-wc'),
-                            'cancel' => __('Cancel Order', 'axytos-wc'),
-                            'on-hold' => __('Put Order On-hold', 'axytos-wc'),
-                            'proceed' => __('Proceed Order', 'axytos-wc'),
-                        ],
-                        'desc_tip' => true,
-                        'class' => 'axytos-hidden',
-                    ],
-                    'decision_code_u' => [
-                        'title' => __('Action on decision code "U"', 'axytos-wc'),
-                        'type' => 'select',
-                        'description' => __('Choose the action when decision code "U" is received.', 'axytos-wc'),
-                        'default' => 'proceed',
-                        'options' => [
-                            'disallow' => __('Disallow This Payment Method', 'axytos-wc'),
-                            'cancel' => __('Cancel Order', 'axytos-wc'),
-                            'on-hold' => __('Put Order On-hold', 'axytos-wc'),
-                            'proceed' => __('Proceed Order', 'axytos-wc'),
-                        ],
-                        'desc_tip' => true,
-                        'class' => 'axytos-hidden',
-                    ],
-                    
+                    // 'decision_code_s' => [
+                    //     'title' => __('Action on decision code "S"', 'axytos-wc'),
+                    //     'type' => 'select',
+                    //     'description' => __('Choose the action when decision code "S" is received.', 'axytos-wc'),
+                    //     'default' => 'disallow',
+                    //     'options' => [
+                    //         'disallow' => __('Disallow This Payment Method', 'axytos-wc'),
+                    //         // 'cancel' => __('Cancel Order', 'axytos-wc'),
+                    //         'on-hold' => __('Put Order On-hold', 'axytos-wc'),
+                    //         'proceed' => __('Proceed Order', 'axytos-wc'),
+                    //     ],
+                    //     'desc_tip' => true,
+                    //     'class' => 'axytos-hidden',
+                    // ],
+                    //
+                    // 'decision_code_r' => [
+                    // 'title' => __('Action on decision code "R"', 'axytos-wc'),
+                    // 'type' => 'select',
+                    // 'description' => __('Choose the action when decision code "R" is received.', 'axytos-wc'),
+                    // 'default' => 'on-hold',
+                    // 'options' => [
+                    //     'disallow' => __('Disallow This Payment Method', 'axytos-wc'),
+                    //     'cancel' => __('Cancel Order', 'axytos-wc'),
+                    //     'on-hold' => __('Put Order On-hold', 'axytos-wc'),
+                    //     'proceed' => __('Proceed Order', 'axytos-wc'),
+                    //   ],
+                    //   'desc_tip' => true,
+                    //   'class' => 'axytos-hidden',
+                    // ],
+                    // 'decision_code_u' => [
+                    //     'title' => __('Action on decision code "U"', 'axytos-wc'),
+                    //     'type' => 'select',
+                    //     'description' => __('Choose the action when decision code "U" is received.', 'axytos-wc'),
+                    //     'default' => 'proceed',
+                    //     'options' => [
+                    //         'disallow' => __('Disallow This Payment Method', 'axytos-wc'),
+                    //         'cancel' => __('Cancel Order', 'axytos-wc'),
+                    //         'on-hold' => __('Put Order On-hold', 'axytos-wc'),
+                    //         'proceed' => __('Proceed Order', 'axytos-wc'),
+                    //     ],
+                    //     'desc_tip' => true,
+                    //     'class' => 'axytos-hidden',
+                    // ],
+                    //
                     'AxytosAPIKey' => [
                         'title' => __('Axytos API Key', 'axytos-wc'),
                         'type' => 'text',
