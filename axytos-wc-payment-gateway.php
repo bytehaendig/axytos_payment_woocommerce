@@ -101,7 +101,7 @@ function column_html($column, $order) {
             $order_status = $order->get_status();
 
             // Only show buttons if the order is neither completed nor cancelled
-            if (!in_array($order_status, ['completed', 'cancelled'])) {
+            if (!in_array($order_status, ['completed', 'cancelled', 'refunded'])) {
                 echo '
                 <div class="axytos-action-buttons-wrapper">
                     <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="report_shipping">' . __('Report Shipping', 'axytos-wc') . '</button>
