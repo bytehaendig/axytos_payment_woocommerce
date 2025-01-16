@@ -449,24 +449,20 @@ function handle_axitos_action () {
             ]
         ]
     ];
-    
-        $invoice_response = $AxytosClient->createInvoice($invoiceData);
-        
-        if (is_wp_error($invoice_response)) {
-            // wc_add_notice(__('Payment error: Could not create Invoice with Axytos API.', 'axytos-wc'), 'error');
-            throw new Exception('Could not create Invoice with Axytos API.');    
-            return [];
-        }
-        
-        $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
-        if (empty($invoice_number)){
-            $invoice_number = null;
-             error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
-        }
-        
-        $order->update_meta_data( 'axytos_invoice_number', $invoice_number );
-            
 
+        try {
+          $invoice_response = $AxytosClient->createInvoice($invoiceData);
+          $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
+          if (empty($invoice_number)){
+              $invoice_number = null;
+              error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
+          }
+          
+          $order->update_meta_data( 'axytos_invoice_number', $invoice_number );
+        } catch (Exception $e) {
+          error_log("Axytos API: could not create invoice: " . $e->getMessage());
+        }
+        
             default:
                 wp_send_json_error(['message' => __('Invalid action.', 'axytos-wc')]);
         }
@@ -744,7 +740,8 @@ function axytoswc_woocommerce_init() {
                     
                     
                     $decision_code = $response_body['decision'];
-                    $action = $this->get_option('decision_code_' . strtolower($decision_code));
+                    // $action = $this->get_option('decision_code_' . strtolower($decision_code));
+                    $action = strtolower($decision_code) === "u" ? 'proceed' : 'disallow';
                     
                     //   $order_id = $order->get_id();
                     //     if (get_transient('disable_axitos_for_' . $order_id)) {
@@ -857,22 +854,18 @@ function axytoswc_woocommerce_init() {
                                 ]
                             ]
                         ];
-                        
-                            $invoice_response = $AxytosClient->createInvoice($invoiceData);
-                            
-                            if (is_wp_error($invoice_response)) {
-                                // wc_add_notice(__('Payment error: Could not create Invoice with Axytos API.', 'axytos-wc'), 'error');
-                                throw new Exception('Could not create Invoice with Axytos API.');    
-                                return [];
+
+                            try {
+                              $invoice_response = $AxytosClient->createInvoice($invoiceData);
+                              $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
+                              if (empty($invoice_number)){
+                                  $invoice_number = null;
+                                      error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
+                              }
+                              $order->update_meta_data( 'axytos_invoice_number', $invoice_number );
+                            } catch (Exception $e) {
+                              error_log("Axytos API: could not create invoice: " . $e->getMessage());
                             }
-                            
-                            $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
-                            if (empty($invoice_number)){
-                                $invoice_number = null;
-                                    error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
-                            }
-                            
-                            $order->update_meta_data( 'axytos_invoice_number', $invoice_number );
                             
                             $order->payment_complete();
                             
@@ -911,7 +904,7 @@ function axytoswc_woocommerce_init() {
                             $order_id = $order->get_id(); 
                             set_transient('disable_axitos_for_' . $order_id, true, 3600);
                             
-                            throw new Exception('This Payment Method is not allowed for this order. Please try a different payment method.');    
+                            throw new Exception(__('This Payment Method is not allowed for this order. Please try a different payment method.', 'axytos-wc'));
                             return [];
 
 
