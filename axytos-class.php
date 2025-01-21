@@ -5,11 +5,11 @@ class AxytosApiClient
     private $AxytosAPIKey;
     private $BaseUrl;
 
-    public function __construct($AxytosAPIKey)
+    public function __construct($AxytosAPIKey, $useSandbox = true)
     {
         $this->AxytosAPIKey = $AxytosAPIKey;
         // TODO: switch between sandbox and production
-        $this->BaseUrl = 'https://api-sandbox.axytos.com/api/v1';
+        $this->BaseUrl = $useSandbox ? 'https://api-sandbox.axytos.com/api/v1' : 'https://api.axytos.com/api/v1';
     }
     private function makeRequest($url, $method = 'GET', $data = [])
     {

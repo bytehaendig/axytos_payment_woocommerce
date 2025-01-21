@@ -234,7 +234,8 @@ function handle_axitos_action () {
     
     $axyos_gateway_obj = new WC_Axytos_Payment_Gateway();
     $api = $axyos_gateway_obj->AxytosAPIKey;
-    $AxytosClient = new AxytosApiClient($api);
+    $sandbox = $axyos_gateway_obj->useSandbox;
+    $AxytosClient = new AxytosApiClient($api, $sandbox);
 
     $order_id = absint($_POST['order_id']);
     $action_type = sanitize_text_field($_POST['action_type']);
@@ -477,7 +478,8 @@ function axytos_load_agreement() {
     }
     $axyos_gateway_obj = new WC_Axytos_Payment_Gateway();
     $api = $axyos_gateway_obj->AxytosAPIKey;
-    $AxytosClient = new AxytosApiClient($api);
+    $sandbox = $axyos_gateway_obj->useSandbox;
+    $AxytosClient = new AxytosApiClient($api, $sandbox);
     $agreement_content = $AxytosClient->getAgreement();
     wp_send_json_success($agreement_content);
 }
@@ -550,6 +552,7 @@ function axytoswc_woocommerce_init() {
                 $this->description = $this->get_option('description');
                 $this->enabled = $this->get_option('enabled');
                 $this->AxytosAPIKey = $this->get_option('AxytosAPIKey');
+                $this->useSandbox = $this->get_option('useSandbox');
 
                 // Save settings
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
@@ -647,6 +650,13 @@ function axytoswc_woocommerce_init() {
                         'default' => '',
                         'desc_tip' => true,
                     ],
+                    'useSandbox' => [
+                        'title' => __('Use API Sandbox', 'axytos-wc'),
+                        'type' => 'checkbox',
+                        'description' => __('Send API requests to the API sandbox for testing', 'axytos-wc'),
+                        'default' => 'no',
+                        'desc_tip' => true,
+                    ],
                     'PrecheckAgreeText' => [
                         'title' => __('Precheck Agreement Link Text', 'axytos-wc'),
                         'type' => 'text',
@@ -664,7 +674,7 @@ function axytoswc_woocommerce_init() {
 
                 $order = wc_get_order($order_id);
 
-                $AxytosClient = new AxytosApiClient($this->AxytosAPIKey);
+                $AxytosClient = new AxytosApiClient($this->AxytosAPIKey, $this->useSandbox);
                 // Data for Precheck
                 $data = [
                     "requestMode" => "SingleStep",
