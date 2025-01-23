@@ -259,29 +259,37 @@ function handle_axitos_action () {
     try {
         switch ($action_type) {
             case 'report_shipping':
-                $statusData = [
-                    "externalOrderId" => $unique_id,
-                    "externalSubOrderId" => $order_id,
-                    "basketPositions" => array_values(array_map(function ($item) {
-                        return [
-                            "productId" => $item->get_product_id(),
-                            "quantity" => $item->get_quantity(),
-                        ];
-                    }, $order->get_items())),
-                    "shippingDate" => date('c'),
-                ];
-                $result = $AxytosClient->updateShippingStatus($statusData);
-                if (is_wp_error($result)) {
-                    wp_send_json_error(['message' => __('Could not update report shipping.', 'axytos-wc')]);
-                    return;
-                }
+                // Report_shipping is called when admin clicks the button or when order changes state to 'completed'.
+                // Since report_shipping also switches state to 'completed', we need to check if it has already been reported.
+                $isShipped = $order->get_meta('axytos_shipped');
+                if (!$isShipped) {
+                  $statusData = [
+                      "externalOrderId" => $unique_id,
+                      "externalSubOrderId" => $order_id,
+                      "basketPositions" => array_values(array_map(function ($item) {
+                          return [
+                              "productId" => $item->get_product_id(),
+                              "quantity" => $item->get_quantity(),
+                          ];
+                      }, $order->get_items())),
+                      "shippingDate" => date('c'),
+                  ];
+                  $result = $AxytosClient->updateShippingStatus($statusData);
+                  if (is_wp_error($result)) {
+                      wp_send_json_error(['message' => __('Could not update report shipping.', 'axytos-wc')]);
+                      return;
+                  }
 
-                $response_body = json_decode($result, true);
-                if (isset($response_body['errors'])) {
-                    $msg = $response_body['errors'][""][0] ?? 'Error Response from Axytos';
-                    wp_send_json_error(['message' => __($msg, 'axytos-wc')]);
-                    return;
+                  $response_body = json_decode($result, true);
+                  if (isset($response_body['errors'])) {
+                      $msg = $response_body['errors'][""][0] ?? 'Error Response from Axytos';
+                      wp_send_json_error(['message' => __($msg, 'axytos-wc')]);
+                      return;
 
+                  }
+                  $order->update_meta_data( 'axytos_shipped', true );
+
+                  $axyos_gateway_obj->createInvoice($order, $AxytosClient);
                 }
 
                 $order->update_status(
