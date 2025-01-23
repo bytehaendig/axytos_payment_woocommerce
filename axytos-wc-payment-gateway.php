@@ -414,55 +414,6 @@ function handle_axitos_action () {
             throw new Exception('Could not confirm order with Axytos API.');    
             return [];
         }
-        
-        $invoiceData = [
-        "externalorderId" => $unique_id,
-        "externalInvoiceNumber" => $order->get_order_number(), 
-        "externalInvoiceDisplayName" => sprintf("Invoice #%s", $order->get_order_number()),
-        "externalSubOrderId" => "", 
-        "date" => date('c', strtotime($order->get_date_created())), // Order creation date in ISO 8601
-        "dueDateOffsetDays" => 14, 
-        "basket" => [
-            "grossTotal" => (float) $order->get_total(), 
-            "netTotal" => (float) $order->get_subtotal(), 
-            "positions" => array_values(array_map(function ($item) {
-                $quantity = $item->get_quantity();
-                $grossPrice = (float) $item->get_total();
-                $taxRate = (float) $item->get_tax_class() ?: 0.0; // Retrieve the tax rate, default 0
-                $netPrice = $grossPrice / (1 + $taxRate / 100);
-                return [
-                    "productId" => $item->get_product_id(),
-                    "quantity" => $quantity,
-                    "taxPercent" => $taxRate,
-                    "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
-                    "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
-                    "netPositionTotal" => round($netPrice, 2),
-                    "grossPositionTotal" => round($grossPrice, 2)
-                ];
-            }, $order->get_items())), 
-            "taxGroups" => [
-                [
-                    "taxPercent" => $order->get_total_tax() > 0 ? round($order->get_total_tax() / $order->get_subtotal() * 100, 2) : 0,
-                    "valueToTax" => (float) $order->get_subtotal(),
-                    "total" => (float) $order->get_total_tax()
-                ]
-            ]
-        ]
-    ];
-
-        try {
-          $invoice_response = $AxytosClient->createInvoice($invoiceData);
-          $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
-          if (empty($invoice_number)){
-              $invoice_number = null;
-              error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
-          }
-          
-          $order->update_meta_data( 'axytos_invoice_number', $invoice_number );
-        } catch (Exception $e) {
-          error_log("Axytos API: could not create invoice: " . $e->getMessage());
-        }
-        
             default:
                 wp_send_json_error(['message' => __('Invalid action.', 'axytos-wc')]);
         }
@@ -829,52 +780,6 @@ function axytoswc_woocommerce_init() {
                                 return [];
                             }
                             
-                            $invoiceData = [
-                            "externalorderId" => $unique_id,
-                            "externalInvoiceNumber" => $order->get_order_number(), 
-                            "externalInvoiceDisplayName" => sprintf("Invoice #%s", $order->get_order_number()),
-                            "externalSubOrderId" => "", 
-                            "date" => date('c', strtotime($order->get_date_created())), // Order creation date in ISO 8601
-                            "dueDateOffsetDays" => 14, 
-                            "basket" => [
-                                "grossTotal" => (float) $order->get_total(), 
-                                "netTotal" => (float) $order->get_subtotal(), 
-                                "positions" => array_values(array_map(function ($item) {
-                                    $quantity = $item->get_quantity();
-                                    $grossPrice = (float) $item->get_total();
-                                    $taxRate = (float) $item->get_tax_class() ?: 0.0; // Retrieve the tax rate, default 0
-                                    $netPrice = $grossPrice / (1 + $taxRate / 100);
-                                    return [
-                                        "productId" => $item->get_product_id(),
-                                        "quantity" => $quantity,
-                                        "taxPercent" => $taxRate,
-                                        "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
-                                        "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
-                                        "netPositionTotal" => round($netPrice, 2),
-                                        "grossPositionTotal" => round($grossPrice, 2)
-                                    ];
-                                }, $order->get_items())), 
-                                "taxGroups" => [
-                                    [
-                                        "taxPercent" => $order->get_total_tax() > 0 ? round($order->get_total_tax() / $order->get_subtotal() * 100, 2) : 0,
-                                        "valueToTax" => (float) $order->get_subtotal(),
-                                        "total" => (float) $order->get_total_tax()
-                                    ]
-                                ]
-                            ]
-                        ];
-
-                            try {
-                              $invoice_response = $AxytosClient->createInvoice($invoiceData);
-                              $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
-                              if (empty($invoice_number)){
-                                  $invoice_number = null;
-                                      error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
-                              }
-                              $order->update_meta_data( 'axytos_invoice_number', $invoice_number );
-                            } catch (Exception $e) {
-                              error_log("Axytos API: could not create invoice: " . $e->getMessage());
-                            }
                             
                             $order->payment_complete();
                             
@@ -932,6 +837,62 @@ function axytoswc_woocommerce_init() {
                 
                 
             }
+
+
+      // TODO: refactor - make AxytosClient a property of WC_Axytos_Payment_Gateway
+      function createInvoice($order, $AxytosClient) {
+        $unique_id = $order->get_meta('unique_id');
+        $invoiceData = [
+          "externalorderId" => $unique_id,
+          "externalInvoiceNumber" => $order->get_order_number(), 
+          "externalInvoiceDisplayName" => sprintf("Invoice #%s", $order->get_order_number()),
+          "externalSubOrderId" => "", 
+          "date" => date('c', strtotime($order->get_date_created())), // Order creation date in ISO 8601
+          "dueDateOffsetDays" => 14, 
+          "basket" => [
+            "grossTotal" => (float) $order->get_total(), 
+            "netTotal" => (float) $order->get_subtotal(), 
+            "positions" => array_values(array_map(function ($item) {
+              $quantity = $item->get_quantity();
+              $grossPrice = (float) $item->get_total();
+              $taxRate = (float) $item->get_tax_class() ?: 0.0; // Retrieve the tax rate, default 0
+              $netPrice = $grossPrice / (1 + $taxRate / 100);
+              return [
+                "productId" => $item->get_product_id(),
+                "quantity" => $quantity,
+                "taxPercent" => $taxRate,
+                "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
+                "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
+                "netPositionTotal" => round($netPrice, 2),
+                "grossPositionTotal" => round($grossPrice, 2)
+              ];
+            }, $order->get_items())), 
+            "taxGroups" => [
+              [
+                "taxPercent" => $order->get_total_tax() > 0 ? round($order->get_total_tax() / $order->get_subtotal() * 100, 2) : 0,
+                "valueToTax" => (float) $order->get_subtotal(),
+                "total" => (float) $order->get_total_tax()
+              ]
+            ]
+          ]
+        ];
+
+        $success = false;
+        try {
+          $invoice_response = $AxytosClient->createInvoice($invoiceData);
+          $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
+          if (empty($invoice_number)){
+              $invoice_number = null;
+              error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
+          }
+          
+          $order->update_meta_data( 'axytos_invoice_number', $invoice_number );
+          $success = true;
+        } catch (Exception $e) {
+          error_log("Axytos API: could not create invoice: " . $e->getMessage());
+        }
+        return $success;
+      }
 
 
 
