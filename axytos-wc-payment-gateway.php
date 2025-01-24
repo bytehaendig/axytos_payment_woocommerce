@@ -98,7 +98,6 @@ function column_html($column, $order) {
           <div class="axytos-action-buttons-wrapper">
           <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="report_shipping">' . __('Report Shipping', 'axytos-wc') . '</button>
           <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="cancel">' . __('Cancel', 'axytos-wc') . '</button>
-          <button class="button axytos-action-button" data-order-id="' . esc_attr($order->get_id()) . '" data-action="refund">' . __('Refund', 'axytos-wc') . '</button>
           </div>';
       } elseif ($order_status === 'completed') {
         echo '<div class="axytos-action-buttons-wrapper">
