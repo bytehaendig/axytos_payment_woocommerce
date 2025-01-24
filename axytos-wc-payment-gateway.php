@@ -519,27 +519,7 @@ function axytoswc_woocommerce_init() {
       }
 
       function actionRefund($order) {
-        $unique_id = $order->get_meta('unique_id');
-        $invoice_number = $order->get_meta('axytos_invoice_number');
-        $order_id = $order->get_id();
-        $refundData = [
-          "externalOrderId" => $unique_id,
-          "refundDate" => date('c'),
-          "originalInvoiceNumber" => $invoice_number,
-          "externalSubOrderId" => $order_id,
-          "basket" => [
-            "grossTotal" => $order->get_total(),
-            "netTotal" => $order->get_subtotal(),
-            "positions" => array_values(array_map(function ($item) {
-              return [
-                "productId" => $item->get_product_id(),
-                "netRefundTotal" => $item->get_total() - $item->get_total_tax(),
-                "grossRefundTotal" => $item->get_total(),
-              ];
-            }, $order->get_items())),
-            "taxGroups" => [],
-          ],
-        ];
+        $refundData = createRefundData($order);
         $result = $this->client->refundOrder($refundData);
         if (is_wp_error($result)) {
           wp_send_json_error(['message' => __('Could not refund order.', 'axytos-wc')]);
