@@ -83,5 +83,4 @@ final class WC_Axytos_Blocks_Gateway extends AbstractPaymentMethodType {
 			'supports'    => array_filter($this->gateway->supports, [$this->gateway, 'supports'])
 		];
 	}
-
 }
