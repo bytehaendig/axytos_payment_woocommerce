@@ -16,7 +16,6 @@ if (!defined('ABSPATH')) {
 
 require_once __DIR__ . '/blocks-support.php';
 
-
 use Automattic\WooCommerce\Utilities\OrderUtil;
 
 function axytos_textdomain() {
@@ -229,205 +228,50 @@ add_action('wp_ajax_axytos_action', 'handle_axitos_action');
 add_action('wp_ajax_nopriv_axytos_action', 'handle_axitos_action');
 
 function handle_axitos_action () {
-    // Verify nonce
-    // check_ajax_referer('axytos_action_nonce', 'security');
-    
-    $axyos_gateway_obj = new WC_Axytos_Payment_Gateway();
-    $api = $axyos_gateway_obj->AxytosAPIKey;
-    $sandbox = $axyos_gateway_obj->useSandbox;
-    $AxytosClient = new AxytosApiClient($api, $sandbox);
+  // TODO: Verify nonce
+  // check_ajax_referer('axytos_action_nonce', 'security');
 
-    $order_id = absint($_POST['order_id']);
-    $action_type = sanitize_text_field($_POST['action_type']);
+  $axyos_gateway_obj = new WC_Axytos_Payment_Gateway();
 
-    if (!$order_id || !$action_type) {
-        wp_send_json_error(['message' => __('Invalid order or action.', 'axytos-wc')]);
+  $order_id = absint($_POST['order_id']);
+  $action_type = sanitize_text_field($_POST['action_type']);
+
+  if (!$order_id || !$action_type) {
+    wp_send_json_error(['message' => __('Invalid order or action.', 'axytos-wc')]);
+  }
+
+  $order = wc_get_order($order_id);
+  if (!$order) {
+    wp_send_json_error(['message' => __('Order not found.', 'axytos-wc')]);
+  }
+
+  $unique_id = $order->get_meta('unique_id');
+  if (!$unique_id) {
+    wp_send_json_error(['message' => __('Axytos unique ID not found.', 'axytos-wc')]);
+  }
+
+  try {
+    switch ($action_type) {
+      case 'report_shipping':
+        $axyos_gateway_obj->actionReportShipping($order);
+        break;
+
+      case 'cancel':
+        $axyos_gateway_obj->actionCancel($order);
+        break;
+
+      case 'refund':
+        $axyos_gateway_obj->actionRefund($order);
+        break;
+
+      case 'confirm':
+        $axyos_gateway_obj->actionConfirm($order);
+      default:
+        wp_send_json_error(['message' => __('Invalid action.', 'axytos-wc')]);
     }
-
-    $order = wc_get_order($order_id);
-    if (!$order) {
-        wp_send_json_error(['message' => __('Order not found.', 'axytos-wc')]);
-    }
-
-    $unique_id = $order->get_meta('unique_id');
-    $invoice_number = $order->get_meta('axytos_invoice_number');
-
-    if (!$unique_id) {
-        wp_send_json_error(['message' => __('Axytos unique ID not found.', 'axytos-wc')]);
-    }
-
-    try {
-        switch ($action_type) {
-            case 'report_shipping':
-                // Report_shipping is called when admin clicks the button or when order changes state to 'completed'.
-                // Since report_shipping also switches state to 'completed', we need to check if it has already been reported.
-                $isShipped = $order->get_meta('axytos_shipped');
-                if (!$isShipped) {
-                  $statusData = [
-                      "externalOrderId" => $unique_id,
-                      "externalSubOrderId" => $order_id,
-                      "basketPositions" => array_values(array_map(function ($item) {
-                          return [
-                              "productId" => $item->get_product_id(),
-                              "quantity" => $item->get_quantity(),
-                          ];
-                      }, $order->get_items())),
-                      "shippingDate" => date('c'),
-                  ];
-                  $result = $AxytosClient->updateShippingStatus($statusData);
-                  if (is_wp_error($result)) {
-                      wp_send_json_error(['message' => __('Could not update report shipping.', 'axytos-wc')]);
-                      return;
-                  }
-
-                  $response_body = json_decode($result, true);
-                  if (isset($response_body['errors'])) {
-                      $msg = $response_body['errors'][""][0] ?? 'Error Response from Axytos';
-                      wp_send_json_error(['message' => __($msg, 'axytos-wc')]);
-                      return;
-
-                  }
-                  $order->update_meta_data( 'axytos_shipped', true );
-
-                  $axyos_gateway_obj->createInvoice($order, $AxytosClient);
-                }
-
-                $order->update_status(
-                    'completed', 
-                    __('Order completed based on Axytos decision.', 'axytos-wc'), 
-                    true // Notify customer (optional)
-                );
-
-                wp_send_json_success(['message' => __('Shipping status reported successfully.', 'axytos-wc')]);
-
-                break;
-
-            case 'cancel':
-                $result = $AxytosClient->cancelOrder($unique_id);
-                if (is_wp_error($result)) {
-                    wp_send_json_error(['message' => __('Could not cancel order.', 'axytos-wc')]);
-                    return;
-                }
-                $response_body = json_decode($result, true);
-                if (isset($response_body['errors'])) {
-                    $msg = $response_body['errors']['orderStatus'][0];
-                    wp_send_json_error(['message' => __($msg, 'axytos-wc')]);
-                    return;
-
-                }
-                $order->update_status('cancelled', __('Order cancelled based on Axytos decision.', 'axytos-wc'));
-                wp_send_json_success(['message' => __('Order canceled successfully.', 'axytos-wc')]);
-
-                break;
-
-            case 'refund':
-                $refundData = [
-                    "externalOrderId" => $unique_id,
-                    "refundDate" => date('c'),
-                    "originalInvoiceNumber" => $invoice_number,
-                    "externalSubOrderId" => $order_id,
-                    "basket" => [
-                        "grossTotal" => $order->get_total(),
-                        "netTotal" => $order->get_subtotal(),
-                        "positions" => array_values(array_map(function ($item) {
-                            return [
-                                "productId" => $item->get_product_id(),
-                                "netRefundTotal" => $item->get_total() - $item->get_total_tax(),
-                                "grossRefundTotal" => $item->get_total(),
-                            ];
-                        }, $order->get_items())),
-                        "taxGroups" => [],
-                    ],
-                ];
-                $result = $AxytosClient->refundOrder($refundData);
-                if (is_wp_error($result)) {
-                    wp_send_json_error(['message' => __('Could not refund order.', 'axytos-wc')]);
-                    return;
-                }
-                $response_body = json_decode($result, true);
-                if (isset($response_body['errors'])) {
-                    $msg = $response_body['errors']['externalSubOrderId'][0] ?? $response_body['errors'][""][0];
-                    wp_send_json_error(['message' => __(strval($msg), 'axytos-wc')]);
-                    return;
-
-                }
-                $order->update_status('refunded', __('Order refunded based on Axytos decision.', 'axytos-wc'));
-                wp_send_json_success(['message' => __('Order refunded successfully.', 'axytos-wc')]);
-                break;
-            
-                case 'confirm':
-                    //data for confirm order
-                    $response_body = json_decode($order->get_meta('precheck_response'), true);
-                            
-                    $confirm_data = [
-                        "customReference" => $order->get_order_number(),
-                        "externalOrderId" => $unique_id,
-                        "date" => date('c'),
-                        "personalData" => [
-                                "externalCustomerId" => (string) $order->get_user_id(),
-                                "language" => get_locale(),
-                                "email" => $order->get_billing_email(),
-                                "mobilePhoneNumber" => $order->get_billing_phone(),
-                            ],
-                        "invoiceAddress" => [
-                            "company" => $order->get_billing_company(),
-                            "firstname" => $order->get_billing_first_name(),
-                            "lastname" => $order->get_billing_last_name(),
-                            "zipCode" => $order->get_billing_postcode(),
-                            "city" => $order->get_billing_city(),
-                            "country" => "DE",
-                            "addressLine1" => $order->get_billing_address_1(),
-                            "addressLine2" => $order->get_billing_address_2(),
-                        ],
-                        "deliveryAddress" => [
-                            "company" => $order->get_shipping_company(),
-                            "firstname" => $order->get_shipping_first_name(),
-                            "lastname" => $order->get_shipping_last_name(),
-                            "zipCode" => $order->get_shipping_postcode() ?: "00000",
-                            "city" => $order->get_shipping_city() ?: "Unknown",
-                            "country" => $order->get_shipping_country() ?: "DE",
-                            "addressLine1" => $order->get_shipping_address_1(),
-                            "addressLine2" => $order->get_shipping_address_2(),
-                        ],
-                        "basket" => [
-                            "netTotal" => round($order->get_subtotal(), 2),
-                            "grossTotal" => round($order->get_total(), 2),
-                            "currency" => $order->get_currency(),
-                            "positions" => array_values(array_map(function($item) {
-                                $quantity = $item->get_quantity();
-                                $grossPrice = $item->get_total();
-                                $taxRate = 0.01; // Adjust based on tax settings
-                                $netPrice = $grossPrice / (1 + $taxRate);
-                                return [
-                                    "productId" => $item->get_product_id(),
-                                    "productName" => $item->get_name(),
-                                    "productCategory" => "General",
-                                    "quantity" => $quantity,
-                                    "taxPercent" => $taxRate * 100,
-                                    "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
-                                    "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
-                                    "netPositionTotal" => round($netPrice, 2),
-                                    "grossPositionTotal" => round($grossPrice, 2),
-                                ];
-                            }, $order->get_items()))
-                        ],
-
-                        "orderPrecheckResponse" => $response_body
-                    ];
-
-        $confirm_response = $AxytosClient->orderConfirm($confirm_data);
-        
-        if (is_wp_error($confirm_response)) {
-            // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
-            throw new Exception('Could not confirm order with Axytos API.');    
-            return [];
-        }
-            default:
-                wp_send_json_error(['message' => __('Invalid action.', 'axytos-wc')]);
-        }
-    } catch (Exception $e) {
-        wp_send_json_error(['message' => __('Error processing action: ', 'axytos-wc') . $e->getMessage()]);
-    }
+  } catch (Exception $e) {
+    wp_send_json_error(['message' => __('Error processing action: ', 'axytos-wc') . $e->getMessage()]);
+  }
 }
 
 function axytos_load_agreement() {
@@ -436,10 +280,7 @@ function axytos_load_agreement() {
         wp_send_json_error(['message' => 'Invalid nonce']);
     }
     $axyos_gateway_obj = new WC_Axytos_Payment_Gateway();
-    $api = $axyos_gateway_obj->AxytosAPIKey;
-    $sandbox = $axyos_gateway_obj->useSandbox;
-    $AxytosClient = new AxytosApiClient($api, $sandbox);
-    $agreement_content = $AxytosClient->getAgreement();
+    $agreement_content = $axyos_gateway_obj->getAgreement();
     wp_send_json_success($agreement_content);
 }
 add_action('wp_ajax_load_axytos_agreement', 'axytos_load_agreement');
@@ -489,13 +330,12 @@ function axytoswc_woocommerce_init() {
         add_action('wp_enqueue_scripts', 'axytos_enqueue_checkout_scripts');
         // Define the payment gateway class
         class WC_Axytos_Payment_Gateway extends WC_Payment_Gateway {
-            
-            
+            protected $client;
 
             public function __construct() {
                 
                 require_once(__DIR__ . '/axytos-class.php');
-
+                require_once(__DIR__ . '/axytos-data.php');
                 
                 $this->id = 'axytoswc';
                 $this->icon = ''; // URL of the icon that will be displayed on the checkout page
@@ -510,8 +350,9 @@ function axytoswc_woocommerce_init() {
                 $this->title = $this->get_option('title');
                 $this->description = $this->get_option('description');
                 $this->enabled = $this->get_option('enabled');
-                $this->AxytosAPIKey = $this->get_option('AxytosAPIKey');
-                $this->useSandbox = $this->get_option('useSandbox');
+                $AxytosAPIKey = $this->get_option('AxytosAPIKey');
+                $useSandbox = $this->get_option('useSandbox');
+                $this->client = new AxytosApiClient($AxytosAPIKey, $useSandbox);
 
                 // Save settings
                 add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
@@ -626,268 +467,194 @@ function axytoswc_woocommerce_init() {
                 ];
             }
 
+      public function process_payment($order_id) {
+        $order = wc_get_order($order_id);
+        $decision_code = $this->doPrecheck($order);
 
+        // $action = $this->get_option('decision_code_' . strtolower($decision_code));
+        $action = strtolower($decision_code) === "u" ? 'proceed' : 'disallow';
 
-
-            public function process_payment($order_id) {
-
-                $order = wc_get_order($order_id);
-
-                $AxytosClient = new AxytosApiClient($this->AxytosAPIKey, $this->useSandbox);
-                // Data for Precheck
-                $data = [
-                    "requestMode" => "SingleStep",
-                    "customReference" => $order->get_order_number(),
-                    "personalData" => [
-                        "externalCustomerId" => (string) $order->get_user_id(),
-                        "language" => get_locale(),
-                        "email" => $order->get_billing_email(),
-                        "mobilePhoneNumber" => $order->get_billing_phone(),
-                    ],
-                    "paymentTypeSecurity" => "S", // Include this field
-                    "selectedPaymentType" => "", // Include this field
-                    "proofOfInterest" => "AAE", // Include this field
-                    "invoiceAddress" => [
-                        "company" => $order->get_billing_company(),
-                        "firstname" => $order->get_billing_first_name(),
-                        "lastname" => $order->get_billing_last_name(),
-                        "zipCode" => $order->get_billing_postcode(),
-                        "city" => $order->get_billing_city(),
-                        "country" => "DE",
-                        "addressLine1" => $order->get_billing_address_1(),
-                        "addressLine2" => $order->get_billing_address_2(),
-                    ],
-                    "deliveryAddress" => [
-                        "company" => $order->get_shipping_company(),
-                        "firstname" => $order->get_shipping_first_name(),
-                        "lastname" => $order->get_shipping_last_name(),
-                        "zipCode" => $order->get_shipping_postcode() ?: "00000",
-                        "city" => $order->get_shipping_city() ?: "Unknown",
-                        "country" => $order->get_shipping_country() ?: "DE",
-                        "addressLine1" => $order->get_shipping_address_1(),
-                        "addressLine2" => $order->get_shipping_address_2(),
-                    ],
-                    "basket" => [
-                        "netTotal" => round($order->get_subtotal(), 2),
-                        "grossTotal" => round($order->get_total(), 2),
-                        "currency" => $order->get_currency(),
-                        "positions" => array_values(array_map(function($item) {
-                            $quantity = $item->get_quantity();
-                            $grossPrice = $item->get_total();
-                            $taxRate = 0.01; // Adjust based on tax settings
-                            $netPrice = $grossPrice / (1 + $taxRate);
-                            return [
-                                "productId" => $item->get_product_id(),
-                                "productName" => $item->get_name(),
-                                "productCategory" => "General",
-                                "quantity" => $quantity,
-                                "taxPercent" => $taxRate * 100,
-                                "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
-                                "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
-                                "netPositionTotal" => round($netPrice, 2),
-                                "grossPositionTotal" => round($grossPrice, 2),
-                            ];
-                        }, $order->get_items()))
-                    ]
-                ];
-                
-                $response = $AxytosClient->invoicePrecheck($data);
-
-                if (is_wp_error($response)) {
-                    // wc_add_notice(__('Payment error: Could not connect to Axytos API.', 'axytos-wc'), 'error');
-                    throw new Exception('Could not connect to Axytos API.');    
-                    return [];
-                }
-
-                $order->update_meta_data('precheck_response', $response);
-        
-                $response_body = json_decode($response, true);
-                
-
-                if (isset($response_body['decision'])) {
-                    
-                    
-                    $decision_code = $response_body['decision'];
-                    // $action = $this->get_option('decision_code_' . strtolower($decision_code));
-                    $action = strtolower($decision_code) === "u" ? 'proceed' : 'disallow';
-                    
-                    //   $order_id = $order->get_id();
-                    //     if (get_transient('disable_axitos_for_' . $order_id)) {
-                    //         delete_transient('disable_axitos_for_' . $order_id);
-                    //     }
-                    
-                    switch ($action) {
-                        case 'proceed':
-
-                            $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
-                            $order->update_meta_data( 'unique_id', $unique_id );
-                            
-                            //data for confirm order
-                            
-                            $confirm_data = [
-                                            "customReference" => $order->get_order_number(),
-                                            "externalOrderId" => $unique_id,
-                                            "date" => date('c'),
-                                            "personalData" => [
-                                                    "externalCustomerId" => (string) $order->get_user_id(),
-                                                    "language" => get_locale(),
-                                                    "email" => $order->get_billing_email(),
-                                                    "mobilePhoneNumber" => $order->get_billing_phone(),
-                                                ],
-                                            "invoiceAddress" => [
-                                                "company" => $order->get_billing_company(),
-                                                "firstname" => $order->get_billing_first_name(),
-                                                "lastname" => $order->get_billing_last_name(),
-                                                "zipCode" => $order->get_billing_postcode(),
-                                                "city" => $order->get_billing_city(),
-                                                "country" => "DE",
-                                                "addressLine1" => $order->get_billing_address_1(),
-                                                "addressLine2" => $order->get_billing_address_2(),
-                                            ],
-                                            "deliveryAddress" => [
-                                                "company" => $order->get_shipping_company(),
-                                                "firstname" => $order->get_shipping_first_name(),
-                                                "lastname" => $order->get_shipping_last_name(),
-                                                "zipCode" => $order->get_shipping_postcode() ?: "00000",
-                                                "city" => $order->get_shipping_city() ?: "Unknown",
-                                                "country" => $order->get_shipping_country() ?: "DE",
-                                                "addressLine1" => $order->get_shipping_address_1(),
-                                                "addressLine2" => $order->get_shipping_address_2(),
-                                            ],
-                                            "basket" => [
-                                                "netTotal" => round($order->get_subtotal(), 2),
-                                                "grossTotal" => round($order->get_total(), 2),
-                                                "currency" => $order->get_currency(),
-                                                "positions" => array_values(array_map(function($item) {
-                                                    $quantity = $item->get_quantity();
-                                                    $grossPrice = $item->get_total();
-                                                    $taxRate = 0.01; // Adjust based on tax settings
-                                                    $netPrice = $grossPrice / (1 + $taxRate);
-                                                    return [
-                                                        "productId" => $item->get_product_id(),
-                                                        "productName" => $item->get_name(),
-                                                        "productCategory" => "General",
-                                                        "quantity" => $quantity,
-                                                        "taxPercent" => $taxRate * 100,
-                                                        "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
-                                                        "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
-                                                        "netPositionTotal" => round($netPrice, 2),
-                                                        "grossPositionTotal" => round($grossPrice, 2),
-                                                    ];
-                                                }, $order->get_items()))
-                                            ],
-
-                                            "orderPrecheckResponse" => $response_body
-                                        ];
-
-                            $confirm_response = $AxytosClient->orderConfirm($confirm_data);
-                            
-                            if (is_wp_error($confirm_response)) {
-                                // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
-                                throw new Exception('Could not confirm order with Axytos API.');    
-                                return [];
-                            }
-                            
-                            
-                            $order->payment_complete();
-                            
-                                return [
-                                'result' => 'success',
-                                'redirect' => $this->get_return_url($order),
-                            ];
-
-                            break;
-            
-                        case 'cancel':
-                            $order->update_status('cancelled', __('Order cancelled based on Axytos decision.', 'axytos-wc'));
-                            // wc_add_notice(__('Order cancelled based on Axytos decision.', 'axytos-wc'), 'error');
-                            throw new Exception('Order cancelled based on Axytos decision.');    
-                            return [];
-            
-                        case 'on-hold':
-
-                            $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
-                            $order->update_meta_data( 'unique_id', $unique_id );
-                            $order->update_status('on-hold', __('Order on-hold based on Axytos decision.', 'axytos-wc'));
-                            // wc_add_notice(__('Order on-hold based on Axytos decision.', 'axytos-wc'), 'success');
-                            // $order->payment_complete();
-                                return [
-                                'result' => 'success',
-                                'redirect' => $this->get_return_url($order),
-                            ];
-
-                            break;
-            
-                        case 'disallow':
-                        default:
-                            // wc_add_notice(__('This Payment Method is not allowed for this order. Please try a different payment method.', 'axytos-wc'), 'error');
-                        
-                            
-                            $order_id = $order->get_id(); 
-                            set_transient('disable_axitos_for_' . $order_id, true, 3600);
-                            
-                            throw new Exception(__('This Payment Method is not allowed for this order. Please try a different payment method.', 'axytos-wc'));
-                            return [];
-
-
-
-                    }
-                }
-                elseif (isset($response_body['errors'])){
-                    //print_r($response_body); exit;
-
-                        // wc_add_notice(__('Decision not found, contact administrator.', 'axytos-wc'), 'error');
-                        throw new Exception('Decision not found, contact administrator.');
-
-                    }
-
-                    return [];
-                
-                
-            }
-
-
-      // TODO: refactor - make AxytosClient a property of WC_Axytos_Payment_Gateway
-      function createInvoice($order, $AxytosClient) {
-        $unique_id = $order->get_meta('unique_id');
-        $invoiceData = [
-          "externalorderId" => $unique_id,
-          "externalInvoiceNumber" => $order->get_order_number(), 
-          "externalInvoiceDisplayName" => sprintf("Invoice #%s", $order->get_order_number()),
-          "externalSubOrderId" => "", 
-          "date" => date('c', strtotime($order->get_date_created())), // Order creation date in ISO 8601
-          "dueDateOffsetDays" => 14, 
-          "basket" => [
-            "grossTotal" => (float) $order->get_total(), 
-            "netTotal" => (float) $order->get_subtotal(), 
-            "positions" => array_values(array_map(function ($item) {
-              $quantity = $item->get_quantity();
-              $grossPrice = (float) $item->get_total();
-              $taxRate = (float) $item->get_tax_class() ?: 0.0; // Retrieve the tax rate, default 0
-              $netPrice = $grossPrice / (1 + $taxRate / 100);
+        switch ($action) {
+          case 'proceed':
+            $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
+            $order->update_meta_data( 'unique_id', $unique_id );
+            if ($this->confirmOrder($order)) {
               return [
-                "productId" => $item->get_product_id(),
-                "quantity" => $quantity,
-                "taxPercent" => $taxRate,
-                "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
-                "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
-                "netPositionTotal" => round($netPrice, 2),
-                "grossPositionTotal" => round($grossPrice, 2)
+                'result' => 'success',
+                'redirect' => $this->get_return_url($order),
               ];
-            }, $order->get_items())), 
-            "taxGroups" => [
-              [
-                "taxPercent" => $order->get_total_tax() > 0 ? round($order->get_total_tax() / $order->get_subtotal() * 100, 2) : 0,
-                "valueToTax" => (float) $order->get_subtotal(),
-                "total" => (float) $order->get_total_tax()
-              ]
-            ]
-          ]
-        ];
+            }
+            break;
 
+          // case 'cancel':
+          //     $order->update_status('cancelled', __('Order cancelled based on Axytos decision.', 'axytos-wc'));
+          //     // wc_add_notice(__('Order cancelled based on Axytos decision.', 'axytos-wc'), 'error');
+          //     throw new Exception('Order cancelled based on Axytos decision.');    
+          //     return [];
+          //
+          // case 'on-hold':
+          //     $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
+          //     $order->update_meta_data( 'unique_id', $unique_id );
+          //     $order->update_status('on-hold', __('Order on-hold based on Axytos decision.', 'axytos-wc'));
+          //     // wc_add_notice(__('Order on-hold based on Axytos decision.', 'axytos-wc'), 'success');
+          //     // $order->payment_complete();
+          //         return [
+          //         'result' => 'success',
+          //         'redirect' => $this->get_return_url($order),
+          //     ];
+          //
+          //     break;
+          //
+          case 'disallow':
+          default:
+            $order_id = $order->get_id(); 
+            set_transient('disable_axitos_for_' . $order_id, true, 600);
+
+            throw new Exception(__('This Payment Method is not allowed for this order. Please try a different payment method.', 'axytos-wc'));
+        }
+        return [];
+      }
+
+      function actionReportShipping($order) {
+        // Report_shipping is called when admin clicks the button or when order changes state to 'completed'.
+        // Since report_shipping also switches state to 'completed', we need to check if it has already been reported.
+        $isShipped = $order->get_meta('axytos_shipped');
+        $ok = true;
+        if (!$isShipped) {
+          $ok = $this->reportShipping($order);
+          if ($ok) {
+            $this->createInvoice($order);
+          }
+        }
+
+        if ($ok) {
+          $order->update_status(
+              'completed', __('Order completed.', 'axytos-wc'), true // Notify customer (optional)
+          );
+          // TODO: refactor error handling
+          wp_send_json_success(['message' => __('Shipping status reported successfully.', 'axytos-wc')]);
+        }
+        return true;
+      }
+
+      function actionCancel($order) {
+        $unique_id = $order->get_meta('unique_id');
+        $result = $this->client->cancelOrder($unique_id);
+        // TODO: fix error handling
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => __('Could not cancel order.', 'axytos-wc')]);
+            return false;
+        }
+        $response_body = json_decode($result, true);
+        if (isset($response_body['errors'])) {
+            $msg = $response_body['errors']['orderStatus'][0];
+            wp_send_json_error(['message' => __($msg, 'axytos-wc')]);
+            return false;
+
+        }
+        $order->update_status('cancelled', __('Order cancelled.', 'axytos-wc'));
+        wp_send_json_success(['message' => __('Order canceled successfully.', 'axytos-wc')]);
+        return true;
+      }
+
+      function actionRefund($order) {
+        $unique_id = $order->get_meta('unique_id');
+        $invoice_number = $order->get_meta('axytos_invoice_number');
+        $order_id = $order->get_id();
+        $refundData = [
+            "externalOrderId" => $unique_id,
+            "refundDate" => date('c'),
+            "originalInvoiceNumber" => $invoice_number,
+            "externalSubOrderId" => $order_id,
+            "basket" => [
+                "grossTotal" => $order->get_total(),
+                "netTotal" => $order->get_subtotal(),
+                "positions" => array_values(array_map(function ($item) {
+                    return [
+                        "productId" => $item->get_product_id(),
+                        "netRefundTotal" => $item->get_total() - $item->get_total_tax(),
+                        "grossRefundTotal" => $item->get_total(),
+                    ];
+                }, $order->get_items())),
+                "taxGroups" => [],
+            ],
+        ];
+        $result = $this->client->refundOrder($refundData);
+        if (is_wp_error($result)) {
+            wp_send_json_error(['message' => __('Could not refund order.', 'axytos-wc')]);
+            return false;
+        }
+        $response_body = json_decode($result, true);
+        if (isset($response_body['errors'])) {
+            $msg = $response_body['errors']['externalSubOrderId'][0] ?? $response_body['errors'][""][0];
+            wp_send_json_error(['message' => __(strval($msg), 'axytos-wc')]);
+            return false;
+
+        }
+        $order->update_status('refunded', __('Order refunded based on Axytos decision.', 'axytos-wc'));
+        wp_send_json_success(['message' => __('Order refunded successfully.', 'axytos-wc')]);
+        return true;
+      }
+
+      function actionConfirm($order) {
+        return $this->confirmOrder($order);
+      }
+
+      function doPrecheck($order) {
+        $data = createPrecheckData($order);
+        $response = $this->client->invoicePrecheck($data);
+
+        if (is_wp_error($response)) {
+          // wc_add_notice(__('Payment error: Could not connect to Axytos API.', 'axytos-wc'), 'error');
+          throw new Exception('Could not connect to Axytos API.');    
+          return [];
+        }
+
+        $order->update_meta_data('precheck_response', $response);
+
+        $response_body = json_decode($response, true);
+
+        $decision_code = $response_body['decision'];
+        return $decision_code;
+      }
+
+      function confirmOrder($order) {
+        $confirm_data = createConfirmData($order);
+        $confirm_response = $this->client->orderConfirm($confirm_data);
+
+        if (is_wp_error($confirm_response)) {
+          // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
+          throw new Exception('Could not confirm order with Axytos API.');    
+          return false;
+        }
+        $order->payment_complete();
+        return true;
+      }
+
+      function reportShipping($order) {
+        $statusData = createShippingData($order);
+        $result = $this->client->updateShippingStatus($statusData);
+        if (is_wp_error($result)) {
+          wp_send_json_error(['message' => __('Could not update report shipping.', 'axytos-wc')]);
+          return false;
+        }
+
+        $response_body = json_decode($result, true);
+        if (isset($response_body['errors'])) {
+          $msg = $response_body['errors'][""][0] ?? 'Error Response from Axytos';
+          wp_send_json_error(['message' => __($msg, 'axytos-wc')]);
+          return false;
+        }
+
+        $order->update_meta_data( 'axytos_shipped', true );
+        return true;
+      }
+
+      function createInvoice($order) {
+        $invoiceData = createInvoiceData($order);
         $success = false;
         try {
-          $invoice_response = $AxytosClient->createInvoice($invoiceData);
+          $invoice_response = $this->client->createInvoice($invoiceData);
           $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
           if (empty($invoice_number)){
               $invoice_number = null;
@@ -902,9 +669,12 @@ function axytoswc_woocommerce_init() {
         return $success;
       }
 
-
-
+      function getAgreement() {
+        return $this->client->getAgreement();
+      }
         }
+
     }
+
 }
 add_action('plugins_loaded', 'axytoswc_woocommerce_init');
