@@ -498,19 +498,24 @@ function axytoswc_woocommerce_init() {
       }
 
       function actionCancel($order) {
-        $unique_id = $order->get_meta('unique_id');
-        $result = $this->client->cancelOrder($unique_id);
-        // TODO: fix error handling
-        if (is_wp_error($result)) {
-          wp_send_json_error(['message' => __('Could not cancel order.', 'axytos-wc')]);
-          return false;
-        }
-        $response_body = json_decode($result, true);
-        if (isset($response_body['errors'])) {
-          $msg = $response_body['errors']['orderStatus'][0];
-          wp_send_json_error(['message' => __($msg, 'axytos-wc')]);
-          return false;
+        // same as with report_shipping - cancel is called when admin clicks the button or when order changes state to 'cancelled'.
+        $isCanceled = $order->get_meta('axytos_canceled');
+        if (!$isCanceled) {
+          $unique_id = $order->get_meta('unique_id');
+          $result = $this->client->cancelOrder($unique_id);
+          // TODO: fix error handling
+          if (is_wp_error($result)) {
+            wp_send_json_error(['message' => __('Could not cancel order.', 'axytos-wc')]);
+            return false;
+          }
+          $response_body = json_decode($result, true);
+          if (isset($response_body['errors'])) {
+            $msg = $response_body['errors']['orderStatus'][0];
+            wp_send_json_error(['message' => __($msg, 'axytos-wc')]);
+            return false;
 
+          }
+          $order->update_meta_data('axytos_canceled', true );
         }
         $order->update_status('cancelled', __('Order cancelled.', 'axytos-wc'));
         wp_send_json_success(['message' => __('Order canceled successfully.', 'axytos-wc')]);
