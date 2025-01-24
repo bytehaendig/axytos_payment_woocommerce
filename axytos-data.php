@@ -1,22 +1,23 @@
 <?php
 
-function createBasketData($order, $withTaxGroups = false) {
-  $data = [
+function createBasketData($order) {
+  return [
     "netTotal" => round($order->get_subtotal(), 2),
     "grossTotal" => round($order->get_total(), 2),
     "currency" => $order->get_currency(),
-    "positions" => array_values(array_map(function($item) {
+    "positions" => array_values(array_map(function($item) use (&$taxGroups) {
       $quantity = $item->get_quantity();
       $netPrice = $item->get_subtotal();
       $tax = $item->get_subtotal_tax();
       $grossPrice = $netPrice + $tax;
       $taxRate = ($grossPrice / $netPrice) - 1;
+      $taxPercent = round($taxRate * 100, 1);
       return [
         "productId" => $item->get_product_id(),
         "productName" => $item->get_name(),
         "productCategory" => "General",
         "quantity" => $quantity,
-        "taxPercent" => round($taxRate * 100, 1),
+        "taxPercent" => $taxPercent,
         "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
         "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
         "netPositionTotal" => round($netPrice, 2),
@@ -24,16 +25,48 @@ function createBasketData($order, $withTaxGroups = false) {
       ];
     }, $order->get_items())),
   ];
-  if ($withTaxGroups) {
-    $data["taxGroups"] = [
-      [
-        "taxPercent" => $order->get_total_tax() > 0 ? round($order->get_total_tax() / $order->get_subtotal() * 100, 2) : 0,
-        "valueToTax" => (float) $order->get_subtotal(),
-        "total" => (float) $order->get_total_tax()
-      ]
-    ];
-  }
-  return $data;
+}
+
+function createInvoiceBasketData($order) {
+  $taxGroups = [];
+  return [
+    "netTotal" => round($order->get_subtotal(), 2),
+    "grossTotal" => round($order->get_total(), 2),
+    "positions" => array_values(array_map(function($item) use (&$taxGroups) {
+      $quantity = $item->get_quantity();
+      $netPrice = $item->get_subtotal();
+      $tax = $item->get_subtotal_tax();
+      $grossPrice = $netPrice + $tax;
+      $taxRate = ($grossPrice / $netPrice) - 1;
+      $taxPercent = round($taxRate * 100, 1);
+      if (!array_key_exists($taxPercent, $taxGroups)) {
+        $taxGroups[$taxPercent] = [];
+      }
+      $taxGroups[$taxPercent][] = ["tax" => $tax, "value" => $netPrice];
+      return [
+        "productId" => $item->get_product_id(),
+        "quantity" => $quantity,
+        "taxPercent" => $taxPercent,
+        "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
+        "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
+        "netPositionTotal" => round($netPrice, 2),
+        "grossPositionTotal" => round($grossPrice, 2),
+      ];
+    }, $order->get_items())),
+    "taxGroups" => array_map(function ($taxPercent, $taxes) {
+      $valueToTax = array_reduce($taxes, function ($acc, $tax) {
+        return $acc + $tax["value"];
+      }, 0);
+      $total = array_reduce($taxes, function ($acc, $tax) {
+        return $acc + $tax["tax"];
+      }, 0);
+      return [
+        "taxPercent" => $taxPercent,
+        "valueToTax" => round($valueToTax, 2),
+        "total" => round($total, 2),
+      ];
+    }, array_keys($taxGroups), $taxGroups),
+  ];
 }
 
 function createOrderData($order) {
@@ -104,7 +137,7 @@ function createInvoiceData($order) {
     "externalSubOrderId" => "", 
     "date" => date('c', strtotime($order->get_date_created())), // Order creation date in ISO 8601
     "dueDateOffsetDays" => 14, 
-    "basket" => createBasketData($order, true),
+    "basket" => createInvoiceBasketData($order),
   ];
 }
 
