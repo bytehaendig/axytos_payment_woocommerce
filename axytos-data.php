@@ -1,35 +1,39 @@
 <?php
 
-function createBasketData($order) {
-  return [
+function createBasketData($order, $withTaxGroups = false) {
+  $data = [
     "netTotal" => round($order->get_subtotal(), 2),
     "grossTotal" => round($order->get_total(), 2),
     "currency" => $order->get_currency(),
     "positions" => array_values(array_map(function($item) {
       $quantity = $item->get_quantity();
-      $grossPrice = $item->get_total();
-      $taxRate = 0.01; // Adjust based on tax settings
-      $netPrice = $grossPrice / (1 + $taxRate);
+      $netPrice = $item->get_subtotal();
+      $tax = $item->get_subtotal_tax();
+      $grossPrice = $netPrice + $tax;
+      $taxRate = ($grossPrice / $netPrice) - 1;
       return [
         "productId" => $item->get_product_id(),
         "productName" => $item->get_name(),
         "productCategory" => "General",
         "quantity" => $quantity,
-        "taxPercent" => $taxRate * 100,
+        "taxPercent" => round($taxRate * 100, 1),
         "netPricePerUnit" => $quantity > 0 ? round($netPrice / $quantity, 2) : 0,
         "grossPricePerUnit" => $quantity > 0 ? round($grossPrice / $quantity, 2) : 0,
         "netPositionTotal" => round($netPrice, 2),
         "grossPositionTotal" => round($grossPrice, 2),
       ];
     }, $order->get_items())),
-    "taxGroups" => [
+  ];
+  if ($withTaxGroups) {
+    $data["taxGroups"] = [
       [
         "taxPercent" => $order->get_total_tax() > 0 ? round($order->get_total_tax() / $order->get_subtotal() * 100, 2) : 0,
         "valueToTax" => (float) $order->get_subtotal(),
         "total" => (float) $order->get_total_tax()
       ]
-    ]
-  ];
+    ];
+  }
+  return $data;
 }
 
 function createOrderData($order) {
@@ -100,7 +104,7 @@ function createInvoiceData($order) {
     "externalSubOrderId" => "", 
     "date" => date('c', strtotime($order->get_date_created())), // Order creation date in ISO 8601
     "dueDateOffsetDays" => 14, 
-    "basket" => createBasketData($order),
+    "basket" => createBasketData($order, true),
   ];
 }
 
