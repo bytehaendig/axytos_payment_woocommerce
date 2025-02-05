@@ -277,7 +277,7 @@ function axytoswc_woocommerce_init() {
     function axytos_add_agreement_link_to_gateway_description($description, $payment_id) {
       // Check if the current payment gateway is Axytos
       if ('axytoswc' === $payment_id) {
-        $agreement_text = get_option('woocommerce_axytoswc_settings')['PrecheckAgreeText'];
+        $agreement_text = get_option('woocommerce_axytoswc_settings')['PrecheckAgreeText'] ?? '';
         $description .= ' <br><a href="#" class="axytos-agreement-link">' . esc_html($agreement_text) . '</a>';
       }
 
