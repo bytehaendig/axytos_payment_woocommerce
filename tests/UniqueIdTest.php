@@ -1,6 +1,6 @@
 <?php
 
-class Test_Unique_Id extends WP_UnitTestCase {
+class UniqueIdTest extends WP_UnitTestCase {
     public function test_thankyou_notice_display() {
         $order = wc_create_order();
         $order->set_payment_method( 'axytoswc' );

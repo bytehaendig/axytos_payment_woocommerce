@@ -1,6 +1,6 @@
 <?php
 
-class Test_Payment_Status_Update extends WP_UnitTestCase {
+class PaymentStatusUpdateTest extends WP_UnitTestCase {
     public function test_payment_status_update() {
         $order = wc_create_order();
         $order->set_payment_method( 'axytoswc' );

@@ -1,6 +1,6 @@
 <?php
 
-class Test_Checkout_Behavior extends WP_UnitTestCase {
+class CheckoutBehaviorTest extends WP_UnitTestCase {
 
     public function test_checkout_scripts_enqueued() {
 

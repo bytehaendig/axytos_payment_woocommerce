@@ -1,6 +1,6 @@
 <?php
 
-class Test_Script_Enqueue extends WP_UnitTestCase {
+class ScriptEnqueueTest extends WP_UnitTestCase {
     public function test_checkout_scripts_enqueued() {
         add_action( 'wp_enqueue_scripts', function() {
             wp_register_script(

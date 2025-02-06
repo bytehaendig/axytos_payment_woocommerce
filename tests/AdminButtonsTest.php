@@ -1,6 +1,6 @@
 <?php
 
-class Test_Admin_Buttons extends WP_UnitTestCase {
+class AdminButtonsTest extends WP_UnitTestCase {
 
     public function test_admin_buttons_visibility_processing() {
         $order = wc_create_order();

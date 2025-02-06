@@ -1,6 +1,6 @@
 <?php
 
-class Test_Gateway_Initialization extends WP_UnitTestCase {
+class GatewayInitializationTest extends WP_UnitTestCase {
 
     public function test_gateway_initialization() {
         $gateway = new WC_Axytos_Payment_Gateway();

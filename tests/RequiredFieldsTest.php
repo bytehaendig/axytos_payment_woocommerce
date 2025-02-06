@@ -1,6 +1,6 @@
 <?php
 
-class Test_Required_Field_Validation extends WP_UnitTestCase {
+class RequiredFieldValidationTest extends WP_UnitTestCase {
     public function test_required_fields_validation() {
         $gateway = $this->createMock( WC_Axytos_Payment_Gateway::class );
         $order = wc_create_order();

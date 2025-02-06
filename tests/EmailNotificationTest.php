@@ -1,6 +1,6 @@
 <?php
 
-class Test_Custom_Email_Notification extends WP_UnitTestCase {
+class EmailNotificationTest extends WP_UnitTestCase {
     public function test_custom_email_notification() {
         $order = wc_create_order();
         $order->set_payment_method( 'axytoswc' );

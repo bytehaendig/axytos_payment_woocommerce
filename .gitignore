@@ -1,0 +1,6 @@
+.aider*
+.env
+.phpunit.result.cache
+/vendor/
+/wp-content/
+/node_modules/

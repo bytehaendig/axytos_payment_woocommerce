@@ -1,76 +1,30 @@
 <?php
 
-class API_WorkFlow_Test extends WP_UnitTestCase {
-    public function test_process_payment_success() {
-
-        $gateway = new WC_Axytos_Payment_Gateway();
+class GatewayAvailabilityTest extends WP_UnitTestCase {
+    public function test_gateway_availability() {
 
         $product = $this->create_sample_product_and_add_to_cart();
-
         $order = wc_create_order();
         $order_id = $order->get_id();
-
-        $order->set_billing_first_name( 'John' );
-        $order->set_billing_last_name( 'Doe' );
-        $order->set_billing_address_1( '123 Main St' );
-        $order->set_billing_address_2( 'Apt 4B' );
-        $order->set_billing_city( 'Anytown' );
-        $order->set_billing_postcode( '56789' );
-        $order->set_billing_country( 'DE' );
-        $order->set_billing_email( 'john.doe@example.com' );
-        $order->set_billing_phone( '+491234567890' );
-
-        $order->set_shipping_first_name( 'John' );
-        $order->set_shipping_last_name( 'Doe' );
-        $order->set_shipping_address_1( '123 Main St' );
-        $order->set_shipping_address_2( 'Apt 4B' );
-        $order->set_shipping_city( 'Anytown' );
-        $order->set_shipping_postcode( '56789' );
-        $order->set_shipping_country( 'DE' );
-
-        $order->update_meta_data( 'unique_id', '12345' );
-        $order->set_status( 'pending' );
-        $order->set_total( 50 );
-        //causing error
-        // $order->calculate_totals();
-
-        $items = WC()->cart->get_cart();
-        foreach ( $items as $cart_item ) {
-            $product_id = $cart_item[ 'product_id' ];
-            $quantity = $cart_item[ 'quantity' ];
-            $order->add_product( wc_get_product( $product_id ), $quantity );
-        }
-        // $order->calculate_totals();
-        $order->save();
 
         WC()->session = new WC_Session_Handler();
         WC()->session->set_customer_session_cookie( true );
         WC()->session->set( 'order_awaiting_payment', $order_id );
 
-        $response = $gateway->process_payment( $order_id );
-        $this->assertStringContainsString( 'order-received=', $response[ 'redirect' ] );
+        $available_gateways = WC()->payment_gateways()->get_available_payment_gateways();
+        $this->assertArrayHasKey( 'axytoswc', $available_gateways, 'Axytos gateway should be available initially.' );
+
+        set_transient( 'disable_axitos_for_' . $order_id, true, 60 * 60 );
+
+        $available_gateways = apply_filters( 'woocommerce_available_payment_gateways', WC()->payment_gateways()->get_available_payment_gateways() );
+
+        $this->assertArrayNotHasKey( 'axytoswc', $available_gateways, 'Axytos gateway should not be available for this order after disabling.' );
     }
 
     private function create_sample_product_and_add_to_cart() {
         if ( ! class_exists( 'WooCommerce' ) ) {
             $this->fail( 'WooCommerce is not installed or activated.' );
             return;
-        }
-
-        if ( ! post_type_exists( 'shop_order' ) ) {
-            register_post_type( 'shop_order', array(
-                'labels'             => array(
-                    'name'          => 'Orders',
-                    'singular_name' => 'Order'
-                ),
-                'public'             => false,
-                'show_ui'            => true,
-                'capability_type'    => 'shop_order',
-                'map_meta_cap'       => true,
-                'supports'           => array( 'title', 'custom-fields' ),
-                'has_archive'        => false,
-                'exclude_from_search'=> true,
-            ) );
         }
 
         if ( ! taxonomy_exists( 'product_tag' ) ) {

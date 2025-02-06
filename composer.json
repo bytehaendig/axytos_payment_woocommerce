@@ -1,6 +1,14 @@
 {
-    "require-dev": {
-        "php-stubs/wordpress-stubs": "^6.7",
-        "php-stubs/woocommerce-stubs": "^9.5"
+  "require-dev": {
+    "php-stubs/wordpress-stubs": "^6.7",
+    "php-stubs/woocommerce-stubs": "^9.5",
+    "phpunit/phpunit": "^9.5.",
+    "wp-phpunit/wp-phpunit": "^5.9",
+    "yoast/phpunit-polyfills": "^1.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true
     }
+  }
 }
