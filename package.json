@@ -1,32 +1,32 @@
 {
-	"name": "axytos-woocommerce",
-	"title": "Axytos WooCommerce Payment",
-	"version": "1.10.0",
-	"author": "WooCommerce",
-	"license": "GPL-3.0+",
-	"keywords": [],
-	"engines": {
-		"node": "^20.12.0",
-		"npm": "^10.5.0"
-	},
-	"devDependencies": {
-		"@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
-		"@wordpress/env": "^8.12.0",
-		"@wordpress/scripts": "^27.8.0",
-		"cross-env": "7.0.3"
-	},
-	"scripts": {
-		"start": "wp-scripts start",
-		"build": "wp-scripts build && npm run i18n:build",
-		"i18n": "npm run i18n:build",
-		"i18n:build": "npm run i18n:pot && ./bin/build_i18n.sh",
-		"i18n:pot": "php -d xdebug.max_nesting_level=512 $(which wp) i18n make-pot --exclude=\"node_modules/,languages/,assets/\" --headers='{\"Report-Msgid-Bugs-To\":\"https://woocommerce.com/my-account/create-a-ticket/\", \"language-team\":\"LANGUAGE <EMAIL@ADDRESS>\"}' . languages/woocommerce-gateway-axytoswc.pot",
-		"i18n:json": "$(which wp) i18n make-json languages --no-purge",
-		"packages-update": "wp-scripts packages-update",
-		"check-engines": "wp-scripts check-engines",
-		"wp-env": "wp-env",
-		"test:env": "wp-env start",
-		"test:unit": "wp-env run tests-cli --env-cwd=/var/www/html/wp-content/plugins/axytos-woocommerce vendor/bin/phpunit",
-		"test:stop": "wp-env stop"
-	}
+  "name": "axytos-woocommerce",
+  "title": "Axytos WooCommerce Payment",
+  "version": "0.11.0",
+  "author": "Bytehaendig Software Manufaktur",
+  "license": "Commercial",
+  "keywords": [],
+  "engines": {
+    "node": "^20.12.0",
+    "npm": "^10.5.0"
+  },
+  "devDependencies": {
+    "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
+    "@wordpress/env": "^8.12.0",
+    "@wordpress/scripts": "^27.8.0",
+    "cross-env": "7.0.3"
+  },
+  "scripts": {
+    "start": "wp-scripts start",
+    "build": "wp-scripts build && npm run i18n:build",
+    "i18n": "npm run i18n:build",
+    "i18n:build": "npm run i18n:pot && ./bin/build_i18n.sh",
+    "i18n:pot": "php -d xdebug.max_nesting_level=512 $(which wp) i18n make-pot --exclude=\"node_modules/,languages/,assets/\" --headers='{\"Report-Msgid-Bugs-To\":\"https://woocommerce.com/my-account/create-a-ticket/\", \"language-team\":\"LANGUAGE <EMAIL@ADDRESS>\"}' . languages/woocommerce-gateway-axytoswc.pot",
+    "i18n:json": "$(which wp) i18n make-json languages --no-purge",
+    "packages-update": "wp-scripts packages-update",
+    "check-engines": "wp-scripts check-engines",
+    "wp-env": "wp-env",
+    "test:env": "wp-env start",
+    "test:unit": "wp-env run tests-cli --env-cwd=/var/www/html/wp-content/plugins/axytos-woocommerce vendor/bin/phpunit",
+    "test:stop": "wp-env stop"
+  }
 }
