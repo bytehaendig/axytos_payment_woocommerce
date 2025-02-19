@@ -302,6 +302,7 @@ function axytoswc_woocommerce_init() {
     // Define the payment gateway class
     class WC_Axytos_Payment_Gateway extends WC_Payment_Gateway {
       protected $client;
+      private $encryption_key;
 
       public function __construct() {
         require_once(__DIR__ . '/axytos-class.php');
@@ -313,6 +314,7 @@ function axytoswc_woocommerce_init() {
         $this->method_title = __('Axytos', 'axytos-wc');
         $this->method_description = __('Payment gateway for Axytos.', 'axytos-wc');
         // Load the settings
+        $this->encryption_key = wp_salt('auth');
         $this->init_form_fields();
         $this->init_settings();
         $this->title = $this->get_option('title');
@@ -323,8 +325,63 @@ function axytoswc_woocommerce_init() {
         $this->client = new AxytosApiClient($AxytosAPIKey, $useSandbox);
         // Save settings
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
+        // Add filter for api-key encryption
+        add_filter('woocommerce_settings_api_sanitized_fields_' . $this->id, array($this, 'encrypt_settings'), 10, 1);
         //Setting up the class for Blocks
         add_filter( 'woocommerce_payment_gateways', [ $this, 'add_gateway_to_block_checkout' ] );
+      }
+
+      public function encrypt_settings($settings) {
+        if (!empty($settings['AxytosAPIKey'])) {
+          $settings['AxytosAPIKey'] = $this->encrypt($settings['AxytosAPIKey']);
+        }
+        return $settings;
+      }
+
+      // Get decrypted value when using get_option
+      public function get_option($key, $empty_value = null) {
+          $value = parent::get_option($key, $empty_value);
+          if ($key === 'AxytosAPIKey' && !empty($value)) {
+              return $this->decrypt($value);
+          }
+          return $value;
+      }
+
+      private function encrypt($value) {
+        if (empty($value)) return '';
+
+        $method = 'aes-256-cbc';
+        $ivlen = openssl_cipher_iv_length($method);
+        $iv = openssl_random_pseudo_bytes($ivlen);
+
+        $encrypted = openssl_encrypt(
+          $value,
+          $method,
+          $this->encryption_key,
+          0,
+          $iv
+        );
+
+        return base64_encode($iv . $encrypted);
+      }
+
+      private function decrypt($encrypted_value) {
+        if (empty($encrypted_value)) return '';
+
+        $encrypted_value = base64_decode($encrypted_value);
+        $method = 'aes-256-cbc';
+        $ivlen = openssl_cipher_iv_length($method);
+
+        $iv = substr($encrypted_value, 0, $ivlen);
+        $encrypted = substr($encrypted_value, $ivlen);
+
+        return openssl_decrypt(
+          $encrypted,
+          $method,
+          $this->encryption_key,
+          0,
+          $iv
+        );
       }
 
       function add_gateway_to_block_checkout( $gateways ) {
