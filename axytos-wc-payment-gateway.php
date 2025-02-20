@@ -14,6 +14,8 @@ if (!defined('ABSPATH')) {
   exit;
 }
 
+define('AXYTOS_PAYMENT_ID', 'axytoswc');
+
 require_once __DIR__ . '/blocks-support.php';
 
 use Automattic\WooCommerce\Utilities\OrderUtil;
@@ -29,7 +31,7 @@ add_filter('woocommerce_available_payment_gateways', function ($available_gatewa
   if (WC()->session && $order_id = WC()->session->get('order_awaiting_payment') ?? WC()->session->get('store_api_draft_order')) {
     // Check if transient is set to disable Axytos
     if (get_transient('disable_axitos_for_' . $order_id)) {
-      $chosen_payment_method = 'axytoswc';
+      $chosen_payment_method = AXYTOS_PAYMENT_ID;
       if (isset($available_gateways[$chosen_payment_method])) {
         unset($available_gateways[$chosen_payment_method]);
       }
@@ -61,7 +63,7 @@ function axytos_thankyou_notice($order_id) {
   if (!$order) {
     return;
   }
-  if ($order->get_payment_method() === 'axytoswc' && $order->get_status() === 'on-hold') {
+  if ($order->get_payment_method() === AXYTOS_PAYMENT_ID && $order->get_status() === 'on-hold') {
     echo '<div class="woocommerce-notice woocommerce-info woocommerce-notice--info woocommerce-thankyou-notice">';
     echo __('Order on-hold, waiting for admin approval.', 'axytos-wc');
     echo '</div>';
@@ -88,8 +90,7 @@ add_action('manage_shop_order_posts_custom_column', 'column_html',20, 2);
 function column_html($column, $order) {
   if ($column === 'axytos_actions') {
     $order = is_a($order, 'WC_Order') ? $order : wc_get_order($order);
-    $unique_id = $order->get_meta('unique_id');
-    if ($unique_id) {
+    if ($order->get_payment_method() === AXYTOS_PAYMENT_ID) {
       $nonce = wp_create_nonce('axytos_action_nonce');
       $order_status = $order->get_status();
       // Only show buttons if the order is neither completed nor cancelled
@@ -120,9 +121,8 @@ function handle_axytos_status_change($order_id, $old_status, $new_status, $order
   if (!$order instanceof WC_Order) {
     return;
   }
-  $unique_id = $order->get_meta('unique_id');
-  if (!$unique_id) {
-    error_log("No unique ID found for order #" .  $order_id);
+  if (!$order->get_payment_method() === AXYTOS_PAYMENT_ID) {
+    error_log("Order did not use Axytos payment: #" .  $order_id);
     return;
   }
   $endpoint_url = site_url('/wp-admin/admin-ajax.php');
@@ -173,8 +173,7 @@ function render_axytos_actions_metabox($post) {
     echo '<p>' . __('Order not found.', 'axytos-wc') . '</p>';
     return;
   }
-  $unique_id = $order->get_meta('unique_id');
-  if ($unique_id) {
+  if ($order->get_payment_method() === AXYTOS_PAYMENT_ID) {
     $nonce = wp_create_nonce('axytos_action_nonce');
     $order_status = $order->get_status();
     if (!in_array($order_status, ['completed', 'cancelled'])) {
@@ -215,9 +214,8 @@ function handle_axitos_action () {
   if (!$order) {
     wp_send_json_error(['message' => __('Order not found.', 'axytos-wc')]);
   }
-  $unique_id = $order->get_meta('unique_id');
-  if (!$unique_id) {
-    wp_send_json_error(['message' => __('Axytos unique ID not found.', 'axytos-wc')]);
+  if ($order->get_payment_method() !== AXYTOS_PAYMENT_ID) {
+    wp_send_json_error(['message' => __('Not an Axytos order.', 'axytos-wc')]);
   }
   try {
     switch ($action_type) {
@@ -276,7 +274,7 @@ function axytoswc_woocommerce_init() {
 
     function axytos_add_agreement_link_to_gateway_description($description, $payment_id) {
       // Check if the current payment gateway is Axytos
-      if ('axytoswc' === $payment_id) {
+      if (AXYTOS_PAYMENT_ID === $payment_id) {
         $agreement_text = get_option('woocommerce_axytoswc_settings')['PrecheckAgreeText'] ?? '';
         $description .= ' <br><a href="#" class="axytos-agreement-link">' . esc_html($agreement_text) . '</a>';
       }
@@ -308,7 +306,7 @@ function axytoswc_woocommerce_init() {
         require_once(__DIR__ . '/axytos-class.php');
         require_once(__DIR__ . '/axytos-data.php');
 
-        $this->id = 'axytoswc';
+        $this->id = AXYTOS_PAYMENT_ID;
         $this->icon = ''; // URL of the icon that will be displayed on the checkout page
         $this->has_fields = true;
         $this->method_title = __('Axytos', 'axytos-wc');
@@ -494,8 +492,6 @@ function axytoswc_woocommerce_init() {
         $action = strtolower($decision_code) === "u" ? 'proceed' : 'disallow';
         switch ($action) {
           case 'proceed':
-            $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
-            $order->update_meta_data( 'unique_id', $unique_id );
             if ($this->confirmOrder($order)) {
               return [
                 'result' => 'success',
@@ -558,8 +554,7 @@ function axytoswc_woocommerce_init() {
         // same as with report_shipping - cancel is called when admin clicks the button or when order changes state to 'cancelled'.
         $isCanceled = $order->get_meta('axytos_canceled');
         if (!$isCanceled) {
-          $unique_id = $order->get_meta('unique_id');
-          $result = $this->client->cancelOrder($unique_id);
+          $result = $this->client->cancelOrder($order->get_order_number());
           // TODO: fix error handling
           if (is_wp_error($result)) {
             wp_send_json_error(['message' => __('Could not cancel order.', 'axytos-wc')]);

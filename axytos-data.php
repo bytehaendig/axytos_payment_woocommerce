@@ -154,12 +154,11 @@ function createPrecheckData($order) {
 
 function createConfirmData($order) {
   $orderData = createOrderData($order);
-  $unique_id = $order->get_meta('unique_id');
   //data for confirm order
   $response_body = json_decode($order->get_meta('precheck_response'), true);
   $confirmData = [
     "customReference" => $order->get_order_number(),
-    "externalOrderId" => $unique_id,
+    "externalOrderId" => $order->get_order_number(),
     "date" => date('c'),
     "orderPrecheckResponse" => $response_body
   ];
@@ -167,9 +166,8 @@ function createConfirmData($order) {
 }
 
 function createInvoiceData($order) {
-  $unique_id = $order->get_meta('unique_id');
   return [
-    "externalorderId" => $unique_id,
+    "externalorderId" => $order->get_order_number(),
     "externalInvoiceNumber" => $order->get_order_number(), 
     "externalInvoiceDisplayName" => sprintf("Invoice #%s", $order->get_order_number()),
     "externalSubOrderId" => "", 
@@ -180,11 +178,10 @@ function createInvoiceData($order) {
 }
 
 function createShippingData($order) {
-  $unique_id = $order->get_meta('unique_id');
-  $order_id = $order->get_id();
   return [
-    "externalOrderId" => $unique_id,
-    "externalSubOrderId" => $order_id,
+    "externalOrderId" => $order->get_order_number(),
+    // TODO: clarify meaning of externalSubOrderId
+    "externalSubOrderId" => $order->get_order_number(),
     "basketPositions" => array_values(array_map(function ($item) {
       return [
         "productId" => $item->get_product_id(),
@@ -196,14 +193,12 @@ function createShippingData($order) {
 }
 
 function createRefundData($order) {
-  $unique_id = $order->get_meta('unique_id');
   $invoice_number = $order->get_meta('axytos_invoice_number');
-  $order_id = $order->get_id();
   return [
-    "externalOrderId" => $unique_id,
+    "externalOrderId" => $order->get_order_number(),
     "refundDate" => date('c'),
     "originalInvoiceNumber" => $invoice_number,
-    "externalSubOrderId" => $order_id,
+    "externalSubOrderId" => $order->get_order_number(),
     "basket" => createRefundBasketData($order),
   ];
 }
