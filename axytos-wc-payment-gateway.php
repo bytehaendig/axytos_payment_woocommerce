@@ -122,7 +122,6 @@ function handle_axytos_status_change($order_id, $old_status, $new_status, $order
     return;
   }
   if (!$order->get_payment_method() === AXYTOS_PAYMENT_ID) {
-    error_log("Order did not use Axytos payment: #" .  $order_id);
     return;
   }
   $endpoint_url = site_url('/wp-admin/admin-ajax.php');
@@ -612,14 +611,17 @@ function axytoswc_woocommerce_init() {
       }
 
       function confirmOrder($order) {
-        $confirm_data = createConfirmData($order);
-        $confirm_response = $this->client->orderConfirm($confirm_data);
-        if (is_wp_error($confirm_response)) {
-          // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
-          throw new Exception('Could not confirm order with Axytos API.');    
-          return false;
+        if (!$order->get_meta('payment_completed')) {
+          $confirm_data = createConfirmData($order);
+          $confirm_response = $this->client->orderConfirm($confirm_data);
+          if (is_wp_error($confirm_response)) {
+            // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
+            throw new Exception('Could not confirm order with Axytos API.');    
+            return false;
+          }
+          $order->payment_complete();
+          $order->update_meta_data('payment_completed', true);
         }
-        $order->payment_complete();
         return true;
       }
 
