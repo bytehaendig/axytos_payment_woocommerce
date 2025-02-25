@@ -522,7 +522,7 @@ function axytoswc_woocommerce_init() {
           default:
             $order_id = $order->get_id(); 
             set_transient('disable_axitos_for_' . $order_id, true, 600);
-
+            $order->update_status('failed', __('Axytos precheck declined', 'axytoswc'));
             throw new Exception(__('This Payment Method is not allowed for this order. Please try a different payment method.', 'axytos-wc'));
         }
         return [];
