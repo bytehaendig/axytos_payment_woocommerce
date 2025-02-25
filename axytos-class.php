@@ -10,6 +10,7 @@ class AxytosApiClient
     $this->AxytosAPIKey = $AxytosAPIKey;
     $this->BaseUrl = $useSandbox ? 'https://api-sandbox.axytos.com/api/v1' : 'https://api.axytos.com/api/v1';
   }
+
   private function makeRequest($url, $method = 'GET', $data = []) {
     $headers = [
       'Content-type: application/json',

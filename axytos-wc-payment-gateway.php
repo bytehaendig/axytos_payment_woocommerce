@@ -318,7 +318,7 @@ function axytoswc_woocommerce_init() {
         $this->description = $this->get_option('description');
         $this->enabled = $this->get_option('enabled');
         $AxytosAPIKey = $this->get_option('AxytosAPIKey');
-        $useSandbox = $this->get_option('useSandbox');
+        $useSandbox = $this->get_option('useSandbox') == 'yes';
         $this->client = new AxytosApiClient($AxytosAPIKey, $useSandbox);
         // Save settings
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
