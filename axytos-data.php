@@ -109,9 +109,13 @@ function createRefundBasketData($order) {
 }
 
 function createOrderData($order) {
+  $customerId = $order->get_user_id();
+  if ($customerId === 0) {
+    $customerId = $order->get_billing_email();
+  }
   return [
     "personalData" => [
-      "externalCustomerId" => (string) $order->get_user_id(),
+      "externalCustomerId" => (string) $customerId,
       "language" => get_locale(),
       "email" => $order->get_billing_email(),
       "mobilePhoneNumber" => $order->get_billing_phone(),
@@ -145,7 +149,7 @@ function createPrecheckData($order) {
   $precheckData = [
     "requestMode" => "SingleStep",
     "customReference" => $order->get_order_number(),
-    "paymentTypeSecurity" => "S", // Include this field
+    "paymentTypeSecurity" => "U", // Include this field
     "selectedPaymentType" => "", // Include this field
     "proofOfInterest" => "AAE", // Include this field
   ];
