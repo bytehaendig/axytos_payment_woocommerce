@@ -148,7 +148,6 @@ function createPrecheckData($order) {
   $orderData = createOrderData($order);
   $precheckData = [
     "requestMode" => "SingleStep",
-    "customReference" => $order->get_order_number(),
     "paymentTypeSecurity" => "U", // Include this field
     "selectedPaymentType" => "", // Include this field
     "proofOfInterest" => "AAE", // Include this field
@@ -161,7 +160,6 @@ function createConfirmData($order) {
   //data for confirm order
   $response_body = json_decode($order->get_meta('precheck_response'), true);
   $confirmData = [
-    "customReference" => $order->get_order_number(),
     "externalOrderId" => $order->get_order_number(),
     "date" => date('c'),
     "orderPrecheckResponse" => $response_body
