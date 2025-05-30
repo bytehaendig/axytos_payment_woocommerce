@@ -15,6 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 define('AXYTOS_PAYMENT_ID', 'axytoswc');
+define('AXYTOS_PLUGIN_VERSION', '0.12.6');
 
 require_once __DIR__ . '/blocks-support.php';
 

@@ -4,19 +4,31 @@ class AxytosApiClient
 {
   private $AxytosAPIKey;
   private $BaseUrl;
+  private $UserAgent;
 
   public function __construct($AxytosAPIKey, $useSandbox = true)
   {
     $this->AxytosAPIKey = $AxytosAPIKey;
     $this->BaseUrl = $useSandbox ? 'https://api-sandbox.axytos.com/api/v1' : 'https://api.axytos.com/api/v1';
+    $this->UserAgent = $this->makeUserAgent();
+  }
+
+  private function makeUserAgent() {
+    $pluginVersion = AXYTOS_PLUGIN_VERSION;
+    $phpVersion = phpversion();
+    $wpVersion = get_bloginfo('version');
+    $wcVersion = WC_VERSION;
+    $userAgent = "AxytosWooCommercePlugin/$pluginVersion (PHP:$phpVersion WP:$wpVersion WC:$wcVersion)";
+    return $userAgent;
   }
 
   private function makeRequest($url, $method = 'GET', $data = []) {
-    $headers = [
-      'Content-type: application/json',
-      'accept: application/json',
-      'X-API-Key: '.$this->AxytosAPIKey,
-    ];
+      $headers = [
+        'Content-type: application/json',
+        'accept: application/json',
+        'X-API-Key: '.$this->AxytosAPIKey,
+        'User-Agent: '.$this->UserAgent,
+      ];
 
     $ch = curl_init($this->BaseUrl . $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -33,7 +45,7 @@ class AxytosApiClient
     curl_close($ch);
     if ($status < 200 || $status >= 300) {
       // TODO: better error handling
-      throw new Exception('Error in communication with Axytos');    
+      throw new Exception("Error in communication with Axytos (Status-Code $status)");    
     }
     return $response;
   }
