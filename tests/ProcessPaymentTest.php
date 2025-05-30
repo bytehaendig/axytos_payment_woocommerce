@@ -3,7 +3,7 @@
 class ProcessPaymentTest extends WP_UnitTestCase {
     public function test_process_payment_success() {
 
-        $gateway = $this->createMock( WC_Axytos_Payment_Gateway::class );
+        $gateway = $this->createMock( AxytosPaymentGateway::class );
 
         $order = wc_create_order();
 

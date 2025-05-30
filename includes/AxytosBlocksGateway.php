@@ -6,7 +6,7 @@ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodTyp
  *
  * @since 1.0.3
  */
-final class WC_Axytos_Blocks_Gateway extends AbstractPaymentMethodType {
+final class AxytosBlocksGateway extends AbstractPaymentMethodType {
 
 	/**
 	 * The gateway instance.
