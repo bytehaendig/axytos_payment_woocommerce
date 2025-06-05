@@ -57,6 +57,7 @@ function execute_status_action($order_id, $action)
             'order_id' => $order_id,
             'action_type' => $action,
             'security' => wp_create_nonce('axytos_action_nonce'),
+            'manual' => false,  // Mark as automatic status change
         ],
     ]);
 

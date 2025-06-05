@@ -16,6 +16,8 @@ function handle_ajax_action()
     
     $order_id = absint($_POST['order_id']);
     $action_type = sanitize_text_field($_POST['action_type']);
+    $invoice_number = isset($_POST['invoice_number']) ? sanitize_text_field($_POST['invoice_number']) : '';
+    $is_manual = isset($_POST['manual']) ? (bool) $_POST['manual'] : true;
     
     if (!$order_id || !$action_type) {
         wp_send_json_error(['message' => __('Invalid order or action.', 'axytos-wc')]);
@@ -35,7 +37,10 @@ function handle_ajax_action()
         
         switch ($action_type) {
             case 'report_shipping':
-                $gateway->actionReportShipping($order);
+                if ($is_manual && empty($invoice_number)) {
+                    wp_send_json_error(['message' => __('Invoice number is required for shipping report.', 'axytos-wc')]);
+                }
+                $gateway->actionReportShipping($order, $invoice_number);
                 break;
             case 'cancel':
                 $gateway->actionCancel($order);

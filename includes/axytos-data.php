@@ -148,12 +148,15 @@ function createConfirmData($order)
     return array_merge($orderData, $confirmData);
 }
 
-function createInvoiceData($order)
+function createInvoiceData($order, $invoice_number = null)
 {
+    $externalInvoiceNumber = $invoice_number ?: "ORDER:" . $order->get_order_number();
+    $externalInvoiceDisplayName = $invoice_number ? sprintf("Invoice #%s", $invoice_number) : sprintf("Order #%s", $order->get_order_number());
+    
     return [
       "externalOrderId" => $order->get_order_number(),
-      "externalInvoiceNumber" => $order->get_order_number(),
-      "externalInvoiceDisplayName" => sprintf("Invoice #%s", $order->get_order_number()),
+      "externalInvoiceNumber" => $externalInvoiceNumber,
+      "externalInvoiceDisplayName" => $externalInvoiceDisplayName,
       "externalSubOrderId" => "",
       "date" => date('c', strtotime($order->get_date_created())), // Order creation date in ISO 8601
       "dueDateOffsetDays" => 14,

@@ -244,7 +244,7 @@ class AxytosPaymentGateway extends WC_Payment_Gateway
         return [];
     }
 
-    public function actionReportShipping($order)
+    public function actionReportShipping($order, $invoice_number = null)
     {
         // Report_shipping is called when admin clicks the button or when order changes state to 'completed'.
         // Since report_shipping also switches state to 'completed', we need to check if it has already been reported.
@@ -253,7 +253,7 @@ class AxytosPaymentGateway extends WC_Payment_Gateway
         if (!$isShipped) {
             $ok = $this->reportShipping($order);
             if ($ok) {
-                $this->createInvoice($order);
+                $this->createInvoice($order, $invoice_number);
             }
         }
         if ($ok) {
@@ -367,18 +367,18 @@ class AxytosPaymentGateway extends WC_Payment_Gateway
         return true;
     }
 
-    public function createInvoice($order)
+    public function createInvoice($order, $invoice_number = null)
     {
-        $invoiceData = createInvoiceData($order);
+        $invoiceData = createInvoiceData($order, $invoice_number);
         $success = false;
         try {
             $invoice_response = $this->client->createInvoice($invoiceData);
-            $invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
-            if (empty($invoice_number)) {
-                $invoice_number = null;
+            $response_invoice_number = json_decode($invoice_response, true)['invoiceNumber']  ?? null;
+            if (empty($response_invoice_number)) {
+                $response_invoice_number = null;
                 error_log("Axytos API: 'invoiceNumber' not found in the response. Response: " . $invoice_response);
             }
-            $order->update_meta_data('axytos_invoice_number', $invoice_number);
+            $order->update_meta_data('axytos_invoice_number', $response_invoice_number);
             $success = true;
         } catch (Exception $e) {
             error_log("Axytos API: could not create invoice: " . $e->getMessage());

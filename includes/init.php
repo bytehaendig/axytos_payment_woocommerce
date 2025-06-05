@@ -163,6 +163,13 @@ function enqueue_admin_assets()
     wp_localize_script("axytos-admin-actions", "AxytosActions", [
         "ajax_url" => admin_url("admin-ajax.php"),
         "nonce" => wp_create_nonce("axytos_action_nonce"),
+        "i18n" => [
+            "invoice_prompt" => __("Please enter the invoice number:", "axytos-wc"),
+            "invoice_required" => __("Invoice number is required for shipping report.", "axytos-wc"),
+            "confirm_action" => __("Are you sure you want to %s this order?", "axytos-wc"),
+            "confirm_action_with_invoice" => __("Are you sure you want to %s this order with invoice number: %s?", "axytos-wc"),
+            "unexpected_error" => __("An unexpected error occurred. Please try again.", "axytos-wc"),
+        ],
     ]);
 
     wp_enqueue_style(
