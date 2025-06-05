@@ -11,12 +11,12 @@ Domain Path: /languages/
 */
 
 // Exit if accessed directly
-if (!defined('ABSPATH')) {
-    exit;
+if (!defined("ABSPATH")) {
+    exit();
 }
 
-define('AXYTOS_PLUGIN_VERSION', '0.12.6');
-define('AXYTOS_PAYMENT_ID', 'axytoswc');
+define("AXYTOS_PLUGIN_VERSION", "0.12.6");
+define("AXYTOS_PAYMENT_ID", "axytoswc");
 
 // Load all plugin functionality
-require_once __DIR__ . '/includes/init.php';
+require_once __DIR__ . "/includes/init.php";

@@ -39,7 +39,9 @@ class AxytosApiClient
     public function __construct($AxytosAPIKey, $useSandbox = true)
     {
         $this->_AxytosAPIKey = $AxytosAPIKey;
-        $this->_BaseUrl = $useSandbox ? 'https://api-sandbox.axytos.com/api/v1' : 'https://api.axytos.com/api/v1';
+        $this->_BaseUrl = $useSandbox
+            ? "https://api-sandbox.axytos.com/api/v1"
+            : "https://api.axytos.com/api/v1";
         $this->_UserAgent = $this->makeUserAgent();
     }
 
@@ -52,7 +54,7 @@ class AxytosApiClient
     {
         $pluginVersion = AXYTOS_PLUGIN_VERSION;
         $phpVersion = phpversion();
-        $wpVersion = get_bloginfo('version');
+        $wpVersion = get_bloginfo("version");
         $wcVersion = WC_VERSION;
         $userAgent = "AxytosWooCommercePlugin/$pluginVersion (PHP:$phpVersion WP:$wpVersion WC:$wcVersion)";
         return $userAgent;
@@ -67,31 +69,33 @@ class AxytosApiClient
      * @return string The API response body
      * @throws Exception When API returns non-2xx status code
      */
-    private function makeRequest($url, $method = 'GET', $data = [])
+    private function makeRequest($url, $method = "GET", $data = []): string|bool
     {
         $headers = [
-          'Content-type: application/json',
-          'accept: application/json',
-          'X-API-Key: '.$this->_AxytosAPIKey,
-          'User-Agent: '.$this->_UserAgent,
+            "Content-type: application/json",
+            "accept: application/json",
+            "X-API-Key: " . $this->_AxytosAPIKey,
+            "User-Agent: " . $this->_UserAgent,
         ];
 
         $ch = curl_init($this->_BaseUrl . $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        if ($method === 'POST') {
+        if ($method === "POST") {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         $response = curl_exec($ch);
         if (curl_errno($ch)) {
-            echo 'Curl error: ' . curl_error($ch);
+            echo "Curl error: " . curl_error($ch);
         }
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         if ($status < 200 || $status >= 300) {
             // TODO: better error handling
-            throw new Exception("Error in communication with Axytos (Status-Code $status)");
+            throw new Exception(
+                "Error in communication with Axytos (Status-Code $status)"
+            );
         }
         return $response;
     }
@@ -105,8 +109,8 @@ class AxytosApiClient
      */
     public function invoicePrecheck($requestData)
     {
-        $apiUrl = '/Payments/invoice/order/precheck';
-        $response = $this->makeRequest($apiUrl, 'POST', $requestData);
+        $apiUrl = "/Payments/invoice/order/precheck";
+        $response = $this->makeRequest($apiUrl, "POST", $requestData);
         return $response;
     }
 
@@ -119,8 +123,8 @@ class AxytosApiClient
      */
     public function orderConfirm($requestData)
     {
-        $apiUrl = '/Payments/invoice/order/confirm';
-        $response = $this->makeRequest($apiUrl, 'POST', $requestData);
+        $apiUrl = "/Payments/invoice/order/confirm";
+        $response = $this->makeRequest($apiUrl, "POST", $requestData);
         return $response;
     }
 
@@ -133,8 +137,8 @@ class AxytosApiClient
      */
     public function updateShippingStatus($requestData)
     {
-        $apiUrl = '/Payments/invoice/order/reportshipping';
-        $response = $this->makeRequest($apiUrl, 'POST', $requestData);
+        $apiUrl = "/Payments/invoice/order/reportshipping";
+        $response = $this->makeRequest($apiUrl, "POST", $requestData);
         return $response;
     }
 
@@ -147,8 +151,8 @@ class AxytosApiClient
      */
     public function returnItems($requestData)
     {
-        $apiUrl = '/Payments/invoice/order/return';
-        $response = $this->makeRequest($apiUrl, 'POST', $requestData);
+        $apiUrl = "/Payments/invoice/order/return";
+        $response = $this->makeRequest($apiUrl, "POST", $requestData);
         return $response;
     }
 
@@ -161,8 +165,8 @@ class AxytosApiClient
      */
     public function refundOrder($requestData)
     {
-        $apiUrl = '/Payments/invoice/order/refund';
-        $response = $this->makeRequest($apiUrl, 'POST', $requestData);
+        $apiUrl = "/Payments/invoice/order/refund";
+        $response = $this->makeRequest($apiUrl, "POST", $requestData);
         return $response;
     }
 
@@ -175,8 +179,8 @@ class AxytosApiClient
      */
     public function createInvoice($requestData)
     {
-        $apiUrl = '/Payments/invoice/order/createInvoice';
-        $response = $this->makeRequest($apiUrl, 'POST', $requestData);
+        $apiUrl = "/Payments/invoice/order/createInvoice";
+        $response = $this->makeRequest($apiUrl, "POST", $requestData);
         return $response;
     }
 
@@ -189,7 +193,7 @@ class AxytosApiClient
      */
     public function getPaymentStatus($orderID)
     {
-        $apiUrl = '/Payments/invoice/order/paymentstate/' . $orderID;
+        $apiUrl = "/Payments/invoice/order/paymentstate/" . $orderID;
         $response = $this->makeRequest($apiUrl);
         return $response;
     }
@@ -203,8 +207,8 @@ class AxytosApiClient
      */
     public function cancelOrder($orderID)
     {
-        $apiUrl = '/Payments/invoice/order/cancel/' . $orderID;
-        $response = $this->makeRequest($apiUrl, 'POST');
+        $apiUrl = "/Payments/invoice/order/cancel/" . $orderID;
+        $response = $this->makeRequest($apiUrl, "POST");
         return $response;
     }
 
@@ -216,7 +220,7 @@ class AxytosApiClient
      */
     public function getAgreement()
     {
-        $apiUrl = '/StaticContent/creditcheckagreement';
+        $apiUrl = "/StaticContent/creditcheckagreement";
         $response = $this->makeRequest($apiUrl);
         return $response;
     }
