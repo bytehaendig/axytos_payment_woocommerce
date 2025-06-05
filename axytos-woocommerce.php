@@ -1,6 +1,6 @@
 <?php
 
-/*
+/**
 Plugin Name: Axytos WooCommerce Payment Gateway
 Description: Axytos Payment Gateway for WooCommerce.
 Version: 0.12.6
@@ -28,10 +28,7 @@ function rudr_gateway_block_support()
         error_log('--- Axytos Debug --- AbstractPaymentMethodType class not found.');
         return;
     }
-    // here we're including our "gateway block support class"
     require_once __DIR__ . '/includes/AxytosBlocksGateway.php';
-
-    // registering the PHP class we have just included
     add_action(
         'woocommerce_blocks_payment_method_type_registration',
         function (Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry) {
