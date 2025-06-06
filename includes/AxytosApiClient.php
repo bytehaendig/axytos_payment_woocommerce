@@ -1,5 +1,7 @@
 <?php
 
+namespace Axytos\WooCommerce;
+
 /**
  * Axytos API Client for WooCommerce Plugin
  *
@@ -52,10 +54,10 @@ class AxytosApiClient
      */
     private function makeUserAgent()
     {
-        $pluginVersion = AXYTOS_PLUGIN_VERSION;
+        $pluginVersion = \AXYTOS_PLUGIN_VERSION;
         $phpVersion = phpversion();
         $wpVersion = get_bloginfo("version");
-        $wcVersion = WC_VERSION;
+        $wcVersion = \WC_VERSION;
         $userAgent = "AxytosWooCommercePlugin/$pluginVersion (PHP:$phpVersion WP:$wpVersion WC:$wcVersion)";
         return $userAgent;
     }

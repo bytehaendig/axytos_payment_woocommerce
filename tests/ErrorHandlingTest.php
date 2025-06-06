@@ -2,7 +2,7 @@
 
 class ErrorHandlingTest extends WP_UnitTestCase {
     public function test_process_payment_error() {
-        $gateway = $this->createMock( AxytosPaymentGateway::class );
+        $gateway = $this->createMock( \Axytos\WooCommerce\AxytosPaymentGateway::class );
 
         $order = wc_create_order();
 

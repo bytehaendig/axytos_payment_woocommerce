@@ -3,7 +3,7 @@
 class GatewayInitializationTest extends WP_UnitTestCase {
 
     public function test_gateway_initialization() {
-        $gateway = new AxytosPaymentGateway();
+        $gateway = new \Axytos\WooCommerce\AxytosPaymentGateway();
         $this->assertEquals( 'yes', $gateway->get_option( 'enabled' ), 'Axytos gateway should be enabled by default.' );
         $this->assertEquals( 'Axytos', $gateway->get_option( 'title' ), 'Axytos gateway title should be "Axytos".' );
     }

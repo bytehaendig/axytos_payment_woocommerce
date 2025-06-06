@@ -1,5 +1,7 @@
 <?php
 
+namespace Axytos\WooCommerce;
+
 function createBasketData($order, $style = "order")
 {
     assert($style === "order" || $style === "invoice" || $style === "refund");

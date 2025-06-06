@@ -1,5 +1,7 @@
 <?php
 
+namespace Axytos\WooCommerce;
+
 /**
  * Axytos Webhook Test Utility
  *
@@ -56,7 +58,7 @@ function show_webhook_info()
 {
     $webhook_url = rest_url("axytos/v1/order-update");
     $gateway_settings = get_option(
-        "woocommerce_" . AXYTOS_PAYMENT_ID . "_settings",
+        "woocommerce_" . \AXYTOS_PAYMENT_ID . "_settings",
         []
     );
     $has_api_key = !empty($gateway_settings["webhook_api_key"]);
@@ -151,7 +153,7 @@ echo "Response: {$body}\n";</pre>
 function test_webhook_request()
 {
     $gateway_settings = get_option(
-        "woocommerce_" . AXYTOS_PAYMENT_ID . "_settings",
+        "woocommerce_" . \AXYTOS_PAYMENT_ID . "_settings",
         []
     );
     $webhook_api_key = "";
@@ -172,7 +174,7 @@ function test_webhook_request()
     $test_order = null;
     $orders = wc_get_orders([
         "limit" => 10,
-        "payment_method" => AXYTOS_PAYMENT_ID,
+        "payment_method" => \AXYTOS_PAYMENT_ID,
         "status" => ["processing", "on-hold"],
     ]);
 

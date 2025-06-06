@@ -1,4 +1,5 @@
 <?php
+namespace Axytos\WooCommerce;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 

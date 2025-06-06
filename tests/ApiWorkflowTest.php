@@ -3,7 +3,7 @@
 class ApiWorkFlowTest extends WP_UnitTestCase {
     public function test_process_payment_success() {
 
-        $gateway = new AxytosPaymentGateway();
+        $gateway = new \Axytos\WooCommerce\AxytosPaymentGateway();
 
         $product = $this->create_sample_product_and_add_to_cart();
 

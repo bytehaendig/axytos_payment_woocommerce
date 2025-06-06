@@ -28,7 +28,7 @@ function render_order_column($column, $order)
 
     $order = is_a($order, "WC_Order") ? $order : wc_get_order($order);
 
-    if ($order->get_payment_method() !== AXYTOS_PAYMENT_ID) {
+    if ($order->get_payment_method() !== \AXYTOS_PAYMENT_ID) {
         echo __("N/A", "axytos-wc");
         return;
     }
@@ -71,7 +71,7 @@ function render_order_metabox($post_or_order)
         return;
     }
 
-    if ($order->get_payment_method() !== AXYTOS_PAYMENT_ID) {
+    if ($order->get_payment_method() !== \AXYTOS_PAYMENT_ID) {
         echo "<p>" .
             __("No Axytos actions available for this order.", "axytos-wc") .
             "</p>";

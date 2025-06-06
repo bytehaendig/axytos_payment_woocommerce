@@ -4,7 +4,7 @@ require_once __DIR__ . '/axytos-class.php';
 
 
 $AxytosAPIKey = getenv('AXYTOS_API_KEY');
-$AxytosClient = new AxytosApiClient($AxytosAPIKey, true);
+$AxytosClient = new \Axytos\WooCommerce\AxytosApiClient($AxytosAPIKey, true);
 
 $result = "{}";
 // Precheck request

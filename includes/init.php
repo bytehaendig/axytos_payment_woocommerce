@@ -39,7 +39,7 @@ function add_blocks_support()
     add_action("woocommerce_blocks_payment_method_type_registration", function (
         \Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry
     ) {
-        $payment_method_registry->register(new \AxytosBlocksGateway());
+        $payment_method_registry->register(new AxytosBlocksGateway());
     });
 }
 
@@ -84,7 +84,7 @@ function load_shared_functionality()
     require_once plugin_dir_path(__FILE__) . "order-manager.php";
     // Webhook handler (needed for REST API endpoint)
     require_once plugin_dir_path(__FILE__) . "AxytosWebhookHandler.php";
-    
+
     // Initialize webhook handler
     new AxytosWebhookHandler();
 }
@@ -148,7 +148,7 @@ function is_rest_request()
  */
 function add_gateway_class($gateways)
 {
-    $gateways[] = "AxytosPaymentGateway";
+    $gateways[] = "Axytos\\WooCommerce\\AxytosPaymentGateway";
     return $gateways;
 }
 
@@ -169,11 +169,26 @@ function enqueue_admin_assets()
         "ajax_url" => admin_url("admin-ajax.php"),
         "nonce" => wp_create_nonce("axytos_action_nonce"),
         "i18n" => [
-            "invoice_prompt" => __("Please enter the invoice number:", "axytos-wc"),
-            "invoice_required" => __("Invoice number is required for shipping report.", "axytos-wc"),
-            "confirm_action" => __("Are you sure you want to %s this order?", "axytos-wc"),
-            "confirm_action_with_invoice" => __("Are you sure you want to %s this order with invoice number: %s?", "axytos-wc"),
-            "unexpected_error" => __("An unexpected error occurred. Please try again.", "axytos-wc"),
+            "invoice_prompt" => __(
+                "Please enter the invoice number:",
+                "axytos-wc"
+            ),
+            "invoice_required" => __(
+                "Invoice number is required for shipping report.",
+                "axytos-wc"
+            ),
+            "confirm_action" => __(
+                "Are you sure you want to %s this order?",
+                "axytos-wc"
+            ),
+            "confirm_action_with_invoice" => __(
+                "Are you sure you want to %s this order with invoice number: %s?",
+                "axytos-wc"
+            ),
+            "unexpected_error" => __(
+                "An unexpected error occurred. Please try again.",
+                "axytos-wc"
+            ),
         ],
     ]);
 
@@ -221,7 +236,7 @@ function enqueue_frontend_assets()
  */
 function add_agreement_link_to_gateway_description($description, $payment_id)
 {
-    if (AXYTOS_PAYMENT_ID !== $payment_id) {
+    if (\AXYTOS_PAYMENT_ID !== $payment_id) {
         return $description;
     }
 

@@ -6,6 +6,8 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
+require_once(__DIR__ . '/AxytosEncryptionService.php');
+
 /**
  * Axytos Webhook Handler
  * 
@@ -29,11 +31,11 @@ class AxytosWebhookHandler
     private $logger;
 
     /**
-     * Encryption key for decrypting settings
+     * Encryption service for handling sensitive data
      *
-     * @var string
+     * @var AxytosEncryptionService
      */
-    private $encryption_key;
+    private $encryption_service;
 
     /**
      * Initialize the webhook handler
@@ -41,7 +43,7 @@ class AxytosWebhookHandler
     public function __construct()
     {
         $this->logger = wc_get_logger();
-        $this->encryption_key = wp_salt('auth');
+        $this->encryption_service = new AxytosEncryptionService();
         $this->init_hooks();
         $this->load_settings();
     }
@@ -59,9 +61,9 @@ class AxytosWebhookHandler
      */
     private function load_settings()
     {
-        $gateway_settings = get_option('woocommerce_' . AXYTOS_PAYMENT_ID . '_settings', []);
+        $gateway_settings = get_option('woocommerce_' . \AXYTOS_PAYMENT_ID . '_settings', []);
         $encrypted_key = $gateway_settings['webhook_api_key'] ?? '';
-        $this->webhook_api_key = $this->decrypt($encrypted_key);
+        $this->webhook_api_key = $this->encryption_service->decrypt($encrypted_key);
     }
 
     /**
@@ -283,7 +285,7 @@ class AxytosWebhookHandler
             }
 
             // Verify the order uses Axytos payment method
-            if ($order->get_payment_method() !== AXYTOS_PAYMENT_ID) {
+            if ($order->get_payment_method() !== \AXYTOS_PAYMENT_ID) {
                 $error_message = sprintf(
                     __('Order %d does not use Axytos payment method.', 'axytos-wc'),
                     $order_id
@@ -530,44 +532,5 @@ class AxytosWebhookHandler
         return $_SERVER['REMOTE_ADDR'] ?? 'Unknown';
     }
 
-    /**
-     * Decrypt an encrypted value
-     *
-     * @param string $encrypted_value The encrypted value to decrypt
-     * @return string The decrypted value
-     */
-    private function decrypt($encrypted_value)
-    {
-        if (empty($encrypted_value)) {
-            return '';
-        }
 
-        $decoded = base64_decode($encrypted_value, true);
-        if ($decoded === false) {
-            // Invalid base64, return original value (might be unencrypted)
-            return $encrypted_value;
-        }
-
-        $method = 'aes-256-cbc';
-        $ivlen = openssl_cipher_iv_length($method);
-
-        if (strlen($decoded) < $ivlen) {
-            // Invalid encrypted data, return original value
-            return $encrypted_value;
-        }
-
-        $iv = substr($decoded, 0, $ivlen);
-        $encrypted = substr($decoded, $ivlen);
-
-        $decrypted = openssl_decrypt(
-            $encrypted,
-            $method,
-            $this->encryption_key,
-            0,
-            $iv
-        );
-
-        // If decryption fails, return original value (might be unencrypted)
-        return $decrypted !== false ? $decrypted : $encrypted_value;
-    }
 }

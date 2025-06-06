@@ -28,12 +28,12 @@ function handle_ajax_action()
         wp_send_json_error(['message' => __('Order not found.', 'axytos-wc')]);
     }
 
-    if ($order->get_payment_method() !== AXYTOS_PAYMENT_ID) {
+    if ($order->get_payment_method() !== \AXYTOS_PAYMENT_ID) {
         wp_send_json_error(['message' => __('Not an Axytos order.', 'axytos-wc')]);
     }
 
     try {
-        $gateway = new \AxytosPaymentGateway();
+        $gateway = new AxytosPaymentGateway();
         
         switch ($action_type) {
             case 'report_shipping':
@@ -72,7 +72,7 @@ function load_agreement()
     }
 
     try {
-        $gateway = new \AxytosPaymentGateway();
+        $gateway = new AxytosPaymentGateway();
         $agreement_content = $gateway->getAgreement();
         wp_send_json_success($agreement_content);
     } catch (\Exception $e) {

@@ -35,7 +35,7 @@ function show_thankyou_notice($order_id)
         return;
     }
 
-    if ($order->get_payment_method() === AXYTOS_PAYMENT_ID && $order->get_status() === 'on-hold') {
+    if ($order->get_payment_method() === \AXYTOS_PAYMENT_ID && $order->get_status() === 'on-hold') {
         echo '<div class="woocommerce-notice woocommerce-info woocommerce-notice--info woocommerce-thankyou-notice">';
         echo __('Order on-hold, waiting for admin approval.', 'axytos-wc');
         echo '</div>';

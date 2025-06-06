@@ -15,7 +15,7 @@ function handle_order_status_change($order_id, $old_status, $new_status, $order)
         return;
     }
 
-    if ($order->get_payment_method() !== AXYTOS_PAYMENT_ID) {
+    if ($order->get_payment_method() !== \AXYTOS_PAYMENT_ID) {
         return;
     }
 
