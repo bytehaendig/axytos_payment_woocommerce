@@ -82,6 +82,11 @@ function load_shared_functionality()
     require_once plugin_dir_path(__FILE__) . "gateway-filter.php";
     // Order manager (needed for status changes in both contexts)
     require_once plugin_dir_path(__FILE__) . "order-manager.php";
+    // Webhook handler (needed for REST API endpoint)
+    require_once plugin_dir_path(__FILE__) . "AxytosWebhookHandler.php";
+    
+    // Initialize webhook handler
+    new AxytosWebhookHandler();
 }
 
 /**

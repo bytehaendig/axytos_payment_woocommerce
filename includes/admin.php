@@ -113,6 +113,92 @@ function render_action_buttons($order)
     }
 }
 
+/**
+ * Add webhook configuration section to gateway settings
+ */
+function add_webhook_settings_script()
+{
+    $screen = get_current_screen();
+    if (!$screen || strpos($screen->id, 'wc-settings') === false) {
+        return;
+    }
+
+    ?>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        // Add generate button for webhook API key
+        if ($('#woocommerce_axytoswc_webhook_api_key').length) {
+            var $webhookKeyField = $('#woocommerce_axytoswc_webhook_api_key');
+            var $generateBtn = $('<button type="button" class="button button-secondary" style="margin-left: 10px;"><?php echo esc_js(__('Generate Secure Key', 'axytos-wc')); ?></button>');
+            
+            $webhookKeyField.after($generateBtn);
+            
+            $generateBtn.on('click', function(e) {
+                e.preventDefault();
+                
+                // Generate a secure random key
+                var key = generateSecureKey(64);
+                $webhookKeyField.val(key);
+                
+                // Show confirmation
+                var $notice = $('<div class="notice notice-success inline" style="margin: 10px 0;"><p><?php echo esc_js(__('Secure webhook API key generated. Make sure to save your settings.', 'axytos-wc')); ?></p></div>');
+                $webhookKeyField.closest('tr').after($('<tr><td colspan="2"></td></tr>').find('td').append($notice).end());
+                
+                // Remove notice after 5 seconds
+                setTimeout(function() {
+                    $notice.fadeOut(function() {
+                        $(this).closest('tr').remove();
+                    });
+                }, 5000);
+            });
+            
+            // Add webhook endpoint info
+            var webhookUrl = '<?php echo esc_js(rest_url('axytos/v1/order-update')); ?>';
+            var $infoHtml = $(
+                '<div class="axytos-webhook-info" style="margin-top: 10px; padding: 10px; background: #f9f9f9; border-left: 4px solid #00a0d2;">' +
+                '<strong><?php echo esc_js(__('Webhook Endpoint Information:', 'axytos-wc')); ?></strong><br>' +
+                '<strong><?php echo esc_js(__('URL:', 'axytos-wc')); ?></strong> <code>' + webhookUrl + '</code><br>' +
+                '<strong><?php echo esc_js(__('Method:', 'axytos-wc')); ?></strong> POST<br>' +
+                '<strong><?php echo esc_js(__('Authentication:', 'axytos-wc')); ?></strong> <?php echo esc_js(__('Send API key in X-Axytos-Webhook-Key header', 'axytos-wc')); ?><br>' +
+                '<strong><?php echo esc_js(__('Content-Type:', 'axytos-wc')); ?></strong> application/json' +
+                '</div>'
+            );
+            $webhookKeyField.closest('tr').after($('<tr><td colspan="2"></td></tr>').find('td').append($infoHtml).end());
+        }
+        
+        function generateSecureKey(length) {
+            var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+            var key = '';
+            
+            // Use crypto.getRandomValues if available, fallback to Math.random
+            if (window.crypto && window.crypto.getRandomValues) {
+                var array = new Uint8Array(length);
+                window.crypto.getRandomValues(array);
+                for (var i = 0; i < length; i++) {
+                    key += chars[array[i] % chars.length];
+                }
+            } else {
+                for (var i = 0; i < length; i++) {
+                    key += chars[Math.floor(Math.random() * chars.length)];
+                }
+            }
+            
+            return key;
+        }
+    });
+    </script>
+    <style>
+    .axytos-webhook-info code {
+        background: #f1f1f1;
+        padding: 2px 4px;
+        border-radius: 3px;
+        font-family: monospace;
+        word-break: break-all;
+    }
+    </style>
+    <?php
+}
+
 // Hook admin functionality
 // HPOS enabled
 add_filter(
@@ -142,3 +228,6 @@ add_action(
 
 // Metaboxes
 add_action("add_meta_boxes", __NAMESPACE__ . "\add_order_metabox");
+
+// Webhook admin scripts
+add_action("admin_footer", __NAMESPACE__ . "\add_webhook_settings_script");

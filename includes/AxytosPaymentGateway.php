@@ -38,6 +38,9 @@ class AxytosPaymentGateway extends WC_Payment_Gateway
         if (!empty($settings['AxytosAPIKey'])) {
             $settings['AxytosAPIKey'] = $this->encrypt($settings['AxytosAPIKey']);
         }
+        if (!empty($settings['webhook_api_key'])) {
+            $settings['webhook_api_key'] = $this->encrypt($settings['webhook_api_key']);
+        }
         return $settings;
     }
 
@@ -45,7 +48,7 @@ class AxytosPaymentGateway extends WC_Payment_Gateway
     public function get_option($key, $empty_value = null)
     {
         $value = parent::get_option($key, $empty_value);
-        if ($key === 'AxytosAPIKey' && !empty($value)) {
+        if (($key === 'AxytosAPIKey' || $key === 'webhook_api_key') && !empty($value)) {
             return $this->decrypt($value);
         }
         return $value;
@@ -195,6 +198,14 @@ class AxytosPaymentGateway extends WC_Payment_Gateway
             'description' => __('Enter text you want to as link to get agreement.', 'axytos-wc'),
             'default' => __('click to see agreement', 'axytos-wc'),
             'desc_tip' => true,
+          ],
+          'webhook_api_key' => [
+            'title' => __('Webhook API Key', 'axytos-wc'),
+            'type' => 'text',
+            'description' => __('Enter a secure API key for webhook authentication. This key will be used to authenticate incoming webhook requests from your ERP system.', 'axytos-wc'),
+            'default' => '',
+            'desc_tip' => true,
+            'placeholder' => __('Generate a secure random key...', 'axytos-wc'),
           ]
         ];
     }
