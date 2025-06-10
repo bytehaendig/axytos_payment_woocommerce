@@ -455,13 +455,25 @@ class AxytosWebhookHandler
 
         // Map ERP status to WooCommerce status if needed
         $wc_status = $this->map_erp_status_to_wc_status($new_status);
-
-        // Build the order note
-        $note_parts[] = sprintf(
-            __("ERP updated status to: %s", "axytos-wc"),
-            $new_status
-        );
-
+        // Validate that the mapped status is a valid WooCommerce status
+        if (!$this->is_valid_wc_status($wc_status)) {
+            $this->log_webhook_activity("ERROR", "Invalid WooCommerce status", [
+                "order_id" => $order_id,
+                "erp_status" => $new_status,
+                "invalid_wc_status" => $wc_status,
+            ]);
+            throw new \Exception(
+                sprintf(
+                    __(
+                        "Invalid WooCommerce status '%s' mapped from ERP status '%s'",
+                        "axytos-wc"
+                    ),
+                    $wc_status,
+                    $new_status
+                )
+            );
+        }
+        $updated = false;
         if (!empty($invoice_number)) {
             $note_parts[] = sprintf(
                 __("Invoice: %s", "axytos-wc"),
@@ -471,6 +483,7 @@ class AxytosWebhookHandler
                 "_axytos_erp_invoice_number",
                 sanitize_text_field($invoice_number)
             );
+            $updated = true;
         }
 
         if (!empty($tracking_number)) {
@@ -482,21 +495,20 @@ class AxytosWebhookHandler
                 "_axytos_erp_tracking_number",
                 sanitize_text_field($tracking_number)
             );
+            $updated = true;
         }
 
-        // Add timestamp for the ERP update
-        $order->update_meta_data(
-            "_axytos_erp_last_update",
-            current_time("mysql")
-        );
-
-        // Add private order note
-        $order_note = implode(". ", $note_parts) . ".";
-        $order->add_order_note($order_note, false, false);
+        if ($updated) {
+            // Add timestamp for the ERP update
+            $order->update_meta_data(
+                "_axytos_erp_last_update",
+                current_time("mysql")
+            );
+        }
 
         // Update the order status if mapped status is different from current
         if ($wc_status && $wc_status !== $order->get_status()) {
-            $status_note = sprintf(
+            $note_first = sprintf(
                 __(
                     "Order status updated from %s to %s via ERP webhook.",
                     "axytos-wc"
@@ -504,7 +516,16 @@ class AxytosWebhookHandler
                 $order->get_status(),
                 $wc_status
             );
-            $order->update_status($wc_status, $status_note);
+            array_unshift($note_parts, $note_first);
+            // Add private order note
+            $order_note = implode(".\n", $note_parts) . ".";
+            $order->add_order_note($order_note, false, false);
+        } else {
+            $note_first = __("ERP added information", "axytos-wc");
+            array_unshift($note_parts, $note_first);
+            // Add private order note
+            $order_note = implode(".\n", $note_parts) . ".";
+            $order->add_order_note($order_note, false, false);
         }
 
         // Save the order
