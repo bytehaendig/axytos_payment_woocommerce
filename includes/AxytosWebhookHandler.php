@@ -567,9 +567,10 @@ class AxytosWebhookHandler
             $status_mapping
         );
 
-        return isset($status_mapping[$erp_status_lower])
+        $mapped_status = isset($status_mapping[$erp_status_lower])
             ? $status_mapping[$erp_status_lower]
-            : null;
+            : $erp_status_lower;
+        return $mapped_status;
     }
 
     /**
