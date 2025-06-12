@@ -54,16 +54,7 @@ class AxytosWebhookHandler
     {
         $this->logger = wc_get_logger();
         $this->encryption_service = new AxytosEncryptionService();
-        $this->init_hooks();
         $this->load_settings();
-    }
-
-    /**
-     * Initialize WordPress hooks
-     */
-    private function init_hooks(): void
-    {
-        add_action("rest_api_init", [$this, "register_webhook_endpoint"]);
     }
 
     /**
@@ -84,7 +75,7 @@ class AxytosWebhookHandler
     /**
      * Register the REST API endpoint for webhook
      */
-    public function register_webhook_endpoint(): void
+    public static function register_webhook_endpoint(): void
     {
         register_rest_route("axytos/v1", "/order-update", [
             "methods" => "POST",
@@ -571,6 +562,29 @@ class AxytosWebhookHandler
             ? $status_mapping[$erp_status_lower]
             : $erp_status_lower;
         return $mapped_status;
+    }
+
+    /**
+     * Validate if a status is a valid WooCommerce order status
+     *
+     * @param string $status The status to validate
+     * @return bool True if valid, false otherwise
+     */
+    private function is_valid_wc_status($status)
+    {
+        // if (empty($status)) {
+        //     return false;
+        // }
+
+        // Get all available WooCommerce order statuses
+        $valid_statuses = wc_get_order_statuses();
+
+        // WooCommerce statuses are prefixed with 'wc-', so we need to check both formats
+        $status_with_prefix = "wc-" . $status;
+
+        // Check if the status exists in the valid statuses array (either with or without prefix)
+        return array_key_exists($status_with_prefix, $valid_statuses) ||
+            in_array($status, array_keys($valid_statuses));
     }
 
     /**

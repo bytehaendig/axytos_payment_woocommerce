@@ -38,10 +38,10 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         $useSandbox = $this->get_option("useSandbox") == "yes";
         $this->client = new AxytosApiClient($AxytosAPIKey, $useSandbox);
         // Save settings
-        add_action("woocommerce_update_options_payment_gateways_" . $this->id, [
-            $this,
-            "process_admin_options",
-        ]);
+        add_action(
+            "woocommerce_update_options_payment_gateways_" . $this->id,
+            [$this, "process_admin_options"],
+        );
         // Add filter for api-key encryption
         add_filter(
             "woocommerce_settings_api_sanitized_fields_" . $this->id,
@@ -50,10 +50,10 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
             1
         );
         //Setting up the class for Blocks
-        add_filter("woocommerce_payment_gateways", [
-            $this,
-            "add_gateway_to_block_checkout",
-        ]);
+        add_filter(
+            "woocommerce_payment_gateways",
+            [$this, "add_gateway_to_block_checkout"],
+        );
     }
 
     public function encrypt_settings($settings)
@@ -228,25 +228,25 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
                 }
                 break;
 
-            // case 'cancel':
-            //     $order->update_status('cancelled', __('Order cancelled based on Axytos decision.', 'axytos-wc'));
-            //     // wc_add_notice(__('Order cancelled based on Axytos decision.', 'axytos-wc'), 'error');
-            //     throw new Exception('Order cancelled based on Axytos decision.');
-            //     return [];
-            //
-            // case 'on-hold':
-            //     $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
-            //     $order->update_meta_data( 'unique_id', $unique_id );
-            //     $order->update_status('on-hold', __('Order on-hold based on Axytos decision.', 'axytos-wc'));
-            //     // wc_add_notice(__('Order on-hold based on Axytos decision.', 'axytos-wc'), 'success');
-            //     // $order->payment_complete();
-            //         return [
-            //         'result' => 'success',
-            //         'redirect' => $this->get_return_url($order),
-            //     ];
-            //
-            //     break;
-            //
+                // case 'cancel':
+                //     $order->update_status('cancelled', __('Order cancelled based on Axytos decision.', 'axytos-wc'));
+                //     // wc_add_notice(__('Order cancelled based on Axytos decision.', 'axytos-wc'), 'error');
+                //     throw new Exception('Order cancelled based on Axytos decision.');
+                //     return [];
+                //
+                // case 'on-hold':
+                //     $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
+                //     $order->update_meta_data( 'unique_id', $unique_id );
+                //     $order->update_status('on-hold', __('Order on-hold based on Axytos decision.', 'axytos-wc'));
+                //     // wc_add_notice(__('Order on-hold based on Axytos decision.', 'axytos-wc'), 'success');
+                //     // $order->payment_complete();
+                //         return [
+                //         'result' => 'success',
+                //         'redirect' => $this->get_return_url($order),
+                //     ];
+                //
+                //     break;
+                //
             case "disallow":
             default:
                 $order_id = $order->get_id();
