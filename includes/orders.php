@@ -77,6 +77,7 @@ function determine_status_action($old_status, $new_status)
  */
 function execute_status_action($order_id, $action, $old_status, $new_status)
 {
+    error_log("Axytos: Executing automatic action '$action' for order #$order_id (status: $old_status -> $new_status)");
     try {
         $order = wc_get_order($order_id);
         if (!$order) {
@@ -159,24 +160,7 @@ function execute_shipping_action($gateway, $order)
  */
 function execute_cancel_action($gateway, $order)
 {
-    $isCanceled = $order->get_meta("axytos_canceled");
-    if ($isCanceled) {
-        return true; // Already canceled
-    }
-
-    $result = $gateway->client->cancelOrder($order->get_order_number());
-    if (is_wp_error($result)) {
-        return false;
-    }
-
-    $response_body = json_decode($result, true);
-    if (isset($response_body["errors"])) {
-        return false;
-    }
-
-    $order->update_meta_data("axytos_canceled", true);
-    $order->save_meta_data();
-    return true;
+    return $gateway->cancelOrder($order);
 }
 
 /**
@@ -184,19 +168,7 @@ function execute_cancel_action($gateway, $order)
  */
 function execute_refund_action($gateway, $order)
 {
-    $refundData = createRefundData($order);
-    $result = $gateway->client->refundOrder($refundData);
-
-    if (is_wp_error($result)) {
-        return false;
-    }
-
-    $response_body = json_decode($result, true);
-    if (isset($response_body["errors"])) {
-        return false;
-    }
-
-    return true;
+    return $gateway->refundOrder($order);
 }
 
 /**
@@ -211,32 +183,4 @@ function bootstrap_orders()
 {
     // Hook order status changes with high priority to ensure it runs early
     add_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change', 5, 4);
-
-    // Also hook into init to ensure the handler is always available
-    add_action(
-        'init',
-        function () {
-            // Ensure WooCommerce is loaded before registering hooks
-            if (class_exists('WooCommerce')) {
-                // Re-register with high priority if not already registered
-                if (!has_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change')) {
-                    add_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change', 5, 4);
-                }
-            }
-        },
-        20
-    );
-
-    // Additional hook for early initialization to catch status changes from other plugins
-    add_action(
-        'woocommerce_init',
-        function () {
-            // Double-check that the hook is registered after WooCommerce is fully loaded
-            if (!has_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change')) {
-                add_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change', 5, 4);
-            }
-        },
-        5
-    );
 }
-

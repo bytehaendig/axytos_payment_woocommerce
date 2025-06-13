@@ -42,14 +42,18 @@ function handle_ajax_action()
                 }
                 $gateway->actionReportShipping($order, $invoice_number);
                 break;
+            // TODO: maybe get rid of 'cancel', 'refund' and 'confirm' actions - just use regular wooCommerce actions
             case 'cancel':
-                $gateway->actionCancel($order);
+                // will trigger axytos cancellation process (see orders.php)
+                $order->update_status('cancelled', __('Order cancelled via Axytos action.', 'axytos-wc'));
                 break;
             case 'refund':
-                $gateway->actionRefund($order);
+                // will trigger axytos refund process (see orders.php)
+                $order->update_status('refunded', __('Order refunded via Axytos action.', 'axytos-wc'));
                 break;
             case 'confirm':
-                $gateway->actionConfirm($order);
+                // will trigger axytos confirmation process (see orders.php)
+                $order->update_status('processing', __('Order confirmed via Axytos action.', 'axytos-wc'));
                 break;
             default:
                 wp_send_json_error(['message' => __('Invalid action.', 'axytos-wc')]);
@@ -87,4 +91,3 @@ function bootstrap_ajax()
     add_action('wp_ajax_load_axytos_agreement', __NAMESPACE__ . '\load_agreement');
     add_action('wp_ajax_nopriv_load_axytos_agreement', __NAMESPACE__ . '\load_agreement');
 }
-

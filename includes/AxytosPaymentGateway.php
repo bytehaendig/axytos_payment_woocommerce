@@ -38,10 +38,10 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         $useSandbox = $this->get_option("useSandbox") == "yes";
         $this->client = new AxytosApiClient($AxytosAPIKey, $useSandbox);
         // Save settings
-        add_action(
-            "woocommerce_update_options_payment_gateways_" . $this->id,
-            [$this, "process_admin_options"],
-        );
+        add_action("woocommerce_update_options_payment_gateways_" . $this->id, [
+            $this,
+            "process_admin_options",
+        ]);
         // Add filter for api-key encryption
         add_filter(
             "woocommerce_settings_api_sanitized_fields_" . $this->id,
@@ -50,10 +50,10 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
             1
         );
         //Setting up the class for Blocks
-        add_filter(
-            "woocommerce_payment_gateways",
-            [$this, "add_gateway_to_block_checkout"],
-        );
+        add_filter("woocommerce_payment_gateways", [
+            $this,
+            "add_gateway_to_block_checkout",
+        ]);
     }
 
     public function encrypt_settings($settings)
@@ -216,37 +216,19 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
     {
         $order = wc_get_order($order_id);
         $decision_code = $this->doPrecheck($order);
-        // $action = $this->get_option('decision_code_' . strtolower($decision_code));
         $action = strtolower($decision_code) === "u" ? "proceed" : "disallow";
         switch ($action) {
             case "proceed":
-                if ($this->confirmOrder($order)) {
-                    return [
-                        "result" => "success",
-                        "redirect" => $this->get_return_url($order),
-                    ];
-                }
+                // this will trigger the order confirmation (see orders.php)
+                $order->update_status(
+                    "processing",
+                    __("Axytos precheck accepted", "axytoswc")
+                );
+                return [
+                    "result" => "success",
+                    "redirect" => $this->get_return_url($order),
+                ];
                 break;
-
-                // case 'cancel':
-                //     $order->update_status('cancelled', __('Order cancelled based on Axytos decision.', 'axytos-wc'));
-                //     // wc_add_notice(__('Order cancelled based on Axytos decision.', 'axytos-wc'), 'error');
-                //     throw new Exception('Order cancelled based on Axytos decision.');
-                //     return [];
-                //
-                // case 'on-hold':
-                //     $unique_id = base64_encode($order->get_id() . mt_rand(0, 999) . microtime(true));
-                //     $order->update_meta_data( 'unique_id', $unique_id );
-                //     $order->update_status('on-hold', __('Order on-hold based on Axytos decision.', 'axytos-wc'));
-                //     // wc_add_notice(__('Order on-hold based on Axytos decision.', 'axytos-wc'), 'success');
-                //     // $order->payment_complete();
-                //         return [
-                //         'result' => 'success',
-                //         'redirect' => $this->get_return_url($order),
-                //     ];
-                //
-                //     break;
-                //
             case "disallow":
             default:
                 $order_id = $order->get_id();
@@ -265,6 +247,7 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         return [];
     }
 
+    // TODO: refactor
     public function actionReportShipping($order, $invoice_number = null)
     {
         // Report_shipping is called when admin clicks the button or when order changes state to 'completed'.
@@ -294,74 +277,13 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         return true;
     }
 
-    public function actionCancel($order)
-    {
-        // same as with report_shipping - cancel is called when admin clicks the button or when order changes state to 'cancelled'.
-        $isCanceled = $order->get_meta("axytos_canceled");
-        if (!$isCanceled) {
-            $result = $this->client->cancelOrder($order->get_order_number());
-            // TODO: fix error handling
-            if (is_wp_error($result)) {
-                wp_send_json_error([
-                    "message" => __("Could not cancel order.", "axytos-wc"),
-                ]);
-                return false;
-            }
-            $response_body = json_decode($result, true);
-            if (isset($response_body["errors"])) {
-                $msg = $response_body["errors"]["orderStatus"][0];
-                wp_send_json_error(["message" => __($msg, "axytos-wc")]);
-                return false;
-            }
-            $order->update_meta_data("axytos_canceled", true);
-        }
-        $order->update_status("cancelled", __("Order cancelled.", "axytos-wc"));
-        wp_send_json_success([
-            "message" => __("Order canceled successfully.", "axytos-wc"),
-        ]);
-        return true;
-    }
-
-    public function actionRefund($order)
-    {
-        $refundData = createRefundData($order);
-        $result = $this->client->refundOrder($refundData);
-        if (is_wp_error($result)) {
-            wp_send_json_error([
-                "message" => __("Could not refund order.", "axytos-wc"),
-            ]);
-            return false;
-        }
-        $response_body = json_decode($result, true);
-        if (isset($response_body["errors"])) {
-            $msg =
-                $response_body["errors"]["externalSubOrderId"][0] ??
-                $response_body["errors"][""][0];
-            wp_send_json_error(["message" => __(strval($msg), "axytos-wc")]);
-            return false;
-        }
-        $order->update_status(
-            "refunded",
-            __("Order refunded based on Axytos decision.", "axytos-wc")
-        );
-        wp_send_json_success([
-            "message" => __("Order refunded successfully.", "axytos-wc"),
-        ]);
-        return true;
-    }
-
-    public function actionConfirm($order)
-    {
-        return $this->confirmOrder($order);
-    }
-
     public function doPrecheck($order)
     {
         $data = createPrecheckData($order);
         $response = $this->client->invoicePrecheck($data);
         if (is_wp_error($response)) {
             // wc_add_notice(__('Payment error: Could not connect to Axytos API.', 'axytos-wc'), 'error');
-            throw new Exception("Could not connect to Axytos API.");
+            throw new \Exception("Could not connect to Axytos API.");
             return [];
         }
         $order->update_meta_data("precheck_response", $response);
@@ -377,7 +299,9 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
             $confirm_response = $this->client->orderConfirm($confirm_data);
             if (is_wp_error($confirm_response)) {
                 // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
-                throw new Exception("Could not confirm order with Axytos API.");
+                throw new \Exception(
+                    "Could not confirm order with Axytos API."
+                );
                 return false;
             }
             $order->payment_complete();
@@ -430,12 +354,50 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
                 $response_invoice_number
             );
             $success = true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             error_log(
                 "Axytos API: could not create invoice: " . $e->getMessage()
             );
         }
         return $success;
+    }
+
+    public function refundOrder($order)
+    {
+        $refundData = createRefundData($order);
+        $result = $this->client->refundOrder($refundData);
+        if (is_wp_error($result)) {
+            return false;
+        }
+
+        $response_body = json_decode($result, true);
+        if (isset($response_body["errors"])) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function cancelOrder($order)
+    {
+        $isCanceled = $order->get_meta("axytos_canceled");
+        if ($isCanceled) {
+            return true; // Already canceled
+        }
+
+        $result = $this->client->cancelOrder($order->get_order_number());
+        if (is_wp_error($result)) {
+            return false;
+        }
+
+        $response_body = json_decode($result, true);
+        if (isset($response_body["errors"])) {
+            return false;
+        }
+
+        $order->update_meta_data("axytos_canceled", true);
+        $order->save_meta_data();
+        return true;
     }
 
     public function getAgreement()
