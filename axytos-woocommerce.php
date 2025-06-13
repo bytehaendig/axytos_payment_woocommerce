@@ -20,3 +20,4 @@ define("AXYTOS_PAYMENT_ID", "axytoswc");
 
 // Load all plugin functionality
 require_once __DIR__ . "/includes/init.php";
+Axytos\WooCommerce\bootstrap();

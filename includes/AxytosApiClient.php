@@ -95,7 +95,7 @@ class AxytosApiClient
         curl_close($ch);
         if ($status < 200 || $status >= 300) {
             // TODO: better error handling
-            throw new Exception(
+            throw new \Exception(
                 "Error in communication with Axytos (Status-Code $status)"
             );
         }

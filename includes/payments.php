@@ -24,5 +24,8 @@ function filter_available_gateways($available_gateways)
     return $available_gateways;
 }
 
-// Hook gateway filter
-add_filter('woocommerce_available_payment_gateways', __NAMESPACE__ . '\filter_available_gateways');
+function bootstrap_payments()
+{
+    add_filter('woocommerce_available_payment_gateways', __NAMESPACE__ . '\filter_available_gateways');
+}
+

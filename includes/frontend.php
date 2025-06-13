@@ -7,6 +7,59 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Enqueue frontend scripts and styles for checkout
+ */
+function enqueue_frontend_assets()
+{
+    // Only load on checkout page
+    if (!is_checkout()) {
+        return;
+    }
+
+    wp_enqueue_style(
+        "axytos-agreement-popup",
+        plugin_dir_url(dirname(__FILE__)) . "/assets/css/agreement_popup.css",
+        [],
+        AXYTOS_PLUGIN_VERSION
+    );
+
+    wp_enqueue_script(
+        "axytos-agreement",
+        plugin_dir_url(dirname(__FILE__)) . "/assets/axytos-agreement.js",
+        ["jquery"],
+        AXYTOS_PLUGIN_VERSION,
+        true
+    );
+
+    wp_localize_script("axytos-agreement", "axytos_agreement", [
+        "ajax_url" => admin_url("admin-ajax.php"),
+        "nonce" => wp_create_nonce("axytos_agreement_nonce"),
+    ]);
+}
+
+/**
+ * Add agreement link to gateway description
+ */
+function add_agreement_link_to_gateway_description($description, $payment_id)
+{
+    if (\AXYTOS_PAYMENT_ID !== $payment_id) {
+        return $description;
+    }
+
+    $settings = get_option("woocommerce_axytoswc_settings", []);
+    $agreement_text = $settings["PrecheckAgreeText"] ?? "";
+
+    if (!empty($agreement_text)) {
+        $description .=
+            ' <br><a href="#" class="axytos-agreement-link">' .
+            esc_html($agreement_text) .
+            "</a>";
+    }
+
+    return $description;
+}
+
+/**
  * Add JavaScript to refresh checkout on error
  */
 function add_checkout_error_handler()
@@ -42,6 +95,49 @@ function show_thankyou_notice($order_id)
     }
 }
 
-// Hook frontend functionality
-add_action('wp_footer', __NAMESPACE__ . '\add_checkout_error_handler');
-add_action('woocommerce_thankyou', __NAMESPACE__ . '\show_thankyou_notice', 10, 1);
+/**
+ * Add WooCommerce Blocks support
+ */
+function add_blocks_support()
+{
+    if (
+        !class_exists(
+            "Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType"
+        )
+    ) {
+        error_log(
+            "--- Axytos Debug --- AbstractPaymentMethodType class not found."
+        );
+        return;
+    }
+
+    require_once plugin_dir_path(__FILE__) . "AxytosBlocksGateway.php";
+
+    add_action("woocommerce_blocks_payment_method_type_registration", function (
+        \Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry
+    ) {
+        $payment_method_registry->register(new AxytosBlocksGateway());
+    });
+}
+
+function bootstrap_frontend()
+{
+    // Enqueue frontend scripts and styles
+    add_action(
+        "wp_enqueue_scripts",
+        __NAMESPACE__ . '\enqueue_frontend_assets'
+    );
+
+    // Add agreement link to gateway description
+    add_filter(
+        "woocommerce_gateway_description",
+        __NAMESPACE__ . "\add_agreement_link_to_gateway_description",
+        10,
+        2
+    );
+    // Hook frontend functionality
+    add_action('wp_footer', __NAMESPACE__ . '\add_checkout_error_handler');
+    add_action('woocommerce_thankyou', __NAMESPACE__ . '\show_thankyou_notice', 10, 1);
+    add_action("woocommerce_blocks_loaded", __NAMESPACE__ . "\add_blocks_support");
+}
+

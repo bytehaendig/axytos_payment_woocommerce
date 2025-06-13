@@ -13,12 +13,12 @@ function handle_ajax_action()
 {
     // TODO: Verify nonce
     // check_ajax_referer('axytos_action_nonce', 'security');
-    
+
     $order_id = absint($_POST['order_id']);
     $action_type = sanitize_text_field($_POST['action_type']);
     $invoice_number = isset($_POST['invoice_number']) ? sanitize_text_field($_POST['invoice_number']) : '';
     $is_manual = isset($_POST['manual']) ? (bool) $_POST['manual'] : true;
-    
+
     if (!$order_id || !$action_type) {
         wp_send_json_error(['message' => __('Invalid order or action.', 'axytos-wc')]);
     }
@@ -34,7 +34,7 @@ function handle_ajax_action()
 
     try {
         $gateway = new AxytosPaymentGateway();
-        
+
         switch ($action_type) {
             case 'report_shipping':
                 if ($is_manual && empty($invoice_number)) {
@@ -54,9 +54,9 @@ function handle_ajax_action()
             default:
                 wp_send_json_error(['message' => __('Invalid action.', 'axytos-wc')]);
         }
-        
+
         wp_send_json_success(['message' => __('Action completed successfully.', 'axytos-wc')]);
-        
+
     } catch (\Exception $e) {
         wp_send_json_error(['message' => __('Error processing action: ', 'axytos-wc') . $e->getMessage()]);
     }
@@ -80,9 +80,11 @@ function load_agreement()
     }
 }
 
-// Hook AJAX handlers
-add_action('wp_ajax_axytos_action', __NAMESPACE__ . '\handle_ajax_action');
-add_action('wp_ajax_nopriv_axytos_action', __NAMESPACE__ . '\handle_ajax_action');
+function bootstrap_ajax()
+{
+    add_action('wp_ajax_axytos_action', __NAMESPACE__ . '\handle_ajax_action');
+    add_action('wp_ajax_nopriv_axytos_action', __NAMESPACE__ . '\handle_ajax_action');
+    add_action('wp_ajax_load_axytos_agreement', __NAMESPACE__ . '\load_agreement');
+    add_action('wp_ajax_nopriv_load_axytos_agreement', __NAMESPACE__ . '\load_agreement');
+}
 
-add_action('wp_ajax_load_axytos_agreement', __NAMESPACE__ . '\load_agreement');
-add_action('wp_ajax_nopriv_load_axytos_agreement', __NAMESPACE__ . '\load_agreement');

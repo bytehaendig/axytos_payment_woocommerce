@@ -75,7 +75,7 @@ class AxytosWebhookHandler
     /**
      * Register the REST API endpoint for webhook
      */
-    public static function register_webhook_endpoint(): void
+    public function register_webhook_endpoint(): void
     {
         register_rest_route("axytos/v1", "/order-update", [
             "methods" => "POST",

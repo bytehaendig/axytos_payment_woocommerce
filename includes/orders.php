@@ -53,17 +53,17 @@ function determine_status_action($old_status, $new_status)
     if ($new_status === 'cancelled' && in_array($old_status, ['pending', 'on-hold', 'processing'])) {
         return 'cancel';
     }
-    
+
     // Handle confirmation when moving to processing
     if ($new_status === 'processing' && in_array($old_status, ['pending', 'on-hold'])) {
         return 'confirm';
     }
-    
+
     // Handle shipping report when completing order
     if ($new_status === 'completed' && in_array($old_status, ['processing', 'on-hold'])) {
         return 'report_shipping';
     }
-    
+
     // Handle refund status
     if ($new_status === 'refunded' && in_array($old_status, ['processing', 'completed'])) {
         return 'refund';
@@ -92,7 +92,7 @@ function execute_status_action($order_id, $action, $old_status, $new_status)
 
         // Initialize gateway
         $gateway = new AxytosPaymentGateway();
-        
+
         // Execute action directly
         $result = false;
         switch ($action) {
@@ -116,7 +116,7 @@ function execute_status_action($order_id, $action, $old_status, $new_status)
 
         if ($result) {
             error_log("Axytos: Successfully executed $action for order #$order_id (status: $old_status -> $new_status)");
-            
+
             // Add order note for tracking
             $order->add_order_note(
                 sprintf(
@@ -186,7 +186,7 @@ function execute_refund_action($gateway, $order)
 {
     $refundData = createRefundData($order);
     $result = $gateway->client->refundOrder($refundData);
-    
+
     if (is_wp_error($result)) {
         return false;
     }
@@ -207,24 +207,36 @@ function execute_confirm_action($gateway, $order)
     return $gateway->confirmOrder($order);
 }
 
-// Hook order status changes with high priority to ensure it runs early
-add_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change', 5, 4);
+function bootstrap_orders()
+{
+    // Hook order status changes with high priority to ensure it runs early
+    add_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change', 5, 4);
 
-// Also hook into init to ensure the handler is always available
-add_action('init', function() {
-    // Ensure WooCommerce is loaded before registering hooks
-    if (class_exists('WooCommerce')) {
-        // Re-register with high priority if not already registered
-        if (!has_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change')) {
-            add_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change', 5, 4);
-        }
-    }
-}, 20);
+    // Also hook into init to ensure the handler is always available
+    add_action(
+        'init',
+        function () {
+            // Ensure WooCommerce is loaded before registering hooks
+            if (class_exists('WooCommerce')) {
+                // Re-register with high priority if not already registered
+                if (!has_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change')) {
+                    add_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change', 5, 4);
+                }
+            }
+        },
+        20
+    );
 
-// Additional hook for early initialization to catch status changes from other plugins
-add_action('woocommerce_init', function() {
-    // Double-check that the hook is registered after WooCommerce is fully loaded
-    if (!has_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change')) {
-        add_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change', 5, 4);
-    }
-}, 5);
+    // Additional hook for early initialization to catch status changes from other plugins
+    add_action(
+        'woocommerce_init',
+        function () {
+            // Double-check that the hook is registered after WooCommerce is fully loaded
+            if (!has_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change')) {
+                add_action('woocommerce_order_status_changed', __NAMESPACE__ . '\handle_order_status_change', 5, 4);
+            }
+        },
+        5
+    );
+}
+

@@ -9,6 +9,54 @@ if (!defined("ABSPATH")) {
 }
 
 /**
+ * Enqueue admin scripts and styles
+ */
+function enqueue_admin_assets()
+{
+    wp_enqueue_script(
+        "axytos-admin-actions",
+        plugin_dir_url(dirname(__FILE__)) . "/assets/admin-actions.js",
+        ["jquery"],
+        AXYTOS_PLUGIN_VERSION,
+        true
+    );
+
+    wp_localize_script("axytos-admin-actions", "AxytosActions", [
+        "ajax_url" => admin_url("admin-ajax.php"),
+        "nonce" => wp_create_nonce("axytos_action_nonce"),
+        "i18n" => [
+            "invoice_prompt" => __(
+                "Please enter the invoice number:",
+                "axytos-wc"
+            ),
+            "invoice_required" => __(
+                "Invoice number is required for shipping report.",
+                "axytos-wc"
+            ),
+            "confirm_action" => __(
+                "Are you sure you want to %s this order?",
+                "axytos-wc"
+            ),
+            "confirm_action_with_invoice" => __(
+                "Are you sure you want to %s this order with invoice number: %s?",
+                "axytos-wc"
+            ),
+            "unexpected_error" => __(
+                "An unexpected error occurred. Please try again.",
+                "axytos-wc"
+            ),
+        ],
+    ]);
+
+    wp_enqueue_style(
+        "axytos-admin-styles",
+        plugin_dir_url(dirname(__FILE__)) . "/assets/css/style.css",
+        [],
+        AXYTOS_PLUGIN_VERSION
+    );
+}
+
+/**
  * Add Axytos Actions column to order list
  */
 function add_order_column($columns)
@@ -199,35 +247,44 @@ function add_webhook_settings_script()
     <?php
 }
 
-// Hook admin functionality
-// HPOS enabled
-add_filter(
-    "manage_woocommerce_page_wc-orders_columns",
-    __NAMESPACE__ . "\add_order_column",
-    20
-);
-add_action(
-    "manage_woocommerce_page_wc-orders_custom_column",
-    __NAMESPACE__ . '\render_order_column',
-    20,
-    2
-);
+function bootstrap_admin()
+{
+    // Enqueue admin scripts and styles
+    add_action(
+        "admin_enqueue_scripts",
+        __NAMESPACE__ . '\enqueue_admin_assets'
+    );
 
-// HPOS disabled
-add_filter(
-    "manage_edit-shop_order_columns",
-    __NAMESPACE__ . "\add_order_column",
-    20
-);
-add_action(
-    "manage_shop_order_posts_custom_column",
-    __NAMESPACE__ . '\render_order_column',
-    20,
-    2
-);
+    // Hook admin functionality
+    // HPOS enabled
+    add_filter(
+        "manage_woocommerce_page_wc-orders_columns",
+        __NAMESPACE__ . "\add_order_column",
+        20
+    );
+    add_action(
+        "manage_woocommerce_page_wc-orders_custom_column",
+        __NAMESPACE__ . '\render_order_column',
+        20,
+        2
+    );
 
-// Metaboxes
-add_action("add_meta_boxes", __NAMESPACE__ . "\add_order_metabox");
+    // HPOS disabled
+    add_filter(
+        "manage_edit-shop_order_columns",
+        __NAMESPACE__ . "\add_order_column",
+        20
+    );
+    add_action(
+        "manage_shop_order_posts_custom_column",
+        __NAMESPACE__ . '\render_order_column',
+        20,
+        2
+    );
 
-// Webhook admin scripts
-add_action("admin_footer", __NAMESPACE__ . "\add_webhook_settings_script");
+    // Metaboxes
+    add_action("add_meta_boxes", __NAMESPACE__ . "\add_order_metabox");
+
+    // Webhook admin scripts
+    add_action("admin_footer", __NAMESPACE__ . "\add_webhook_settings_script");
+}

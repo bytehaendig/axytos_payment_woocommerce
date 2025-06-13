@@ -255,7 +255,7 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
                     "failed",
                     __("Axytos precheck declined", "axytoswc")
                 );
-                throw new Exception(
+                throw new \Exception(
                     __(
                         "This Payment Method is not allowed for this order. Please try a different payment method.",
                         "axytos-wc"
