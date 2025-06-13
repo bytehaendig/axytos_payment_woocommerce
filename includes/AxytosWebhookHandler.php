@@ -10,6 +10,7 @@ if (!defined("ABSPATH")) {
 }
 
 require_once __DIR__ . "/AxytosEncryptionService.php";
+require_once __DIR__ . "/AxytosActionHandler.php";
 
 /**
  * Axytos Webhook Handler
@@ -443,6 +444,7 @@ class AxytosWebhookHandler
     ): void {
         $order_id = $order->get_id();
         $note_parts = [];
+        $action_handler = new AxytosActionHandler();
 
         // Map ERP status to WooCommerce status if needed
         $wc_status = $this->map_erp_status_to_wc_status($new_status);
@@ -464,26 +466,32 @@ class AxytosWebhookHandler
                 )
             );
         }
+
         $updated = false;
+
+        // Store invoice number for potential shipping action
         if (!empty($invoice_number)) {
             $note_parts[] = sprintf(
                 __("Invoice: %s", "axytos-wc"),
                 $invoice_number
             );
-            $order->update_meta_data(
-                "_axytos_erp_invoice_number",
+            // Store for AxytosActionHandler
+            $action_handler->setInvoiceNumber(
+                $order_id,
                 sanitize_text_field($invoice_number)
             );
             $updated = true;
         }
 
+        // Store tracking number
         if (!empty($tracking_number)) {
             $note_parts[] = sprintf(
                 __("Tracking: %s", "axytos-wc"),
                 $tracking_number
             );
-            $order->update_meta_data(
-                "_axytos_erp_tracking_number",
+            // Store for AxytosActionHandler
+            $action_handler->setTrackingNumber(
+                $order_id,
                 sanitize_text_field($tracking_number)
             );
             $updated = true;
@@ -508,9 +516,13 @@ class AxytosWebhookHandler
                 $wc_status
             );
             array_unshift($note_parts, $note_first);
-            // Add private order note
-            $order_note = implode(".\n", $note_parts) . ".";
-            $order->add_order_note($order_note, false, false);
+
+            // Update status (this may trigger additional actions via orders.php)
+            $order->update_status(
+                $wc_status,
+                implode(".\n", $note_parts) . ".",
+                false
+            );
         } else {
             $note_first = __("ERP added information", "axytos-wc");
             array_unshift($note_parts, $note_first);

@@ -27,15 +27,26 @@ function initialize_woocommerce()
         return;
     }
 
-    // Always load these (needed in multiple contexts)
-    load_shared_functionality();
+    bootstrap_gateway();
+    bootstrap_webhooks();
+    // AJAX handlers (needed for both frontend AJAX and admin AJAX)
+    require_once plugin_dir_path(__FILE__) . "ajax.php";
+    bootstrap_ajax();
+    // Gateway filter (needed for checkout and admin order processing)
+    require_once plugin_dir_path(__FILE__) . "payments.php";
+    bootstrap_payments();
+    // Order manager (needed for status changes in both contexts)
+    require_once plugin_dir_path(__FILE__) . "orders.php";
+    bootstrap_orders();
+    require_once plugin_dir_path(__FILE__) . "cron.php";
+    bootstrap_cron();
 
     // Load context-specific functionality
     if (is_admin() && !is_ajax_request()) {
-        include_once plugin_dir_path(__FILE__) . "admin.php";
+        require_once plugin_dir_path(__FILE__) . "admin.php";
         bootstrap_admin();
     } elseif (!is_admin() || is_ajax_request() || is_rest_request()) {
-        include_once plugin_dir_path(__FILE__) . "frontend.php";
+        require_once plugin_dir_path(__FILE__) . "frontend.php";
         bootstrap_frontend();
     }
 }
@@ -62,17 +73,6 @@ function bootstrap_webhooks()
  */
 function load_shared_functionality()
 {
-    bootstrap_gateway();
-    bootstrap_webhooks();
-    // AJAX handlers (needed for both frontend AJAX and admin AJAX)
-    require_once plugin_dir_path(__FILE__) . "ajax.php";
-    bootstrap_ajax();
-    // Gateway filter (needed for checkout and admin order processing)
-    require_once plugin_dir_path(__FILE__) . "payments.php";
-    bootstrap_payments();
-    // Order manager (needed for status changes in both contexts)
-    require_once plugin_dir_path(__FILE__) . "orders.php";
-    bootstrap_orders();
 }
 
 /**
