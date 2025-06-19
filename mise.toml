@@ -1,0 +1,7 @@
+[vars]
+ddev_exec = "ddev exec -d /var/www/html/wp-content/plugins/axytos-woocommerce"
+
+[tasks.unit-tests]
+description = "Run unit tests"
+run = "{{ vars.ddev_exec }} vendor/bin/phpunit"
+

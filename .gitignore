@@ -1,6 +1,7 @@
 .aider*
 .env
-.phpunit.result.cache
+.php*.cache
 /vendor/
 /wp-content/
+/wp-tests-dir/
 /node_modules/
