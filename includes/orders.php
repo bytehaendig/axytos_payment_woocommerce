@@ -6,8 +6,6 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-// Include required data functions
-require_once __DIR__ . "/axytos-data.php";
 require_once __DIR__ . "/AxytosActionHandler.php";
 
 /**
@@ -38,7 +36,7 @@ function handle_order_status_change($order_id, $old_status, $new_status, $order)
     $order->update_meta_data("_axytos_processing_status_change", true);
     $order->save_meta_data();
 
-    execute_status_action($order_id, $action, $old_status, $new_status);
+    queue_status_action($order_id, $action, $old_status, $new_status);
 
     // Clear the processing flag
     $order->delete_meta_data("_axytos_processing_status_change");
@@ -50,61 +48,36 @@ function handle_order_status_change($order_id, $old_status, $new_status, $order)
  */
 function determine_status_action($old_status, $new_status)
 {
-    // Handle cancellation from various states
-    if (
-        $new_status === "cancelled" &&
-        in_array($old_status, ["pending", "on-hold", "processing"])
-    ) {
+    if ($new_status === "cancelled") {
         return "cancel";
     }
 
-    // Handle confirmation when moving to processing
-    if (
-        $new_status === "processing" &&
-        in_array($old_status, ["pending", "on-hold"])
-    ) {
+    if ($new_status === "processing") {
         return "confirm";
     }
 
-    // Handle shipping report when completing order
-    if (
-        $new_status === "completed" &&
-        in_array($old_status, ["processing", "on-hold"])
-    ) {
-        return "report_shipping";
+    if ($new_status === "completed") {
+        return "complete";
     }
 
-    // Handle refund status
-    if (
-        $new_status === "refunded" &&
-        in_array($old_status, ["processing", "completed"])
-    ) {
+    if ($new_status === "refunded") {
         return "refund";
     }
 
+    error_log(
+        "Axytos: No action determined for order status change from '$old_status' to '$new_status'"
+    );
     return "";
 }
 
 /**
  * Execute the determined action using the action handler for robustness
  */
-function execute_status_action($order_id, $action, $old_status, $new_status)
+function queue_status_action($order_id, $action, $old_status, $new_status)
 {
-    error_log(
-        "Axytos: Adding pending action '$action' for order #$order_id (status: $old_status -> $new_status)"
-    );
     try {
         $action_handler = new AxytosActionHandler();
-
-        // Map action names to match the action handler
-        $mapped_action = $action;
-        // TODO: rename
-        if ($action === "report_shipping") {
-            $mapped_action = "shipped";
-        }
-
-        $success = $action_handler->addPendingAction($order_id, $mapped_action);
-
+        $success = $action_handler->addPendingAction($order_id, $action);
         if ($success) {
             error_log(
                 "Axytos: Successfully queued $action for order #$order_id (status: $old_status -> $new_status)"

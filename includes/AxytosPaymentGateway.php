@@ -250,8 +250,8 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
     // TODO: refactor
     public function actionReportShipping($order, $invoice_number = null)
     {
-        // Report_shipping is called when admin clicks the button or when order changes state to 'completed'.
-        // Since report_shipping also switches state to 'completed', we need to check if it has already been reported.
+        // Shipped is called when admin clicks the button or when order changes state to 'completed'.
+        // Since shipped also switches state to 'completed', we need to check if it has already been reported.
         $isShipped = $order->get_meta("axytos_shipped");
         $ok = true;
         if (!$isShipped) {

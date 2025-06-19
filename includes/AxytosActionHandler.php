@@ -15,8 +15,8 @@ require_once __DIR__ . "/axytos-data.php";
 class AxytosActionHandler
 {
     const META_KEY_PENDING = "_axytos_pending";
-    const META_KEY_INVOICE_NUMBER = "_axytos_invoice_number_for_shipping";
-    const META_KEY_TRACKING_NUMBER = "_axytos_tracking_number";
+    const META_KEY_INVOICE_NUMBER = "axytos_ext_invoice_nr";
+    const META_KEY_TRACKING_NUMBER = "axytos_ext_tracking_nr";
     const RETRY_INTERVAL = 60 * 10; // Default 10 min
 
     private $gateway;
@@ -170,8 +170,8 @@ class AxytosActionHandler
                 case "confirm":
                     return $this->processConfirmAction($order, $action_data);
 
-                case "shipped":
-                    return $this->processShippedAction($order, $action_data);
+                case "complete":
+                    return $this->processCompleteAction($order, $action_data);
 
                 case "cancel":
                     return $this->processCancelAction($order, $action_data);
@@ -208,9 +208,9 @@ class AxytosActionHandler
     }
 
     /**
-     * Process shipped action
+     * Process complete action
      */
-    private function processShippedAction($order, $action_data)
+    private function processCompleteAction($order, $action_data)
     {
         // TODO: split into two actions one for shipped and invoiced
         $isShipped = $order->get_meta("axytos_shipped");

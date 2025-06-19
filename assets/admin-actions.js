@@ -6,8 +6,8 @@
             const actionType = $button.data('action');
             const nonce = AxytosActions.nonce;
 
-            // Handle report_shipping action differently
-            if (actionType === 'report_shipping') {
+            // Handle shipped action differently
+            if (actionType === 'shipped') {
                 const invoiceNumber = prompt(AxytosActions.i18n.invoice_prompt);
                 
                 if (invoiceNumber === null) {

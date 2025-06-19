@@ -21,7 +21,6 @@ function handle_ajax_action()
     $invoice_number = isset($_POST["invoice_number"])
         ? sanitize_text_field($_POST["invoice_number"])
         : "";
-    $is_manual = isset($_POST["manual"]) ? (bool) $_POST["manual"] : true;
 
     if (!$order_id || !$action_type) {
         wp_send_json_error([
@@ -44,14 +43,14 @@ function handle_ajax_action()
         $action_handler = new AxytosActionHandler();
 
         switch ($action_type) {
-            case "report_shipping":
+            case "shipped":
                 // Store invoice number if provided
                 if (!empty($invoice_number)) {
                     $action_handler->setInvoiceNumber(
                         $order_id,
                         $invoice_number
                     );
-                } elseif ($is_manual) {
+                } else {
                     wp_send_json_error([
                         "message" => __(
                             "Invoice number is required for shipping report.",
@@ -59,9 +58,14 @@ function handle_ajax_action()
                         ),
                     ]);
                 }
+                // will trigger axytos shipping process (see orders.php)
+                $order->update_status(
+                    "completed",
+                    __("Order shipped via Axytos action.", "axytos-wc")
+                );
                 break;
             // TODO: maybe get rid of 'cancel', 'refund' and 'confirm' actions - just use regular wooCommerce actions
-            case 'cancel':
+            case "cancel":
                 // will trigger axytos cancellation process (see orders.php)
                 // will trigger axytos cancellation process (see orders.php)
                 $order->update_status(
@@ -69,14 +73,14 @@ function handle_ajax_action()
                     __("Order cancelled via Axytos action.", "axytos-wc")
                 );
                 break;
-            case 'refund':
+            case "refund":
                 // will trigger axytos refund process (see orders.php)
                 $order->update_status(
                     "refunded",
                     __("Order refunded via Axytos action.", "axytos-wc")
                 );
                 break;
-            case 'confirm':
+            case "confirm":
                 // will trigger axytos confirmation process (see orders.php)
                 $order->update_status(
                     "processing",

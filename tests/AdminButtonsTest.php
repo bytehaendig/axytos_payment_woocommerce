@@ -11,7 +11,7 @@ class AdminButtonsTest extends WP_UnitTestCase {
         ob_start();
         column_html( 'axytos_actions', $order );
         $output = ob_get_clean();
-        $this->assertStringContainsString( 'data-action="report_shipping"', $output );
+        $this->assertStringContainsString( 'data-action="shipped"', $output );
     }
 
     public function test_admin_buttons_visibility_completed() {

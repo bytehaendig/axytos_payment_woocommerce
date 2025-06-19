@@ -215,7 +215,7 @@ function render_action_buttons($order)
         echo '<div class="axytos-action-buttons-wrapper">';
         echo '<button class="button axytos-action-button" data-order-id="' .
             esc_attr($order_id) .
-            '" data-action="report_shipping">' .
+            '" data-action="shipped">' .
             __("Report Shipping", "axytos-wc") .
             "</button>";
         echo '<button class="button axytos-action-button" data-order-id="' .
