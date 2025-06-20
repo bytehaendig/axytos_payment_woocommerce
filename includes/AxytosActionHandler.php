@@ -15,9 +15,11 @@ require_once __DIR__ . "/axytos-data.php";
 class AxytosActionHandler
 {
     const META_KEY_PENDING = "_axytos_pending";
+    const META_KEY_DONE = "_axytos_done";
     const META_KEY_INVOICE_NUMBER = "axytos_ext_invoice_nr";
     const META_KEY_TRACKING_NUMBER = "axytos_ext_tracking_nr";
     const RETRY_INTERVAL = 60 * 10; // Default 10 min
+    const MAX_RETRIES = 3;
 
     private $gateway;
     private $logger;
@@ -26,6 +28,7 @@ class AxytosActionHandler
     {
         $this->gateway = new AxytosPaymentGateway();
         $this->logger = wc_get_logger();
+        $this->registerCustomOrderStatus();
     }
 
     /**
@@ -49,7 +52,7 @@ class AxytosActionHandler
 
         $new_action = [
             "action" => $action,
-            "created_at" => current_time("c"),
+            "created_at" => gmdate("c"),
             "failed_at" => null,
             "failed_count" => 0,
             "data" => $additional_data,
@@ -89,6 +92,50 @@ class AxytosActionHandler
     }
 
     /**
+     * Get completed actions for an order
+     */
+    public function getDoneActions($order)
+    {
+        if (is_numeric($order)) {
+            $order = wc_get_order($order);
+        }
+
+        if (!$order) {
+            return [];
+        }
+
+        $done_actions = $order->get_meta(self::META_KEY_DONE);
+        return is_array($done_actions) ? $done_actions : [];
+    }
+
+    /**
+     * Move a successful action to the done actions list
+     */
+    private function moveActionToDone($order, $action_data)
+    {
+        $done_actions = $this->getDoneActions($order);
+        
+        // Add processed_at timestamp
+        $action_data['processed_at'] = gmdate('c');
+        
+        $done_actions[] = $action_data;
+        
+        $order->update_meta_data(self::META_KEY_DONE, $done_actions);
+        // Note: save_meta_data() will be called by the caller
+    }
+
+    /**
+     * Get all actions (pending + done) for an order
+     */
+    public function getAllActions($order)
+    {
+        return [
+            'pending' => $this->getPendingActions($order),
+            'done' => $this->getDoneActions($order)
+        ];
+    }
+
+    /**
      * Process all pending actions for an order
      */
     public function processPendingActionsForOrder($order_id)
@@ -101,6 +148,17 @@ class AxytosActionHandler
         $pending_actions = $this->getPendingActions($order);
         if (empty($pending_actions)) {
             return true;
+        }
+
+        // Check if any action has exceeded retry limit - if so, skip this order
+        foreach ($pending_actions as $action_data) {
+            if (($action_data["failed_count"] ?? 0) >= self::MAX_RETRIES) {
+                $this->log(
+                    "Order #{$order_id} has actions that exceeded max retries, skipping processing",
+                    "warning"
+                );
+                return false;
+            }
         }
 
         $updated = false;
@@ -120,7 +178,8 @@ class AxytosActionHandler
             $success = $this->processAction($order, $action_data);
 
             if ($success) {
-                // Remove successful action
+                // Move successful action to done actions
+                $this->moveActionToDone($order, $action_data);
                 unset($pending_actions[$index]);
                 $updated = true;
 
@@ -131,15 +190,23 @@ class AxytosActionHandler
                 );
             } else {
                 // Mark as failed
-                $pending_actions[$index]["failed_at"] = current_time("c");
+                $pending_actions[$index]["failed_at"] = gmdate("c");
                 $pending_actions[$index]["failed_count"] =
                     ($action_data["failed_count"] ?? 0) + 1;
                 $updated = true;
 
+                $failed_count = $pending_actions[$index]["failed_count"];
                 $this->log(
-                    "Failed to process action '{$action_data["action"]}' for order #$order_id (attempt #{$pending_actions[$index]["failed_count"]})",
+                    "Failed to process action '{$action_data["action"]}' for order #$order_id (attempt #{$failed_count})",
                     "error"
                 );
+
+                // Check if max retries reached
+                if ($failed_count >= self::MAX_RETRIES) {
+                    $this->handleMaxRetriesExceeded($order, $action_data);
+                    // Don't process any more actions for this order
+                    break;
+                }
 
                 // Stop processing further actions for this order
                 break;
@@ -365,6 +432,12 @@ class AxytosActionHandler
 
             foreach ($order_ids as $order_id) {
                 try {
+                    // Skip orders that have actions exceeding retry limits
+                    $order = wc_get_order($order_id);
+                    if ($order && $this->hasActionsExceedingRetryLimit($order)) {
+                        continue;
+                    }
+                    
                     $success = $this->processPendingActionsForOrder($order_id);
                     if ($success) {
                         $processed_count++;
@@ -439,6 +512,105 @@ class AxytosActionHandler
         }
 
         return $cleaned_count;
+    }
+
+    /**
+     * Handle when an action exceeds maximum retry limit
+     */
+    private function handleMaxRetriesExceeded($order, $action_data)
+    {
+        $order_id = $order->get_id();
+        $action = $action_data["action"];
+        
+        // Change order status to axytos_error
+        $order->update_status('axytos-error', sprintf(
+            __('Axytos action "%s" failed after %d retries', 'axytos-wc'),
+            $action,
+            self::MAX_RETRIES
+        ));
+
+        // Log the error
+        $this->log(
+            "Action '{$action}' for order #{$order_id} exceeded max retries (" . self::MAX_RETRIES . "), setting order to error status",
+            "critical"
+        );
+
+        // Notify shop admin
+        $this->notifyShopAdmin($order, $action_data);
+
+        // Add order note
+        $order->add_order_note(sprintf(
+            __('Axytos action "%s" failed permanently after %d retries. Order requires manual attention.', 'axytos-wc'),
+            $action,
+            self::MAX_RETRIES
+        ));
+    }
+
+    /**
+     * Send notification email to shop admin
+     */
+    private function notifyShopAdmin($order, $action_data)
+    {
+        $admin_email = get_option('admin_email');
+        $order_id = $order->get_id();
+        $action = $action_data["action"];
+        
+        $subject = sprintf(
+            __('[%s] Axytos Payment Action Failed - Order #%s', 'axytos-wc'),
+            get_bloginfo('name'),
+            $order_id
+        );
+        
+        $message = sprintf(
+            __("An Axytos payment action has failed permanently and requires manual attention.\n\nOrder: #%s\nAction: %s\nMax retries reached: %d\n\nPlease check the order in your WooCommerce admin and contact Axytos support if needed.\n\nOrder URL: %s", 'axytos-wc'),
+            $order_id,
+            $action,
+            self::MAX_RETRIES,
+            admin_url("post.php?post={$order_id}&action=edit")
+        );
+        
+        wp_mail($admin_email, $subject, $message);
+        
+        $this->log(
+            "Admin notification sent for failed action '{$action}' on order #{$order_id}",
+            "info"
+        );
+    }
+
+    /**
+     * Check if order has actions that have exceeded max retry count
+     */
+    private function hasActionsExceedingRetryLimit($order)
+    {
+        $pending_actions = $this->getPendingActions($order);
+        foreach ($pending_actions as $action_data) {
+            if (($action_data["failed_count"] ?? 0) >= self::MAX_RETRIES) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Register custom order status
+     */
+    private function registerCustomOrderStatus()
+    {
+        add_action('init', function() {
+            register_post_status('wc-axytos-error', array(
+                'label' => __('Axytos Error', 'axytos-wc'),
+                'public' => true,
+                'exclude_from_search' => false,
+                'show_in_admin_all_list' => true,
+                'show_in_admin_status_list' => true,
+                'label_count' => _n_noop('Axytos Error <span class="count">(%s)</span>', 'Axytos Error <span class="count">(%s)</span>', 'axytos-wc')
+            ));
+        });
+
+        add_filter('wc_order_statuses', function($order_statuses) {
+            $order_statuses['wc-axytos-error'] = __('Axytos Error', 'axytos-wc');
+            return $order_statuses;
+        });
     }
 
     /**

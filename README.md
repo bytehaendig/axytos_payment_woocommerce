@@ -103,10 +103,11 @@ This documentation should provide a good starting point for any developer workin
 
 **Key Features:**
 - **Pending Actions Queue:** JSON-based action storage in order meta-data for confirm, shipped, cancel, and refund actions. Includes deduplication and sequential processing.
+- **Action Audit Trail:** Successful actions are preserved in `_axytos_done` meta field with processing timestamps, providing complete audit history.
 - **Robust Error Handling:** Failed actions are timestamped, retried, and automatically cleaned up after 30 days. Comprehensive logging to WooCommerce logs.
 - **Additional Data Management:** Stores invoice numbers, tracking numbers, and ERP data.
 - **WordPress Cron Integration:** Processes pending actions every 15 minutes, with daily cleanup. Manual trigger available.
-- **Admin Interface Enhancements:** Dedicated "Pending Actions Management Page" and enhancements to "Order Edit Page" for visibility and control.
+- **Admin Interface Enhancements:** Dedicated "Pending Actions Management Page" and enhancements to "Order Edit Page" for visibility and control. Shows both pending and completed actions with timestamps.
 - **Comprehensive Monitoring:** Integrates with WooCommerce logger for "axytos-action-handler" source and adds order notes.
 
 **Modified Files:**
@@ -132,7 +133,22 @@ This documentation should provide a good starting point for any developer workin
   }
 ]
 ```
-**Additional Meta-Data Keys:** `_axytos_pending`, `_axytos_ext_last_update`, `axytos_ext_invoice_nr`, `axytos_ext_tracking_nr`.
+
+**Data Structure (Completed Actions):**
+Successful actions are moved from `_axytos_pending` to `_axytos_done` with processing timestamp:
+```json
+[
+  {
+    "action": "shipped",
+    "created_at": "2023-10-01T12:00:00Z",
+    "processed_at": "2023-10-01T12:15:00Z",
+    "data": {
+      "invoice_number": "INV-123"
+    }
+  }
+]
+```
+**Additional Meta-Data Keys:** `_axytos_pending`, `_axytos_done`, `_axytos_ext_last_update`, `axytos_ext_invoice_nr`, `axytos_ext_tracking_nr`.
 
 **Benefits:** Zero data loss, automatic recovery, full observability, manual control, backward compatibility, graceful degradation.
 

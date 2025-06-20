@@ -127,6 +127,7 @@ function render_order_metabox($post_or_order)
     }
 
     render_pending_actions_status($order);
+    render_done_actions_status($order);
     render_action_buttons($order);
 }
 
@@ -165,42 +166,105 @@ function render_pending_actions_status($order)
         __("Pending Axytos Actions", "axytos-wc") .
         "</h4>";
 
-    if ($pending_count > 0) {
-        echo '<p style="margin: 5px 0;"><strong>' .
-            sprintf(__("Pending: %d", "axytos-wc"), $pending_count) .
-            "</strong></p>";
-    }
-
-    if ($failed_count > 0) {
-        echo '<p style="margin: 5px 0; color: #d63638;"><strong>' .
-            sprintf(__("Failed: %d", "axytos-wc"), $failed_count) .
-            "</strong></p>";
-    }
-
     echo '<div style="margin-top: 10px;">';
     foreach ($pending_actions as $action) {
         $status_color = empty($action["failed_at"]) ? "#00a32a" : "#d63638";
         $status_text = empty($action["failed_at"])
             ? __("pending", "axytos-wc")
             : sprintf(__("failed (%dx)", "axytos-wc"), $action["failed_count"]);
+        $failed_at = !empty($action["failed_at"]) ? $action["failed_at"] : $action["created_at"];
+        $failed_time = format_action_time($failed_at);
 
         echo '<div style="margin: 3px 0; font-size: 12px;">';
         echo '<span style="font-weight: bold;">' .
             esc_html($action["action"]) .
             "</span> ";
-        echo '<span style="color: ' .
+        echo '<span style="color: #666;">' .
+            esc_html($failed_time) .
+            "</span>";
+        echo '<br/><span style="color: ' .
             $status_color .
             ';">(' .
             $status_text .
             ")</span> ";
-        echo '<span style="color: #666;">' .
-            esc_html($action["created_at"]) .
-            "</span>";
         echo "</div>";
     }
     echo "</div>";
 
     echo "</div>";
+}
+
+/**
+ * Render done actions status
+ */
+function render_done_actions_status($order)
+{
+    require_once plugin_dir_path(__FILE__) . "AxytosActionHandler.php";
+
+    $action_handler = new AxytosActionHandler();
+    $done_actions = $action_handler->getDoneActions($order);
+
+    if (empty($done_actions)) {
+        return;
+    }
+
+    echo '<div class="axytos-done-status" style="margin-bottom: 15px; padding: 10px; background: #f0f8ff; border-left: 4px solid #00a32a;">';
+    echo '<h4 style="margin: 0 0 10px 0;">' .
+        __("Completed Axytos Actions", "axytos-wc") .
+        "</h4>";
+
+
+    echo '<div style="margin-top: 10px;">';
+    foreach ($done_actions as $action) {
+        $processed_at = !empty($action["processed_at"]) ? $action["processed_at"] : $action["created_at"];
+        $processed_time = format_action_time($processed_at);
+        
+        echo '<div style="margin: 3px 0; font-size: 12px;">';
+        echo '<span style="font-weight: bold; color: #00a32a;">' .
+            esc_html($action["action"]) .
+            "</span> ";
+        echo '<span style="color: #666;">' .
+            esc_html($processed_time) .
+            "</span>";
+            
+        // Show additional data if available
+        if (!empty($action["data"])) {
+            $additional_info = [];
+            foreach ($action["data"] as $key => $value) {
+                if (!empty($value)) {
+                    $additional_info[] = "$key: $value";
+                }
+            }
+            if (!empty($additional_info)) {
+                echo '<br><span style="color: #666; font-size: 11px; margin-left: 10px;">' .
+                    esc_html(implode(", ", $additional_info)) .
+                    "</span>";
+            }
+        }
+        echo "</div>";
+    }
+    echo "</div>";
+
+    echo "</div>";
+}
+
+/**
+ * Format action time for display
+ */
+function format_action_time($time_string)
+{
+    if (empty($time_string)) {
+        return __("Unknown", "axytos-wc");
+    }
+    
+    // Parse UTC timestamp and convert to local time for display
+    try {
+        $date = new \DateTime($time_string, new \DateTimeZone('UTC'));
+        $date->setTimezone(wp_timezone());
+        return $date->format(get_option("date_format") . " " . get_option("time_format"));
+    } catch (Exception $e) {
+        return esc_html($time_string);
+    }
 }
 
 /**
@@ -443,8 +507,8 @@ function render_pending_actions_page()
                     ); ?></th>
                     <td>
                         <?php if ($next_scheduled["process_pending"]) {
-                            echo date(
-                                "Y-m-d H:i:s",
+                            echo wp_date(
+                                get_option("date_format") . " " . get_option("time_format"),
                                 $next_scheduled["process_pending"]
                             );
                         } else {
@@ -456,8 +520,8 @@ function render_pending_actions_page()
                     <th><?php echo __("Next Cleanup Run", "axytos-wc"); ?></th>
                     <td>
                         <?php if ($next_scheduled["cleanup_old"]) {
-                            echo date(
-                                "Y-m-d H:i:s",
+                            echo wp_date(
+                                get_option("date_format") . " " . get_option("time_format"),
                                 $next_scheduled["cleanup_old"]
                             );
                         } else {
@@ -501,6 +565,10 @@ function render_pending_actions_page()
                                 "Failed Actions",
                                 "axytos-wc"
                             ); ?></th>
+                            <th><?php echo __(
+                                "Completed Actions",
+                                "axytos-wc"
+                            ); ?></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -514,10 +582,15 @@ function render_pending_actions_page()
                             $pending_actions = $action_handler->getPendingActions(
                                 $order
                             );
+                            $done_actions = $action_handler->getDoneActions(
+                                $order
+                            );
                             $pending_count = 0;
                             $failed_count = 0;
+                            $done_count = count($done_actions);
                             $pending_list = [];
                             $failed_list = [];
+                            $done_list = [];
 
                             foreach ($pending_actions as $action) {
                                 if (empty($action["failed_at"])) {
@@ -535,6 +608,12 @@ function render_pending_actions_page()
                                         $action["failed_count"] .
                                         "x)";
                                 }
+                            }
+
+                            // Populate done actions list
+                            foreach ($done_actions as $action) {
+                                $processed_at = !empty($action["processed_at"]) ? $action["processed_at"] : $action["created_at"];
+                                $done_list[] = $action["action"] . " (" . format_action_time($processed_at) . ")";
                             }
                             ?>
                         <tr>
@@ -564,6 +643,19 @@ function render_pending_actions_page()
                                         <?php echo implode(
                                             "<br>",
                                             $failed_list
+                                        ); ?>
+                                    </div>
+                                <?php else: ?>
+                                    -
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($done_count > 0): ?>
+                                    <span class="count" style="color: #00a32a;"><?php echo $done_count; ?></span>
+                                    <div style="font-size: 11px; color: #666;">
+                                        <?php echo implode(
+                                            "<br>",
+                                            $done_list
                                         ); ?>
                                     </div>
                                 <?php else: ?>
