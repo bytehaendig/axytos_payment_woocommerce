@@ -466,53 +466,7 @@ class AxytosActionHandler
         return ["processed" => $processed_count, "failed" => $failed_count];
     }
 
-    /**
-     * Clean up old failed actions (optional maintenance)
-     */
-    // TODO: only retry for X times
-    public function cleanupOldFailedActions($days_old = 30)
-    {
-        $cutoff_date = date("c", strtotime("-$days_old days"));
-        $order_ids = $this->getOrdersWithPendingActions(200);
-        $cleaned_count = 0;
 
-        foreach ($order_ids as $order_id) {
-            $order = wc_get_order($order_id);
-            if (!$order) {
-                continue;
-            }
-
-            $pending_actions = $this->getPendingActions($order);
-            $original_count = count($pending_actions);
-
-            // Remove old failed actions
-            $pending_actions = array_filter($pending_actions, function (
-                $action
-            ) use ($cutoff_date) {
-                return empty($action["failed_at"]) ||
-                    $action["failed_at"] > $cutoff_date;
-            });
-
-            if (count($pending_actions) < $original_count) {
-                $pending_actions = array_values($pending_actions);
-                $order->update_meta_data(
-                    self::META_KEY_PENDING,
-                    $pending_actions
-                );
-                $order->save_meta_data();
-                $cleaned_count++;
-            }
-        }
-
-        if ($cleaned_count > 0) {
-            $this->log(
-                "Cleaned up old failed actions from $cleaned_count orders",
-                "info"
-            );
-        }
-
-        return $cleaned_count;
-    }
 
     /**
      * Handle when an action exceeds maximum retry limit

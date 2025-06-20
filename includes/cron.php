@@ -15,7 +15,6 @@ require_once __DIR__ . "/AxytosActionHandler.php";
 class AxytosScheduler
 {
     const CRON_HOOK = "axytos_process_pending_actions";
-    const CLEANUP_HOOK = "axytos_cleanup_old_actions";
 
     /**
      * Initialize cron functionality
@@ -23,7 +22,6 @@ class AxytosScheduler
     public static function init()
     {
         add_action(self::CRON_HOOK, [__CLASS__, "process_pending_actions"]);
-        add_action(self::CLEANUP_HOOK, [__CLASS__, "cleanup_old_actions"]);
 
         // Schedule recurring events
         add_action("wp", [__CLASS__, "schedule_events"]);
@@ -43,11 +41,6 @@ class AxytosScheduler
         // Schedule main processing job (every 15 minutes)
         if (!wp_next_scheduled(self::CRON_HOOK)) {
             wp_schedule_event(time(), "axytos_15min", self::CRON_HOOK);
-        }
-
-        // Schedule cleanup job (daily)
-        if (!wp_next_scheduled(self::CLEANUP_HOOK)) {
-            wp_schedule_event(time(), "daily", self::CLEANUP_HOOK);
         }
     }
 
@@ -74,27 +67,7 @@ class AxytosScheduler
         }
     }
 
-    /**
-     * Cleanup old failed actions cron job
-     */
-    public static function cleanup_old_actions()
-    {
-        $handler = new AxytosActionHandler();
 
-        try {
-            $cleaned = $handler->cleanupOldFailedActions(30);
-
-            if ($cleaned > 0) {
-                error_log(
-                    "Axytos cron: Cleaned up old failed actions from $cleaned orders"
-                );
-            }
-        } catch (\Exception $e) {
-            error_log(
-                "Axytos cron: Exception during cleanup: " . $e->getMessage()
-            );
-        }
-    }
 
     /**
      * Clear all scheduled events (used on plugin deactivation)
@@ -102,7 +75,6 @@ class AxytosScheduler
     public static function clear_scheduled_events()
     {
         wp_clear_scheduled_hook(self::CRON_HOOK);
-        wp_clear_scheduled_hook(self::CLEANUP_HOOK);
     }
 
     /**
@@ -112,7 +84,6 @@ class AxytosScheduler
     {
         return [
             "process_pending" => wp_next_scheduled(self::CRON_HOOK),
-            "cleanup_old" => wp_next_scheduled(self::CLEANUP_HOOK),
         ];
     }
 

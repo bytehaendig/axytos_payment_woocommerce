@@ -516,19 +516,7 @@ function render_pending_actions_page()
                         } ?>
                     </td>
                 </tr>
-                <tr>
-                    <th><?php echo __("Next Cleanup Run", "axytos-wc"); ?></th>
-                    <td>
-                        <?php if ($next_scheduled["cleanup_old"]) {
-                            echo wp_date(
-                                get_option("date_format") . " " . get_option("time_format"),
-                                $next_scheduled["cleanup_old"]
-                            );
-                        } else {
-                            echo __("Not scheduled", "axytos-wc");
-                        } ?>
-                    </td>
-                </tr>
+
             </table>
 
             <form method="post">
