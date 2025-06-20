@@ -64,6 +64,10 @@ class AxytosActionHandler
             "Added pending action '$action' for order #$order_id",
             "info"
         );
+
+        // Immediately process pending actions for this order
+        $this->processPendingActionsForOrder($order_id);
+
         return true;
     }
 
@@ -200,10 +204,6 @@ class AxytosActionHandler
      */
     private function processConfirmAction($order, $action_data)
     {
-        if ($order->get_meta("payment_completed")) {
-            return true; // Already confirmed
-        }
-
         return $this->gateway->confirmOrder($order);
     }
 
@@ -213,11 +213,6 @@ class AxytosActionHandler
     private function processCompleteAction($order, $action_data)
     {
         // TODO: split into two actions one for shipped and invoiced
-        $isShipped = $order->get_meta("axytos_shipped");
-        if ($isShipped) {
-            return true; // Already shipped
-        }
-
         // Report shipping first
         $shipping_success = $this->gateway->reportShipping($order);
         if (!$shipping_success) {

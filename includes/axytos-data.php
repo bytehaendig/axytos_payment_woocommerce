@@ -153,12 +153,12 @@ function createConfirmData($order)
 function createInvoiceData($order, $invoice_number = null)
 {
     $externalInvoiceNumber = $invoice_number ?: "ORDER:" . $order->get_order_number();
-    $externalInvoiceDisplayName = $invoice_number ? sprintf("Invoice #%s", $invoice_number) : sprintf("Order #%s", $order->get_order_number());
     
     return [
       "externalOrderId" => $order->get_order_number(),
       "externalInvoiceNumber" => $externalInvoiceNumber,
-      "externalInvoiceDisplayName" => $externalInvoiceDisplayName,
+      // TODO: clarify meaning of externalInvoiceDisplayName
+      "externalInvoiceDisplayName" => $externalInvoiceNumber,
       "externalSubOrderId" => "",
       "date" => date('c', strtotime($order->get_date_created())), // Order creation date in ISO 8601
       "dueDateOffsetDays" => 14,
@@ -184,7 +184,11 @@ function createShippingData($order)
 
 function createRefundData($order)
 {
-    $invoice_number = $order->get_meta('axytos_invoice_number');
+    $invoice_number = $order->get_meta('axytos_ext_invoice_nr');
+    if (empty($invoice_number)) {
+        // backward compatibility
+        $invoice_number = $order->get_meta('axytos_invoice_number');
+    }
     return [
       "externalOrderId" => $order->get_order_number(),
       "refundDate" => date('c'),

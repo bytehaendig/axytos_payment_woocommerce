@@ -500,7 +500,7 @@ class AxytosWebhookHandler
         if ($updated) {
             // Add timestamp for the ERP update
             $order->update_meta_data(
-                "_axytos_erp_last_update",
+                "_axytos_ext_last_update",
                 current_time("mysql")
             );
         }

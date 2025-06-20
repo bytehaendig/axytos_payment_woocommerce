@@ -132,7 +132,7 @@ This documentation should provide a good starting point for any developer workin
   }
 ]
 ```
-**Additional Meta-Data Keys:** `_axytos_pending`, `_axytos_invoice_number_for_shipping`, `_axytos_tracking_number`, `_axytos_erp_invoice_number`, `_axytos_erp_tracking_number`.
+**Additional Meta-Data Keys:** `_axytos_pending`, `_axytos_ext_last_update`, `axytos_ext_invoice_nr`, `axytos_ext_tracking_nr`.
 
 **Benefits:** Zero data loss, automatic recovery, full observability, manual control, backward compatibility, graceful degradation.
 
@@ -175,7 +175,7 @@ This documentation should provide a good starting point for any developer workin
 
 **Logging:** All webhook activity logged to WooCommerce logs (filter by 'axytos-webhook').
 
-**Order Data Storage:** Additional ERP data stored in order meta fields: `_axytos_erp_invoice_number`, `_axytos_erp_tracking_number`, `_axytos_erp_last_update`. Also added to order notes.
+**Order Data Storage:** Additional ERP data stored in order meta fields: `axytos_ext_invoice_nr`, `axytos_ext_tracking_nr`, `_axytos_ext_last_update`. Also added to order notes.
 
 **Testing:** Test utility available at `/wp-content/plugins/axytos-woocommerce/includes/webhook-test.php` when `WP_DEBUG` is enabled.
 

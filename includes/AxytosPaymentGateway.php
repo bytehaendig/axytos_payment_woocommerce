@@ -247,36 +247,6 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         return [];
     }
 
-    // TODO: refactor
-    public function actionReportShipping($order, $invoice_number = null)
-    {
-        // Shipped is called when admin clicks the button or when order changes state to 'completed'.
-        // Since shipped also switches state to 'completed', we need to check if it has already been reported.
-        $isShipped = $order->get_meta("axytos_shipped");
-        $ok = true;
-        if (!$isShipped) {
-            $ok = $this->reportShipping($order);
-            if ($ok) {
-                $this->createInvoice($order, $invoice_number);
-            }
-        }
-        if ($ok) {
-            $order->update_status(
-                "completed",
-                __("Order completed.", "axytos-wc"),
-                true // Notify customer (optional)
-            );
-            // TODO: refactor error handling
-            wp_send_json_success([
-                "message" => __(
-                    "Shipping status reported successfully.",
-                    "axytos-wc"
-                ),
-            ]);
-        }
-        return true;
-    }
-
     public function doPrecheck($order)
     {
         $data = createPrecheckData($order);
@@ -294,19 +264,16 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
 
     public function confirmOrder($order)
     {
-        if (!$order->get_meta("payment_completed")) {
-            $confirm_data = createConfirmData($order);
-            $confirm_response = $this->client->orderConfirm($confirm_data);
-            if (is_wp_error($confirm_response)) {
-                // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
-                throw new \Exception(
-                    "Could not confirm order with Axytos API."
-                );
-                return false;
-            }
-            $order->payment_complete();
-            $order->update_meta_data("payment_completed", true);
+        $confirm_data = createConfirmData($order);
+        $confirm_response = $this->client->orderConfirm($confirm_data);
+        if (is_wp_error($confirm_response)) {
+            // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
+            throw new \Exception(
+                "Could not confirm order with Axytos API."
+            );
+            return false;
         }
+        $order->payment_complete();
         return true;
     }
 
@@ -330,7 +297,6 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
             wp_send_json_error(["message" => __($msg, "axytos-wc")]);
             return false;
         }
-        $order->update_meta_data("axytos_shipped", true);
         return true;
     }
 
@@ -339,21 +305,12 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         $invoiceData = createInvoiceData($order, $invoice_number);
         $success = false;
         try {
-            $invoice_response = $this->client->createInvoice($invoiceData);
-            $response_invoice_number =
-                json_decode($invoice_response, true)["invoiceNumber"] ?? null;
-            if (empty($response_invoice_number)) {
-                $response_invoice_number = null;
-                error_log(
-                    "Axytos API: 'invoiceNumber' not found in the response. Response: " .
-                        $invoice_response
-                );
-            }
-            $order->update_meta_data(
-                "axytos_invoice_number",
-                $response_invoice_number
-            );
+            $result = $this->client->createInvoice($invoiceData);
             $success = true;
+            $response_body = json_decode($result, true);
+            if (isset($response_body["errors"])) {
+                return false;
+            }
         } catch (\Exception $e) {
             error_log(
                 "Axytos API: could not create invoice: " . $e->getMessage()
@@ -380,11 +337,6 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
 
     public function cancelOrder($order)
     {
-        $isCanceled = $order->get_meta("axytos_canceled");
-        if ($isCanceled) {
-            return true; // Already canceled
-        }
-
         $result = $this->client->cancelOrder($order->get_order_number());
         if (is_wp_error($result)) {
             return false;
@@ -395,7 +347,6 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
             return false;
         }
 
-        $order->update_meta_data("axytos_canceled", true);
         $order->save_meta_data();
         return true;
     }
