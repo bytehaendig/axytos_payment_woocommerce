@@ -6,17 +6,6 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-/**
- * Load plugin text domain for translations
- */
-function load_textdomain()
-{
-    load_plugin_textdomain(
-        "axytos-wc",
-        false,
-        dirname(plugin_basename(__FILE__)) . "/languages/"
-    );
-}
 
 /**
  * Initialize WooCommerce integration
@@ -121,6 +110,5 @@ function add_gateway_class($gateways)
 function bootstrap()
 {
     // Initialize everything
-    add_action("plugins_loaded", __NAMESPACE__ . "\load_textdomain", 1);
     add_action("plugins_loaded", __NAMESPACE__ . "\initialize_woocommerce");
 }

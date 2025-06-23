@@ -142,7 +142,8 @@ function handle_manual_processing()
 
         wp_send_json_success([
             "message" => sprintf(
-                __("Processed %d orders, %d failed.", "axytos-wc"),
+                /* translators: 1: number of processed orders, 2: number of failed orders */
+                __("Processed %1\$d orders, %2\$d failed.", "axytos-wc"),
                 $result["processed"],
                 $result["failed"]
             ),

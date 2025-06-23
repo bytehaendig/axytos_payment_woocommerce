@@ -222,7 +222,7 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
                 // this will trigger the order confirmation (see orders.php)
                 $order->update_status(
                     "processing",
-                    __("Axytos precheck accepted", "axytoswc")
+                    __("Axytos precheck accepted", "axytos-wc")
                 );
                 return [
                     "result" => "success",
@@ -235,7 +235,7 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
                 set_transient("disable_axitos_for_" . $order_id, true, 600);
                 $order->update_status(
                     "failed",
-                    __("Axytos precheck declined", "axytoswc")
+                    __("Axytos precheck declined", "axytos-wc")
                 );
                 throw new \Exception(
                     __(
@@ -253,7 +253,7 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         $response = $this->client->invoicePrecheck($data);
         if (is_wp_error($response)) {
             // wc_add_notice(__('Payment error: Could not connect to Axytos API.', 'axytos-wc'), 'error');
-            throw new \Exception("Could not connect to Axytos API.");
+            throw new \Exception(__("Could not connect to Axytos API.", "axytos-wc"));
             return [];
         }
         $order->update_meta_data("precheck_response", $response);
@@ -269,7 +269,7 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         if (is_wp_error($confirm_response)) {
             // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
             throw new \Exception(
-                "Could not confirm order with Axytos API."
+                __("Could not confirm order with Axytos API.", "axytos-wc")
             );
             return false;
         }
@@ -293,8 +293,8 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         $response_body = json_decode($result, true);
         if (isset($response_body["errors"])) {
             $msg =
-                $response_body["errors"][""][0] ?? "Error Response from Axytos";
-            wp_send_json_error(["message" => __($msg, "axytos-wc")]);
+                $response_body["errors"][""][0] ?? __("Error Response from Axytos", "axytos-wc");
+            wp_send_json_error(["message" => $msg]);
             return false;
         }
         return true;

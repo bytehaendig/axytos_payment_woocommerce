@@ -5,3 +5,14 @@ ddev_exec = "ddev exec -d /var/www/html/wp-content/plugins/axytos-woocommerce"
 description = "Run unit tests"
 run = "{{ vars.ddev_exec }} vendor/bin/phpunit"
 
+[tasks.i18n-pot]
+description = "Generate .pot file for translations"
+run = "{{ vars.ddev_exec }} wp i18n make-pot --exclude=wp-tests-dir . languages/axytos-wc.pot"
+
+[tasks.i18n-po-de]
+description = "Update .po file"
+run = "{{ vars.ddev_exec }} wp i18n update-po languages/axytos-wc.pot languages/axytos-wc-de_DE.po"
+
+[tasks.i18n-mo-de]
+description = "Create .mo file"
+run = "{{ vars.ddev_exec }} wp i18n make-mo languages/axytos-wc-de_DE.po languages/axytos-wc-de_DE.mo"

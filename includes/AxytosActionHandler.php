@@ -332,8 +332,9 @@ class AxytosActionHandler
         $created_at = $action_data["created_at"];
 
         $note = sprintf(
+            /* translators: 1: action name, 2: queue timestamp */
             __(
-                'Axytos action "%s" processed successfully (queued at %s)',
+                'Axytos action "%1$s" processed successfully (queued at %2$s)',
                 "axytos-wc"
             ),
             $action,
@@ -478,7 +479,8 @@ class AxytosActionHandler
         
         // Change order status to axytos_error
         $order->update_status('axytos-error', sprintf(
-            __('Axytos action "%s" failed after %d retries', 'axytos-wc'),
+            /* translators: 1: action name, 2: number of retries */
+            __('Axytos action "%1$s" failed after %2$d retries', 'axytos-wc'),
             $action,
             self::MAX_RETRIES
         ));
@@ -494,7 +496,8 @@ class AxytosActionHandler
 
         // Add order note
         $order->add_order_note(sprintf(
-            __('Axytos action "%s" failed permanently after %d retries. Order requires manual attention.', 'axytos-wc'),
+            /* translators: 1: action name, 2: number of retries */
+            __('Axytos action "%1$s" failed permanently after %2$d retries. Order requires manual attention.', 'axytos-wc'),
             $action,
             self::MAX_RETRIES
         ));
@@ -510,13 +513,15 @@ class AxytosActionHandler
         $action = $action_data["action"];
         
         $subject = sprintf(
-            __('[%s] Axytos Payment Action Failed - Order #%s', 'axytos-wc'),
+            /* translators: 1: site name, 2: order number */
+            __('[%1$s] Axytos Payment Action Failed - Order #%2$s', 'axytos-wc'),
             get_bloginfo('name'),
             $order_id
         );
         
         $message = sprintf(
-            __("An Axytos payment action has failed permanently and requires manual attention.\n\nOrder: #%s\nAction: %s\nMax retries reached: %d\n\nPlease check the order in your WooCommerce admin and contact Axytos support if needed.\n\nOrder URL: %s", 'axytos-wc'),
+            /* translators: 1: order number, 2: action name, 3: max retries, 4: order edit URL */
+            __("An Axytos payment action has failed permanently and requires manual attention.\n\nOrder: #%1\$s\nAction: %2\$s\nMax retries reached: %3\$d\n\nPlease check the order in your WooCommerce admin and contact Axytos support if needed.\n\nOrder URL: %4\$s", 'axytos-wc'),
             $order_id,
             $action,
             self::MAX_RETRIES,
@@ -557,6 +562,7 @@ class AxytosActionHandler
                 'exclude_from_search' => false,
                 'show_in_admin_all_list' => true,
                 'show_in_admin_status_list' => true,
+                /* translators: %s: number of orders with this status */
                 'label_count' => _n_noop('Axytos Error <span class="count">(%s)</span>', 'Axytos Error <span class="count">(%s)</span>', 'axytos-wc')
             ));
         });

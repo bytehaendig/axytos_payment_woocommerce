@@ -100,13 +100,13 @@ class AxytosWebhookHandler
                 "new_status" => [
                     "required" => true,
                     "type" => "string",
-                    "description" => "The new order status from ERP",
+                    "description" => "The new order status from webhook",
                     "sanitize_callback" => "sanitize_text_field",
                 ],
                 "invoice_number" => [
                     "required" => false,
                     "type" => "string",
-                    "description" => "Invoice number from ERP",
+                    "description" => "Invoice number from webhook",
                     "sanitize_callback" => "sanitize_text_field",
                 ],
                 "tracking_number" => [
@@ -311,6 +311,7 @@ class AxytosWebhookHandler
 
             if (!$order) {
                 $error_message = sprintf(
+                    /* translators: %d: order ID */
                     __("Order with ID %d not found.", "axytos-wc"),
                     $order_id
                 );
@@ -330,6 +331,7 @@ class AxytosWebhookHandler
             // Verify the order uses Axytos payment method
             if ($order->get_payment_method() !== \AXYTOS_PAYMENT_ID) {
                 $error_message = sprintf(
+                    /* translators: %d: order ID */
                     __(
                         "Order %d does not use Axytos payment method.",
                         "axytos-wc"
@@ -357,8 +359,9 @@ class AxytosWebhookHandler
                 $current_order_status !== $curr_status
             ) {
                 $warning_message = sprintf(
+                    /* translators: 1: current status, 2: expected status */
                     __(
-                        "Current order status (%s) does not match expected status (%s). Update may be outdated.",
+                        "Current order status (%1\$s) does not match expected status (%2\$s). Update may be outdated.",
                         "axytos-wc"
                     ),
                     $current_order_status,
@@ -389,6 +392,7 @@ class AxytosWebhookHandler
             );
 
             $success_message = sprintf(
+                /* translators: %d: order ID */
                 __("Order %d updated successfully.", "axytos-wc"),
                 $order_id
             );
@@ -407,7 +411,8 @@ class AxytosWebhookHandler
             );
         } catch (\Exception $e) {
             $error_message = sprintf(
-                __("Error processing webhook for order %d: %s", "axytos-wc"),
+                /* translators: 1: order ID, 2: error message */
+                __("Error processing webhook for order %1\$d: %2\$s", "axytos-wc"),
                 $order_id,
                 $e->getMessage()
             );
@@ -457,8 +462,9 @@ class AxytosWebhookHandler
             ]);
             throw new \Exception(
                 sprintf(
+                    /* translators: 1: WooCommerce status, 2: ERP status */
                     __(
-                        "Invalid WooCommerce status '%s' mapped from ERP status '%s'",
+                        "Invalid WooCommerce status '%1\$s' mapped from webhook status '%2\$s'",
                         "axytos-wc"
                     ),
                     $wc_status,
@@ -472,6 +478,7 @@ class AxytosWebhookHandler
         // Store invoice number for potential shipping action
         if (!empty($invoice_number)) {
             $note_parts[] = sprintf(
+                /* translators: %s: invoice number */
                 __("Invoice: %s", "axytos-wc"),
                 $invoice_number
             );
@@ -486,6 +493,7 @@ class AxytosWebhookHandler
         // Store tracking number
         if (!empty($tracking_number)) {
             $note_parts[] = sprintf(
+                /* translators: %s: tracking number */
                 __("Tracking: %s", "axytos-wc"),
                 $tracking_number
             );
@@ -508,8 +516,9 @@ class AxytosWebhookHandler
         // Update the order status if mapped status is different from current
         if ($wc_status && $wc_status !== $order->get_status()) {
             $note_first = sprintf(
+                /* translators: 1: old status, 2: new status */
                 __(
-                    "Order status updated from %s to %s via ERP webhook.",
+                    "Order status updated from %1\$s to %2\$s via webhook.",
                     "axytos-wc"
                 ),
                 $order->get_status(),
@@ -524,7 +533,7 @@ class AxytosWebhookHandler
                 false
             );
         } else {
-            $note_first = __("ERP added information", "axytos-wc");
+            $note_first = __("Webhook added information", "axytos-wc");
             array_unshift($note_parts, $note_first);
             // Add private order note
             $order_note = implode(".\n", $note_parts) . ".";

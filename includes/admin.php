@@ -34,11 +34,13 @@ function enqueue_admin_assets()
                 "axytos-wc"
             ),
             "confirm_action" => __(
+                /* translators: %s: action name (e.g., 'report', 'cancel') */
                 "Are you sure you want to %s this order?",
                 "axytos-wc"
             ),
             "confirm_action_with_invoice" => __(
-                "Are you sure you want to %s this order with invoice number: %s?",
+                /* translators: 1: action name (e.g., 'report', 'cancel'), 2: invoice number */
+                "Are you sure you want to %1\$s this order with invoice number: %2\$s?",
                 "axytos-wc"
             ),
             "unexpected_error" => __(
@@ -171,7 +173,11 @@ function render_pending_actions_status($order)
         $status_color = empty($action["failed_at"]) ? "#00a32a" : "#d63638";
         $status_text = empty($action["failed_at"])
             ? __("pending", "axytos-wc")
-            : sprintf(__("failed (%dx)", "axytos-wc"), $action["failed_count"]);
+            : sprintf(
+                /* translators: %d: number of failed attempts */
+                __("failed (%dx)", "axytos-wc"), 
+                $action["failed_count"]
+            );
         $failed_at = !empty($action["failed_at"]) ? $action["failed_at"] : $action["created_at"];
         $failed_time = format_action_time($failed_at);
 
@@ -483,7 +489,8 @@ function render_pending_actions_page()
         $result = $action_handler->processAllPendingActions();
         echo '<div class="notice notice-success"><p>' .
             sprintf(
-                __("Processed %d orders, %d failed.", "axytos-wc"),
+                /* translators: 1: number of processed orders, 2: number of failed orders */
+                __("Processed %1\$d orders, %2\$d failed.", "axytos-wc"),
                 $result["processed"],
                 $result["failed"]
             ) .
