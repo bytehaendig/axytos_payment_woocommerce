@@ -452,19 +452,19 @@ function bootstrap_admin()
     // Webhook admin scripts
     add_action("admin_footer", __NAMESPACE__ . "\add_webhook_settings_script");
 
-    // Pending actions management
-    add_action("admin_menu", __NAMESPACE__ . "\add_pending_actions_menu");
+    // Pending actions management 
+    add_action("admin_menu", __NAMESPACE__ . "\add_axytos_status_menu", 70);
 }
 
 /**
  * Add pending actions management menu
  */
-function add_pending_actions_menu()
+function add_axytos_status_menu()
 {
     add_submenu_page(
         "woocommerce",
-        __("Axytos Pending Actions", "axytos-wc"),
-        __("Axytos Pending Actions", "axytos-wc"),
+        __("Axytos Status", "axytos-wc"),
+        __("Axytos Status", "axytos-wc"),
         "manage_woocommerce",
         "axytos-pending-actions",
         __NAMESPACE__ . '\render_pending_actions_page'
@@ -486,7 +486,7 @@ function render_pending_actions_page()
         isset($_POST["manual_process"]) &&
         wp_verify_nonce($_POST["_wpnonce"], "axytos_manual_process")
     ) {
-        $result = $action_handler->processAllPendingActions();
+        $result = AxytosScheduler::process_pending_actions_with_logging();
         echo '<div class="notice notice-success"><p>' .
             sprintf(
                 /* translators: 1: number of processed orders, 2: number of failed orders */
@@ -500,6 +500,7 @@ function render_pending_actions_page()
     // Get orders with pending actions
     $order_ids = $action_handler->getOrdersWithPendingActions(100);
     $next_scheduled = AxytosScheduler::get_next_scheduled_times();
+    $last_processing_run = AxytosScheduler::get_last_processing_run();
     ?>
     <div class="wrap">
         <h1><?php echo __("Axytos Pending Actions", "axytos-wc"); ?></h1>
@@ -507,6 +508,22 @@ function render_pending_actions_page()
         <div class="card">
             <h2><?php echo __("Cron Status", "axytos-wc"); ?></h2>
             <table class="form-table">
+                <tr>
+                    <th><?php echo __(
+                        "Last Processing Run",
+                        "axytos-wc"
+                    ); ?></th>
+                    <td>
+                        <?php if ($last_processing_run) {
+                            echo wp_date(
+                                get_option("date_format") . " " . get_option("time_format"),
+                                $last_processing_run
+                            );
+                        } else {
+                            echo __("Never", "axytos-wc");
+                        } ?>
+                    </td>
+                </tr>
                 <tr>
                     <th><?php echo __(
                         "Next Processing Run",

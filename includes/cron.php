@@ -49,9 +49,20 @@ class AxytosScheduler
      */
     public static function process_pending_actions()
     {
+        self::process_pending_actions_with_logging();
+    }
+
+    /**
+     * Process pending actions and record timestamp (shared by cron and manual processing)
+     */
+    public static function process_pending_actions_with_logging()
+    {
         $handler = new AxytosActionHandler();
 
         try {
+            // Record the start time as timestamp
+            update_option('axytos_last_processing_run', time());
+            
             $result = $handler->processAllPendingActions();
 
             if ($result["processed"] > 0 || $result["failed"] > 0) {
@@ -59,11 +70,14 @@ class AxytosScheduler
                     "Axytos cron: Processed {$result["processed"]} orders, {$result["failed"]} failed"
                 );
             }
+
+            return $result;
         } catch (\Exception $e) {
             error_log(
                 "Axytos cron: Exception during pending actions processing: " .
                     $e->getMessage()
             );
+            return ["processed" => 0, "failed" => 0];
         }
     }
 
@@ -85,6 +99,14 @@ class AxytosScheduler
         return [
             "process_pending" => wp_next_scheduled(self::CRON_HOOK),
         ];
+    }
+
+    /**
+     * Get last processing run time
+     */
+    public static function get_last_processing_run()
+    {
+        return get_option('axytos_last_processing_run', false);
     }
 
     /**
