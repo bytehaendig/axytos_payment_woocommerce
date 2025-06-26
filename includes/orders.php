@@ -21,80 +21,57 @@ function handle_order_status_change($order_id, $old_status, $new_status, $order)
         return;
     }
 
-    // Prevent infinite loops by checking if this is an automatic status change
-    $is_automatic_change = $order->get_meta("_axytos_processing_status_change");
-    if ($is_automatic_change) {
-        return;
-    }
+    // // Prevent infinite loops by checking if this is an automatic status change
+    // $is_automatic_change = $order->get_meta("_axytos_processing_status_change");
+    // if ($is_automatic_change) {
+    //     return;
+    // }
 
-    $action = determine_status_action($old_status, $new_status);
-    if (empty($action)) {
+    $actions = determine_status_actions($old_status, $new_status);
+    if (empty($actions)) {
         return;
     }
 
     // Mark as processing to prevent loops
-    $order->update_meta_data("_axytos_processing_status_change", true);
-    $order->save_meta_data();
+    // $order->update_meta_data("_axytos_processing_status_change", true);
+    // $order->save_meta_data();
 
-    queue_status_action($order_id, $action, $old_status, $new_status);
+    $action_handler = new AxytosActionHandler();
+    foreach ($actions as $action) {
+        $action_handler->addPendingAction($order_id, $action);
+    }
+    $action_handler->processPendingActionsForOrder($order_id);
 
     // Clear the processing flag
-    $order->delete_meta_data("_axytos_processing_status_change");
-    $order->save_meta_data();
+    // $order->delete_meta_data("_axytos_processing_status_change");
+    // $order->save_meta_data();
 }
 
 /**
  * Determine which action to take based on status change
  */
-function determine_status_action($old_status, $new_status)
+function determine_status_actions($old_status, $new_status)
 {
     if ($new_status === "cancelled") {
-        return "cancel";
+        return ["cancel"];
     }
 
     if ($new_status === "processing") {
-        return "confirm";
+        return ["confirm"];
     }
 
     if ($new_status === "completed") {
-        return "complete";
+        return ["shipped", "invoice"];
     }
 
     if ($new_status === "refunded") {
-        return "refund";
+        return ["refund"];
     }
 
     error_log(
         "Axytos: No action determined for order status change from '$old_status' to '$new_status'"
     );
-    return "";
-}
-
-/**
- * Execute the determined action using the action handler for robustness
- */
-function queue_status_action($order_id, $action, $old_status, $new_status)
-{
-    try {
-        $action_handler = new AxytosActionHandler();
-        $success = $action_handler->addPendingAction($order_id, $action);
-        if ($success) {
-            error_log(
-                "Axytos: Successfully queued $action for order #$order_id (status: $old_status -> $new_status)"
-            );
-        } else {
-            // TODO: what to do here?
-            error_log(
-                "Axytos: Failed to queue $action for order #$order_id (status: $old_status -> $new_status)"
-            );
-        }
-    } catch (\Exception $e) {
-        // TODO: what to do here?
-        error_log(
-            "Axytos: Exception while queueing $action for order #$order_id: " .
-                $e->getMessage()
-        );
-    }
+    return [];
 }
 
 function bootstrap_orders()

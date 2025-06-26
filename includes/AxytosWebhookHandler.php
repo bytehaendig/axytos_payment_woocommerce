@@ -136,7 +136,7 @@ class AxytosWebhookHandler
             ]);
             return new \WP_Error(
                 "rate_limit_exceeded",
-                __("Too many requests. Please try again later.", "axytos-wc"),
+                "Too many requests. Please try again later.",
                 ["status" => 429]
             );
         }
@@ -153,7 +153,7 @@ class AxytosWebhookHandler
             );
             return new \WP_Error(
                 "webhook_not_configured",
-                __("Webhook endpoint not properly configured.", "axytos-wc"),
+                "Webhook endpoint not properly configured.",
                 ["status" => 500]
             );
         }
@@ -174,7 +174,7 @@ class AxytosWebhookHandler
             ]);
             return new \WP_Error(
                 "invalid_content_type",
-                __("Content-Type must be application/json.", "axytos-wc"),
+                "Content-Type must be application/json.",
                 ["status" => 400]
             );
         }
@@ -194,10 +194,7 @@ class AxytosWebhookHandler
             );
             return new \WP_Error(
                 "missing_api_key",
-                __(
-                    "API key is required in X-Axytos-Webhook-Key header.",
-                    "axytos-wc"
-                ),
+                "API key is required in X-Axytos-Webhook-Key header.",
                 ["status" => 401]
             );
         }
@@ -212,7 +209,7 @@ class AxytosWebhookHandler
             ]);
             return new \WP_Error(
                 "invalid_api_key",
-                __("Invalid API key provided.", "axytos-wc"),
+                "Invalid API key.",
                 ["status" => 403]
             );
         }
@@ -231,7 +228,7 @@ class AxytosWebhookHandler
             );
             return new \WP_Error(
                 "invalid_api_key",
-                __("Invalid API key provided.", "axytos-wc"),
+                "Invalid API key.",
                 ["status" => 403]
             );
         }
@@ -271,7 +268,7 @@ class AxytosWebhookHandler
             $raw_body = $request->get_body();
             if (strlen($raw_body) > 10240) {
                 // 10KB limit
-                $error_message = __("Request payload too large.", "axytos-wc");
+                $error_message = "Request payload too large.";
                 $this->log_webhook_activity("ERROR", $error_message, [
                     "order_id" => $order_id,
                     "payload_size" => strlen($raw_body),
@@ -290,7 +287,7 @@ class AxytosWebhookHandler
             if (!empty($raw_body)) {
                 $decoded = json_decode($raw_body, true);
                 if (json_last_error() !== JSON_ERROR_NONE) {
-                    $error_message = __("Invalid JSON payload.", "axytos-wc");
+                    $error_message = "Invalid JSON payload.";
                     $this->log_webhook_activity("ERROR", $error_message, [
                         "order_id" => $order_id,
                         "json_error" => json_last_error_msg(),
@@ -311,8 +308,7 @@ class AxytosWebhookHandler
 
             if (!$order) {
                 $error_message = sprintf(
-                    /* translators: %d: order ID */
-                    __("Order with ID %d not found.", "axytos-wc"),
+                    "Order with ID %d not found.",
                     $order_id
                 );
                 $this->log_webhook_activity("ERROR", $error_message, [
@@ -331,11 +327,7 @@ class AxytosWebhookHandler
             // Verify the order uses Axytos payment method
             if ($order->get_payment_method() !== \AXYTOS_PAYMENT_ID) {
                 $error_message = sprintf(
-                    /* translators: %d: order ID */
-                    __(
-                        "Order %d does not use Axytos payment method.",
-                        "axytos-wc"
-                    ),
+                    "Order %d does not use Axytos payment method.",
                     $order_id
                 );
                 $this->log_webhook_activity("ERROR", $error_message, [
@@ -359,11 +351,7 @@ class AxytosWebhookHandler
                 $current_order_status !== $curr_status
             ) {
                 $warning_message = sprintf(
-                    /* translators: 1: current status, 2: expected status */
-                    __(
-                        "Current order status (%1\$s) does not match expected status (%2\$s). Update may be outdated.",
-                        "axytos-wc"
-                    ),
+                    "Current order status (%1\$s) does not match expected status (%2\$s). Update may be outdated.",
                     $current_order_status,
                     $curr_status
                 );
@@ -392,8 +380,7 @@ class AxytosWebhookHandler
             );
 
             $success_message = sprintf(
-                /* translators: %d: order ID */
-                __("Order %d updated successfully.", "axytos-wc"),
+                "Order %d updated successfully.",
                 $order_id
             );
             $this->log_webhook_activity("INFO", $success_message, [
@@ -411,8 +398,7 @@ class AxytosWebhookHandler
             );
         } catch (\Exception $e) {
             $error_message = sprintf(
-                /* translators: 1: order ID, 2: error message */
-                __("Error processing webhook for order %1\$d: %2\$s", "axytos-wc"),
+                "Error processing webhook for order %1\$d: %2\$s",
                 $order_id,
                 $e->getMessage()
             );
@@ -462,11 +448,7 @@ class AxytosWebhookHandler
             ]);
             throw new \Exception(
                 sprintf(
-                    /* translators: 1: WooCommerce status, 2: ERP status */
-                    __(
-                        "Invalid WooCommerce status '%1\$s' mapped from webhook status '%2\$s'",
-                        "axytos-wc"
-                    ),
+                    "Invalid WooCommerce status '%1\$s' mapped from webhook status '%2\$s'",
                     $wc_status,
                     $new_status
                 )
@@ -515,21 +497,10 @@ class AxytosWebhookHandler
 
         // Update the order status if mapped status is different from current
         if ($wc_status && $wc_status !== $order->get_status()) {
-            $note_first = sprintf(
-                /* translators: 1: old status, 2: new status */
-                __(
-                    "Order status updated from %1\$s to %2\$s via webhook.",
-                    "axytos-wc"
-                ),
-                $order->get_status(),
-                $wc_status
-            );
-            array_unshift($note_parts, $note_first);
-
             // Update status (this may trigger additional actions via orders.php)
             $order->update_status(
                 $wc_status,
-                implode(".\n", $note_parts) . ".",
+                implode("\n", $note_parts) . "\n",
                 false
             );
         } else {
@@ -563,21 +534,9 @@ class AxytosWebhookHandler
         $status_mapping = [
             "shipped" => "completed",
             "invoiced" => "processing",
-            "cancelled" => "cancelled",
-            "refunded" => "refunded",
-            "on-hold" => "on-hold",
-            "pending" => "pending",
-            "processing" => "processing",
-            "completed" => "completed",
         ];
 
         $erp_status_lower = strtolower($erp_status);
-
-        // Apply filters to allow customization of status mapping
-        $status_mapping = apply_filters(
-            "axytos_webhook_status_mapping",
-            $status_mapping
-        );
 
         $mapped_status = isset($status_mapping[$erp_status_lower])
             ? $status_mapping[$erp_status_lower]
@@ -650,6 +609,8 @@ class AxytosWebhookHandler
      */
     private function is_rate_limited($ip)
     {
+        // disable rate limiting for now
+        return false;
         $transient_key = "axytos_webhook_rate_limit_" . md5($ip);
         $attempts = get_transient($transient_key);
 

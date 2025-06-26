@@ -68,9 +68,6 @@ class AxytosActionHandler
             "info"
         );
 
-        // Immediately process pending actions for this order
-        $this->processPendingActionsForOrder($order_id);
-
         return true;
     }
 
@@ -241,8 +238,11 @@ class AxytosActionHandler
                 case "confirm":
                     return $this->processConfirmAction($order, $action_data);
 
-                case "complete":
-                    return $this->processCompleteAction($order, $action_data);
+                case "shipped":
+                    return $this->processShippedAction($order, $action_data);
+
+                case "invoice":
+                    return $this->processInvoiceAction($order, $action_data);
 
                 case "cancel":
                     return $this->processCancelAction($order, $action_data);
@@ -275,35 +275,22 @@ class AxytosActionHandler
     }
 
     /**
-     * Process complete action
+     * Process shipped action
      */
-    private function processCompleteAction($order, $action_data)
+    private function processShippedAction($order, $action_data)
     {
-        // TODO: split into two actions one for shipped and invoiced
-        // Report shipping first
-        $shipping_success = $this->gateway->reportShipping($order);
-        if (!$shipping_success) {
-            return false;
-        }
+        return $this->gateway->reportShipping($order);
+    }
 
+    /**
+     * Process invoice action
+     */
+    private function processInvoiceAction($order, $action_data)
+    {
         // Get invoice number from meta-data or action data
         $invoice_number = $order->get_meta(self::META_KEY_INVOICE_NUMBER);
-        if (
-            empty($invoice_number) &&
-            !empty($action_data["data"]["invoice_number"])
-        ) {
-            $invoice_number = $action_data["data"]["invoice_number"];
-        }
-
         // Create invoice (this can succeed even if invoice number is empty)
-        $invoice_success = $this->gateway->createInvoice(
-            $order,
-            $invoice_number
-        );
-
-        // Consider shipping successful even if invoice creation fails
-        // Invoice creation failure is logged in the gateway method
-        return true;
+        return $this->gateway->createInvoice( $order, $invoice_number);
     }
 
     /**
