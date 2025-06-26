@@ -94,7 +94,7 @@ function handle_ajax_action()
         }
 
         wp_send_json_success([
-            "message" => __("Action queued successfully.", "axytos-wc"),
+            "message" => __("The change of the order was successful.", "axytos-wc"),
         ]);
     } catch (\Exception $e) {
         wp_send_json_error([

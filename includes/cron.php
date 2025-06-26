@@ -40,7 +40,7 @@ class AxytosScheduler
     {
         // Schedule main processing job (every 15 minutes)
         if (!wp_next_scheduled(self::CRON_HOOK)) {
-            wp_schedule_event(time(), "axytos_15min", self::CRON_HOOK);
+            wp_schedule_event(time(), "axytos_actions", self::CRON_HOOK);
         }
     }
 
@@ -128,9 +128,9 @@ class AxytosScheduler
  */
 function add_cron_schedules($schedules)
 {
-    $schedules["axytos_15min"] = [
-        "interval" => 15 * MINUTE_IN_SECONDS,
-        "display" => __("Every 15 Minutes (Axytos)", "axytos-wc"),
+    $schedules["axytos_actions"] = [
+        "interval" => 120 * MINUTE_IN_SECONDS,
+        "display" => "Axytos Actions",
     ];
 
     return $schedules;

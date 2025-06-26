@@ -20,7 +20,7 @@
                     return;
                 }
 
-                if (!confirm(AxytosActions.i18n.confirm_action_with_invoice.replace('%s', actionType).replace('%s', invoiceNumber))) {
+                if (!confirm(AxytosActions.i18n.confirm_action_with_invoice.replace('%1$s', actionType).replace('%2$s', invoiceNumber))) {
                     return;
                 }
 

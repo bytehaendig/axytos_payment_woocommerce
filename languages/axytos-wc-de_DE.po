@@ -40,19 +40,19 @@ msgstr "Bitte geben Sie die Rechnungsnummer ein:"
 #: includes/admin.php:32
 #: includes/ajax.php:55
 msgid "Invoice number is required for shipping report."
-msgstr "Rechnungsnummer ist für den Versandbericht erforderlich."
+msgstr "Eine Rechnungsnummer ist für den Versand erforderlich."
 
 #. translators: %s: action name (e.g., 'report', 'cancel')
 #: includes/admin.php:36
 #, php-format
 msgid "Are you sure you want to %s this order?"
-msgstr "Sind Sie sicher, dass Sie diese Bestellung %s möchten?"
+msgstr "Sind Sie sicher, dass Sie diese Bestellung auf '%s' setzen möchten?"
 
 #. translators: 1: action name (e.g., 'report', 'cancel'), 2: invoice number
 #: includes/admin.php:41
 #, php-format
 msgid "Are you sure you want to %1$s this order with invoice number: %2$s?"
-msgstr "Sind Sie sicher, dass Sie diese Bestellung mit Rechnungsnummer %2$s %1$s möchten?"
+msgstr "Sind Sie sicher, dass Sie die Bestellung mit Rechnungsnummer '%2$s' auf '%1$s' setzen möchten?"
 
 #: includes/admin.php:46
 msgid "An unexpected error occurred. Please try again."
@@ -65,7 +65,7 @@ msgstr "Axytos Aktionen"
 
 #: includes/admin.php:82
 msgid "N/A"
-msgstr "Nicht verfügbar"
+msgstr "--"
 
 #: includes/admin.php:120
 #: includes/ajax.php:33
@@ -74,7 +74,7 @@ msgstr "Bestellung nicht gefunden."
 
 #: includes/admin.php:126
 msgid "No Axytos actions available for this order."
-msgstr "Keine Axytos-Aktionen für diese Bestellung verfügbar."
+msgstr "Keine Axytos-Aktionen für diese Bestellung vorhanden."
 
 #: includes/admin.php:149
 msgid "No pending actions"
@@ -82,7 +82,7 @@ msgstr "Keine ausstehenden Aktionen"
 
 #: includes/admin.php:168
 msgid "Pending Axytos Actions"
-msgstr "Ausstehende Axytos Aktionen"
+msgstr "Ausstehende Aktionen"
 
 #: includes/admin.php:175
 msgid "pending"
@@ -96,7 +96,7 @@ msgstr "fehlgeschlagen (%dx)"
 
 #: includes/admin.php:219
 msgid "Completed Axytos Actions"
-msgstr "Abgeschlossene Axytos Aktionen"
+msgstr "Abgeschlossene Aktionen"
 
 #: includes/admin.php:263
 msgid "Unknown"
@@ -124,7 +124,7 @@ msgstr "Sicherer Webhook-API-Schlüssel generiert. Stellen Sie sicher, dass Sie 
 
 #: includes/admin.php:360
 msgid "Webhook Endpoint Information:"
-msgstr "Webhook-Endpunkt-Informationen:"
+msgstr "Informationen zum Webhook-Endpunkt:"
 
 #: includes/admin.php:363
 msgid "URL:"
@@ -146,11 +146,9 @@ msgstr "API-Schlüssel im X-Axytos-Webhook-Key-Header senden"
 msgid "Content-Type:"
 msgstr "Content-Type:"
 
-#: includes/admin.php:466
-#: includes/admin.php:467
-#: includes/admin.php:505
+#: includes/admin.php:506
 msgid "Axytos Pending Actions"
-msgstr "Axytos Ausstehende Aktionen"
+msgstr "Ausstehende Axytos-Aktionen"
 
 #. translators: 1: number of processed orders, 2: number of failed orders
 #: includes/admin.php:493
@@ -159,47 +157,47 @@ msgstr "Axytos Ausstehende Aktionen"
 msgid "Processed %1$d orders, %2$d failed."
 msgstr "%1$d Bestellungen verarbeitet, %2$d fehlgeschlagen."
 
-#: includes/admin.php:508
+#: includes/admin.php:509
 msgid "Cron Status"
 msgstr "Cron-Status"
 
-#: includes/admin.php:511
+#: includes/admin.php:528
 msgid "Next Processing Run"
 msgstr "Nächste Verarbeitung"
 
-#: includes/admin.php:522
+#: includes/admin.php:539
 msgid "Not scheduled"
 msgstr "Nicht geplant"
 
-#: includes/admin.php:532
+#: includes/admin.php:549
 msgid "Process All Pending Actions Now"
 msgstr "Alle ausstehenden Aktionen jetzt verarbeiten"
 
-#: includes/admin.php:540
+#: includes/admin.php:557
 msgid "Orders with Pending Actions"
 msgstr "Bestellungen mit ausstehenden Aktionen"
 
-#: includes/admin.php:545
+#: includes/admin.php:562
 msgid "No orders with pending actions found."
 msgstr "Keine Bestellungen mit ausstehenden Aktionen gefunden."
 
-#: includes/admin.php:553
+#: includes/admin.php:570
 msgid "Order ID"
 msgstr "Bestell-ID"
 
-#: includes/admin.php:554
+#: includes/admin.php:571
 msgid "Status"
 msgstr "Status"
 
-#: includes/admin.php:555
+#: includes/admin.php:572
 msgid "Pending Actions"
 msgstr "Ausstehende Aktionen"
 
-#: includes/admin.php:559
+#: includes/admin.php:576
 msgid "Failed Actions"
 msgstr "Fehlgeschlagene Aktionen"
 
-#: includes/admin.php:563
+#: includes/admin.php:580
 msgid "Completed Actions"
 msgstr "Abgeschlossene Aktionen"
 
@@ -213,27 +211,23 @@ msgstr "Keine Axytos-Bestellung."
 
 #: includes/ajax.php:64
 msgid "Order shipped via Axytos action."
-msgstr "Bestellung über Axytos-Aktion versendet."
+msgstr "Bestellung bei Axytos als versandt markiert."
 
 #: includes/ajax.php:73
 msgid "Order cancelled via Axytos action."
-msgstr "Bestellung über Axytos-Aktion storniert."
+msgstr "Bestellung bei Axytos storniert."
 
 #: includes/ajax.php:80
 msgid "Order refunded via Axytos action."
-msgstr "Bestellung über Axytos-Aktion erstattet."
+msgstr "Bestellung bei Axytos zur Erstattung markiert."
 
 #: includes/ajax.php:87
 msgid "Order confirmed via Axytos action."
-msgstr "Bestellung über Axytos-Aktion bestätigt."
+msgstr "Bestellung bei Axytos bestätigt."
 
 #: includes/ajax.php:92
 msgid "Invalid action."
 msgstr "Ungültige Aktion."
-
-#: includes/ajax.php:97
-msgid "Action queued successfully."
-msgstr "Aktion erfolgreich in die Warteschlange eingereiht."
 
 #: includes/ajax.php:102
 msgid "Error processing action: "
@@ -343,35 +337,35 @@ msgstr "Dies steuert die Beschreibung, die der Benutzer beim Checkout sieht."
 
 #: includes/AxytosPaymentGateway.php:122
 msgid "Pay using Axytos."
-msgstr "Mit Axytos bezahlen."
+msgstr "Kauf auf Rechnung"
 
-#: includes/AxytosPaymentGateway.php:169
+#: includes/AxytosPaymentGateway.php:179
 msgid "Axytos API Key"
 msgstr "Axytos API-Schlüssel"
 
-#: includes/AxytosPaymentGateway.php:171
+#: includes/AxytosPaymentGateway.php:181
 msgid "Enter your Axytos API Key for authentication."
 msgstr "Geben Sie Ihren Axytos API-Schlüssel für die Authentifizierung ein."
 
-#: includes/AxytosPaymentGateway.php:179
+#: includes/AxytosPaymentGateway.php:189
 msgid "Use API Sandbox"
 msgstr "API-Sandbox verwenden"
 
-#: includes/AxytosPaymentGateway.php:181
+#: includes/AxytosPaymentGateway.php:191
 msgid "Send API requests to the API sandbox for testing"
 msgstr "API-Anfragen zu Testzwecken an die API-Sandbox senden"
 
-#: includes/AxytosPaymentGateway.php:189
+#: includes/AxytosPaymentGateway.php:169
 msgid "Precheck Agreement Link Text"
-msgstr "Vorabprüfungs-Vereinbarungs-Linktext"
+msgstr "Vereinbarungs-Linktext"
 
-#: includes/AxytosPaymentGateway.php:191
+#: includes/AxytosPaymentGateway.php:171
 msgid "Enter text you want to as link to get agreement."
 msgstr "Geben Sie den Text ein, den Sie als Link zur Vereinbarung verwenden möchten."
 
-#: includes/AxytosPaymentGateway.php:195
+#: includes/AxytosPaymentGateway.php:175
 msgid "click to see agreement"
-msgstr "Klicken Sie hier, um die Vereinbarung anzuzeigen"
+msgstr "Vereinbarung anzeigen"
 
 #: includes/AxytosPaymentGateway.php:199
 msgid "Webhook API Key"
@@ -395,15 +389,15 @@ msgstr "Axytos-Vorabprüfung abgelehnt"
 
 #: includes/AxytosPaymentGateway.php:241
 msgid "This Payment Method is not allowed for this order. Please try a different payment method."
-msgstr "Diese Zahlungsmethode ist für diese Bestellung nicht zulässig. Bitte versuchen Sie eine andere Zahlungsmethode."
+msgstr "Diese Zahlungsmethode ist für diese Bestellung nicht möglich. Bitte wählen Sie eine andere Zahlungsmethode."
 
 #: includes/AxytosPaymentGateway.php:256
 msgid "Could not connect to Axytos API."
-msgstr "Verbindung zur Axytos API konnte nicht hergestellt werden."
+msgstr "Verbindung zur Zahlungs-API konnte nicht hergestellt werden."
 
 #: includes/AxytosPaymentGateway.php:272
 msgid "Could not confirm order with Axytos API."
-msgstr "Bestellung konnte nicht mit der Axytos API bestätigt werden."
+msgstr "Bestellung konnte nicht mit bei der API bestätigt werden."
 
 #: includes/AxytosPaymentGateway.php:286
 msgid "Could not update report shipping."
@@ -432,7 +426,7 @@ msgstr "API-Schlüssel ist im X-Axytos-Webhook-Key-Header erforderlich."
 #: includes/AxytosWebhookHandler.php:215
 #: includes/AxytosWebhookHandler.php:234
 msgid "Invalid API key provided."
-msgstr "Ungültiger API-Schlüssel bereitgestellt."
+msgstr "Ungültiger API-Schlüssel."
 
 #: includes/AxytosWebhookHandler.php:274
 msgid "Request payload too large."
@@ -484,26 +478,39 @@ msgstr "Rechnung: %s"
 msgid "Tracking: %s"
 msgstr "Sendungsverfolgung: %s"
 
-#: includes/cron.php:111
-msgid "Every 15 Minutes (Axytos)"
-msgstr "Alle 15 Minuten (Axytos)"
-
 #: includes/frontend.php:93
 msgid "Order on-hold, waiting for admin approval."
-msgstr "Bestellung in Warteschleife, warte auf Admin-Genehmigung."
+msgstr "Bestellung in Wartezustand, warte auf Admin-Genehmigung."
 
 #. translators: 1: WooCommerce status, 2: ERP status
 #: includes/AxytosWebhookHandler.php:466
 #, php-format
 msgid "Invalid WooCommerce status '%1$s' mapped from webhook status '%2$s'"
-msgstr ""
+msgstr "Ungültiger WooCommerce status '%1$s' gemapped vom Webhook status '%2%s'"
 
 #. translators: 1: old status, 2: new status
 #: includes/AxytosWebhookHandler.php:520
 #, php-format
 msgid "Order status updated from %1$s to %2$s via webhook."
-msgstr ""
+msgstr "Bestellstatus vom Webhook geändert von %1$s zu %2$s."
 
 #: includes/AxytosWebhookHandler.php:536
 msgid "Webhook added information"
+msgstr "Webhook fügte Informationen hinzu"
+
+#: includes/admin.php:466
+#: includes/admin.php:467
+msgid "Axytos Status"
 msgstr ""
+
+#: includes/admin.php:512
+msgid "Last Processing Run"
+msgstr "Letzte Ausführung"
+
+#: includes/admin.php:523
+msgid "Never"
+msgstr "Nie"
+
+#: includes/ajax.php:97
+msgid "The change of the order was successful."
+msgstr "Die Anpassung der Bestellung wurde vermerkt."

@@ -165,6 +165,16 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
             //     'class' => 'axytos-hidden',
             // ],
             //
+            "PrecheckAgreeText" => [
+                "title" => __("Precheck Agreement Link Text", "axytos-wc"),
+                "type" => "text",
+                "description" => __(
+                    "Enter text you want to as link to get agreement.",
+                    "axytos-wc"
+                ),
+                "default" => __("click to see agreement", "axytos-wc"),
+                "desc_tip" => true,
+            ],
             "AxytosAPIKey" => [
                 "title" => __("Axytos API Key", "axytos-wc"),
                 "type" => "text",
@@ -183,16 +193,6 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
                     "axytos-wc"
                 ),
                 "default" => "no",
-                "desc_tip" => true,
-            ],
-            "PrecheckAgreeText" => [
-                "title" => __("Precheck Agreement Link Text", "axytos-wc"),
-                "type" => "text",
-                "description" => __(
-                    "Enter text you want to as link to get agreement.",
-                    "axytos-wc"
-                ),
-                "default" => __("click to see agreement", "axytos-wc"),
                 "desc_tip" => true,
             ],
             "webhook_api_key" => [
