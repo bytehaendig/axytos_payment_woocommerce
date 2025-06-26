@@ -85,5 +85,44 @@
                 });
             }
         });
+
+        // Handle remove failed action button
+        $('.axytos-remove-failed-action').on('click', function () {
+            const $button = $(this);
+            const orderId = $button.data('order-id');
+            const actionName = $button.data('action-name');
+            const nonce = AxytosActions.nonce;
+
+            if (!confirm(AxytosActions.i18n.confirm_remove_failed_action.replace('%s', actionName))) {
+                return;
+            }
+
+            $button.prop('disabled', true).text('Removing...');
+
+            $.ajax({
+                url: AxytosActions.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'axytos_remove_failed_action',
+                    security: nonce,
+                    order_id: orderId,
+                    action_name: actionName
+                },
+                success: function (response) {
+                    if (response.success) {
+                        alert(response.data.message);
+                        location.reload();
+                    } else {
+                        alert(response.data.message);
+                    }
+                },
+                error: function () {
+                    alert(AxytosActions.i18n.unexpected_error);
+                },
+                complete: function () {
+                    $button.prop('disabled', false).text('Remove');
+                }
+            });
+        });
     });
 })(jQuery);

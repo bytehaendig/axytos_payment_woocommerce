@@ -43,6 +43,11 @@ function enqueue_admin_assets()
                 "Are you sure you want to %1\$s this order with invoice number: %2\$s?",
                 "axytos-wc"
             ),
+            "confirm_remove_failed_action" => __(
+                /* translators: %s: action name */
+                "Are you sure you want to remove the failed '%s' action? This cannot be undone.",
+                "axytos-wc"
+            ),
             "unexpected_error" => __(
                 "An unexpected error occurred. Please try again.",
                 "axytos-wc"
@@ -170,18 +175,24 @@ function render_pending_actions_status($order)
 
     echo '<div style="margin-top: 10px;">';
     foreach ($pending_actions as $action) {
-        $status_color = empty($action["failed_at"]) ? "#00a32a" : "#d63638";
-        $status_text = empty($action["failed_at"])
-            ? __("pending", "axytos-wc")
-            : sprintf(
-                /* translators: %d: number of failed attempts */
-                __("failed (%dx)", "axytos-wc"), 
-                $action["failed_count"]
-            );
+        $status_text = format_action_status($action, $action_handler);
+        
+        if (empty($action["failed_at"])) {
+            $status_color = "#00a32a";
+        } else {
+            // Check if action is broken (exceeded max retries)
+            if ($action_handler->isBroken($action)) {
+                $status_color = "#d63638"; // Red for broken actions
+            } else {
+                $status_color = "#ff8c00"; // Orange for retryable actions
+            }
+        }
+        
         $failed_at = !empty($action["failed_at"]) ? $action["failed_at"] : $action["created_at"];
         $failed_time = format_action_time($failed_at);
 
-        echo '<div style="margin: 3px 0; font-size: 12px;">';
+        echo '<div style="margin: 3px 0; font-size: 12px; display: flex; justify-content: space-between; align-items: flex-start;">';
+        echo '<div>';
         echo '<span style="font-weight: bold;">' .
             esc_html($action["action"]) .
             "</span> ";
@@ -193,6 +204,19 @@ function render_pending_actions_status($order)
             ';">(' .
             $status_text .
             ")</span> ";
+        echo '</div>';
+
+        // Add remove button only for broken actions (exceeded max retries)
+        if ($action_handler->isBroken($action)) {
+            echo '<button type="button" class="button button-small axytos-remove-failed-action" ' .
+                'data-order-id="' . esc_attr($order->get_id()) . '" ' .
+                'data-action-name="' . esc_attr($action["action"]) . '" ' .
+                'style="margin-left: 10px; font-size: 10px; padding: 2px 6px; color: #d63638; border-color: #d63638;" ' .
+                'title="' . esc_attr(__("Remove this permanently failed action", "axytos-wc")) . '">' .
+                __("Remove", "axytos-wc") .
+                '</button>';
+        }
+
         echo "</div>";
     }
     echo "</div>";
@@ -224,7 +248,7 @@ function render_done_actions_status($order)
     foreach ($done_actions as $action) {
         $processed_at = !empty($action["processed_at"]) ? $action["processed_at"] : $action["created_at"];
         $processed_time = format_action_time($processed_at);
-        
+
         echo '<div style="margin: 3px 0; font-size: 12px;">';
         echo '<span style="font-weight: bold; color: #00a32a;">' .
             esc_html($action["action"]) .
@@ -232,7 +256,7 @@ function render_done_actions_status($order)
         echo '<span style="color: #666;">' .
             esc_html($processed_time) .
             "</span>";
-            
+
         // Show additional data if available
         if (!empty($action["data"])) {
             $additional_info = [];
@@ -262,7 +286,7 @@ function format_action_time($time_string)
     if (empty($time_string)) {
         return __("Unknown", "axytos-wc");
     }
-    
+
     // Parse UTC timestamp and convert to local time for display
     try {
         $date = new \DateTime($time_string, new \DateTimeZone('UTC'));
@@ -270,6 +294,30 @@ function format_action_time($time_string)
         return $date->format(get_option("date_format") . " " . get_option("time_format"));
     } catch (Exception $e) {
         return esc_html($time_string);
+    }
+}
+
+/**
+ * Format action status display text
+ */
+function format_action_status($action, $action_handler)
+{
+    if (empty($action["failed_at"])) {
+        return __("pending", "axytos-wc");
+    }
+
+    if ($action_handler->isBroken($action)) {
+        return sprintf(
+            /* translators: %d: number of failed attempts */
+            __("failed %dx, broken", "axytos-wc"),
+            $action["failed_count"]
+        );
+    } else {
+        return sprintf(
+            /* translators: %d: number of failed attempts */
+            __("failed %dx, will retry", "axytos-wc"),
+            $action["failed_count"]
+        );
     }
 }
 
@@ -333,6 +381,9 @@ function add_webhook_settings_script()
                 var key = generateSecureKey(64);
                 $webhookKeyField.val(key);
 
+                // Trigger events to enable the submit button
+                $webhookKeyField.trigger('input').trigger('change').trigger('keyup');
+
                 // Show confirmation
                 var $notice = $('<div class="notice notice-success inline" style="margin: 10px 0;"><p><?php echo esc_js(
                     __(
@@ -368,8 +419,8 @@ function add_webhook_settings_script()
                 '<strong><?php echo esc_js(
                     __("Authentication:", "axytos-wc")
                 ); ?></strong> <?php echo esc_js(
-    __("Send API key in X-Axytos-Webhook-Key header", "axytos-wc")
-); ?><br>' +
+                    __("Send API key in X-Axytos-Webhook-Key header", "axytos-wc")
+                ); ?><br>' +
                 '<strong><?php echo esc_js(
                     __("Content-Type:", "axytos-wc")
                 ); ?></strong> application/json' +
@@ -452,7 +503,7 @@ function bootstrap_admin()
     // Webhook admin scripts
     add_action("admin_footer", __NAMESPACE__ . "\add_webhook_settings_script");
 
-    // Pending actions management 
+    // Pending actions management
     add_action("admin_menu", __NAMESPACE__ . "\add_axytos_status_menu", 70);
 }
 
@@ -574,11 +625,11 @@ function render_pending_actions_page()
                                 "axytos-wc"
                             ); ?></th>
                             <th><?php echo __(
-                                "Failed Actions",
+                                "Retry Actions",
                                 "axytos-wc"
                             ); ?></th>
                             <th><?php echo __(
-                                "Completed Actions",
+                                "Broken Actions",
                                 "axytos-wc"
                             ); ?></th>
                         </tr>
@@ -594,15 +645,12 @@ function render_pending_actions_page()
                             $pending_actions = $action_handler->getPendingActions(
                                 $order
                             );
-                            $done_actions = $action_handler->getDoneActions(
-                                $order
-                            );
                             $pending_count = 0;
-                            $failed_count = 0;
-                            $done_count = count($done_actions);
+                            $retry_count = 0;
+                            $broken_count = 0;
                             $pending_list = [];
-                            $failed_list = [];
-                            $done_list = [];
+                            $retry_list = [];
+                            $broken_list = [];
 
                             foreach ($pending_actions as $action) {
                                 if (empty($action["failed_at"])) {
@@ -613,19 +661,24 @@ function render_pending_actions_page()
                                         $action["created_at"] .
                                         ")";
                                 } else {
-                                    $failed_count++;
-                                    $failed_list[] =
-                                        $action["action"] .
-                                        " (failed " .
-                                        $action["failed_count"] .
-                                        "x)";
+                                    $status_text = format_action_status($action, $action_handler);
+                                    // Check if action is broken (exceeded max retries)
+                                    if ($action_handler->isBroken($action)) {
+                                        $broken_count++;
+                                        $broken_list[] =
+                                            $action["action"] .
+                                            " (" .
+                                            $status_text .
+                                            ")";
+                                    } else {
+                                        $retry_count++;
+                                        $retry_list[] =
+                                            $action["action"] .
+                                            " (" .
+                                            $status_text .
+                                            ")";
+                                    }
                                 }
-                            }
-
-                            // Populate done actions list
-                            foreach ($done_actions as $action) {
-                                $processed_at = !empty($action["processed_at"]) ? $action["processed_at"] : $action["created_at"];
-                                $done_list[] = $action["action"] . " (" . format_action_time($processed_at) . ")";
                             }
                             ?>
                         <tr>
@@ -637,8 +690,7 @@ function render_pending_actions_page()
                             <td><?php echo $order->get_status(); ?></td>
                             <td>
                                 <?php if ($pending_count > 0): ?>
-                                    <span class="count"><?php echo $pending_count; ?></span>
-                                    <div style="font-size: 11px; color: #666;">
+                                    <div style="font-size: 13px;">
                                         <?php echo implode(
                                             "<br>",
                                             $pending_list
@@ -649,12 +701,11 @@ function render_pending_actions_page()
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?php if ($failed_count > 0): ?>
-                                    <span class="count" style="color: #d63638;"><?php echo $failed_count; ?></span>
-                                    <div style="font-size: 11px; color: #666;">
+                                <?php if ($retry_count > 0): ?>
+                                    <div style="font-size: 13px; color: #ff8c00;">
                                         <?php echo implode(
                                             "<br>",
-                                            $failed_list
+                                            $retry_list
                                         ); ?>
                                     </div>
                                 <?php else: ?>
@@ -662,12 +713,11 @@ function render_pending_actions_page()
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?php if ($done_count > 0): ?>
-                                    <span class="count" style="color: #00a32a;"><?php echo $done_count; ?></span>
-                                    <div style="font-size: 11px; color: #666;">
+                                <?php if ($broken_count > 0): ?>
+                                    <div style="font-size: 13px; color: #d63638;">
                                         <?php echo implode(
                                             "<br>",
-                                            $done_list
+                                            $broken_list
                                         ); ?>
                                     </div>
                                 <?php else: ?>
