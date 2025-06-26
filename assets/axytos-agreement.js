@@ -44,9 +44,10 @@ jQuery(document).ready(function($) {
         $('body').on('click', '.axytos-close-btn', function() {
             $('#axytos-agreement-modal').fadeOut(function() {
                 $(this).remove();
+                // Restore body scroll when modal is closed
+                $('body').css('overflow', '');
             });
         });
-
         // Prevent body scroll when modal is open
         $('body').css('overflow', 'hidden');
     });
