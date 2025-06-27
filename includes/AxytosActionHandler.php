@@ -16,6 +16,7 @@ class AxytosActionHandler
 {
     public const META_KEY_PENDING = "_axytos_pending";
     public const META_KEY_DONE = "_axytos_done";
+    public const META_KEY_BROKEN = "_axytos_broken";
     public const META_KEY_INVOICE_NUMBER = "axytos_ext_invoice_nr";
     public const META_KEY_TRACKING_NUMBER = "axytos_ext_tracking_nr";
     public const RETRY_INTERVAL = 60 * 10; // Default 10 min
@@ -54,11 +55,16 @@ class AxytosActionHandler
             "created_at" => gmdate("c"),
             "failed_at" => null,
             "failed_count" => 0,
+            "fail_reason" => null,
             "data" => $additional_data,
         ];
 
         $pending_actions[] = $new_action;
         $order->update_meta_data(self::META_KEY_PENDING, $pending_actions);
+        
+        // Update broken status whenever pending actions change
+        $this->updateBrokenStatus($order, $pending_actions);
+        
         // TODO: is save_meta_data needed?
         $order->save_meta_data();
 
@@ -171,9 +177,9 @@ class AxytosActionHandler
                 }
             }
 
-            $success = $this->processAction($order, $action_data);
+            $result = $this->processAction($order, $action_data);
 
-            if ($success) {
+            if ($result['success']) {
                 // Move successful action to done actions
                 $this->moveActionToDone($order, $action_data);
                 unset($pending_actions[$index]);
@@ -189,11 +195,12 @@ class AxytosActionHandler
                 $pending_actions[$index]["failed_at"] = gmdate("c");
                 $pending_actions[$index]["failed_count"] =
                     ($action_data["failed_count"] ?? 0) + 1;
+                $pending_actions[$index]["fail_reason"] = $result['error_message'] ?? 'Unknown error';
                 $updated = true;
 
                 $failed_count = $pending_actions[$index]["failed_count"];
                 $this->log(
-                    "Failed to process action '{$action_data["action"]}' for order #$order_id (attempt #{$failed_count})",
+                    "Failed to process action '{$action_data["action"]}' for order #$order_id (attempt #{$failed_count}): {$result['error_message']}",
                     "error"
                 );
 
@@ -243,15 +250,68 @@ class AxytosActionHandler
                         "Unknown action type: {$action_data["action"]}",
                         "error"
                     );
-                    return false;
+                    return ['success' => false, 'error_message' => "Unknown action type: {$action_data["action"]}"];
             }
         } catch (\Exception $e) {
+            $error_message = $this->categorizeError($e);
             $this->log(
                 "Exception processing action '{$action_data["action"]}' for order #{$order->get_id()}: {$e->getMessage()}",
                 "error"
             );
-            return false;
+            return ['success' => false, 'error_message' => $error_message];
         }
+    }
+
+    /**
+     * Categorize error messages for better user understanding
+     */
+    private function categorizeError(\Exception $e)
+    {
+        $message = $e->getMessage();
+        
+        // Check for HTTP status codes in the message
+        if (preg_match('/Status-Code (\d+)/', $message, $matches)) {
+            $status_code = intval($matches[1]);
+            
+            switch ($status_code) {
+                case 400:
+                    return "Validation error (400): Invalid request data - " . $message;
+                case 401:
+                    return "Authentication error (401): Invalid API key or credentials";
+                case 403:
+                    return "Authorization error (403): Access denied";
+                case 404:
+                    return "Not found error (404): Resource not found";
+                case 500:
+                    return "Server error (500): Internal server error at Axytos";
+                case 502:
+                    return "Bad gateway (502): Axytos service temporarily unavailable";
+                case 503:
+                    return "Service unavailable (503): Axytos API temporarily down";
+                case 504:
+                    return "Gateway timeout (504): Request to Axytos timed out";
+                default:
+                    return "HTTP error ({$status_code}): " . $message;
+            }
+        }
+        
+        // Check for common connection errors
+        if (stripos($message, 'curl') !== false || stripos($message, 'connection') !== false) {
+            return "Connection error: Unable to connect to Axytos API - " . $message;
+        }
+        
+        // Check for timeout errors
+        if (stripos($message, 'timeout') !== false) {
+            return "Timeout error: Request to Axytos API timed out";
+        }
+        
+        // Check for SSL/TLS errors
+        if (stripos($message, 'ssl') !== false || stripos($message, 'certificate') !== false) {
+            return "SSL/Certificate error: " . $message;
+        }
+        
+        // Default case
+        return "API error: " . $message;
     }
 
     /**
@@ -259,7 +319,12 @@ class AxytosActionHandler
      */
     private function processConfirmAction($order, $action_data)
     {
-        return $this->gateway->confirmOrder($order);
+        try {
+            $success = $this->gateway->confirmOrder($order);
+            return ['success' => $success, 'error_message' => $success ? null : 'Order confirmation failed'];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error_message' => $this->categorizeError($e)];
+        }
     }
 
     /**
@@ -267,7 +332,12 @@ class AxytosActionHandler
      */
     private function processShippedAction($order, $action_data)
     {
-        return $this->gateway->reportShipping($order);
+        try {
+            $success = $this->gateway->reportShipping($order);
+            return ['success' => $success, 'error_message' => $success ? null : 'Shipping report failed'];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error_message' => $this->categorizeError($e)];
+        }
     }
 
     /**
@@ -275,10 +345,15 @@ class AxytosActionHandler
      */
     private function processInvoiceAction($order, $action_data)
     {
-        // Get invoice number from meta-data or action data
-        $invoice_number = $order->get_meta(self::META_KEY_INVOICE_NUMBER);
-        // Create invoice (this can succeed even if invoice number is empty)
-        return $this->gateway->createInvoice($order, $invoice_number);
+        try {
+            // Get invoice number from meta-data or action data
+            $invoice_number = $order->get_meta(self::META_KEY_INVOICE_NUMBER);
+            // Create invoice (this can succeed even if invoice number is empty)
+            $success = $this->gateway->createInvoice($order, $invoice_number);
+            return ['success' => $success, 'error_message' => $success ? null : 'Invoice creation failed'];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error_message' => $this->categorizeError($e)];
+        }
     }
 
     /**
@@ -286,7 +361,12 @@ class AxytosActionHandler
      */
     private function processCancelAction($order, $action_data)
     {
-        return $this->gateway->cancelOrder($order);
+        try {
+            $success = $this->gateway->cancelOrder($order);
+            return ['success' => $success, 'error_message' => $success ? null : 'Order cancellation failed'];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error_message' => $this->categorizeError($e)];
+        }
     }
 
     /**
@@ -294,7 +374,12 @@ class AxytosActionHandler
      */
     private function processRefundAction($order, $action_data)
     {
-        return $this->gateway->refundOrder($order);
+        try {
+            $success = $this->gateway->refundOrder($order);
+            return ['success' => $success, 'error_message' => $success ? null : 'Order refund failed'];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error_message' => $this->categorizeError($e)];
+        }
     }
 
     /**
@@ -382,6 +467,38 @@ class AxytosActionHandler
         ]);
 
         return $orders;
+    }
+
+    /**
+     * Get all orders with broken actions
+     */
+    public function getOrdersWithBrokenActions($limit = 50)
+    {
+        $orders = wc_get_orders([
+            "limit" => $limit,
+            "meta_key" => self::META_KEY_BROKEN,
+            "meta_compare" => "EXISTS",
+            "payment_method" => \AXYTOS_PAYMENT_ID,
+            "return" => "ids",
+        ]);
+
+        return $orders;
+    }
+
+    /**
+     * Get count of orders with broken actions
+     */
+    public function getOrdersWithBrokenActionsCount()
+    {
+        $orders = wc_get_orders([
+            "limit" => -1, // Get all
+            "meta_key" => self::META_KEY_BROKEN,
+            "meta_compare" => "EXISTS",
+            "payment_method" => \AXYTOS_PAYMENT_ID,
+            "return" => "ids",
+        ]);
+
+        return count($orders);
     }
 
     /**
@@ -539,7 +656,37 @@ class AxytosActionHandler
         } else {
             $order->update_meta_data(self::META_KEY_PENDING, $pending_actions);
         }
+        
+        // Update broken status whenever pending actions change
+        $this->updateBrokenStatus($order, $pending_actions);
+        
         $order->save_meta_data();
+    }
+
+    /**
+     * Update the broken status meta-data based on pending actions
+     */
+    private function updateBrokenStatus($order, $pending_actions = null)
+    {
+        if ($pending_actions === null) {
+            $pending_actions = $this->getPendingActions($order);
+        }
+        
+        $has_broken_actions = false;
+        
+        // Check if any pending action is broken
+        foreach ($pending_actions as $action) {
+            if ($this->isBroken($action)) {
+                $has_broken_actions = true;
+                break;
+            }
+        }
+        
+        if ($has_broken_actions) {
+            $order->update_meta_data(self::META_KEY_BROKEN, true);
+        } else {
+            $order->delete_meta_data(self::META_KEY_BROKEN);
+        }
     }
 
     /**
@@ -620,9 +767,9 @@ class AxytosActionHandler
                 "info"
             );
 
-            $success = $this->processAction($order, $action_data);
+            $result = $this->processAction($order, $action_data);
 
-            if ($success) {
+            if ($result['success']) {
                 // Move successful action to done actions
                 $this->moveActionToDone($order, $action_data);
                 unset($pending_actions[$index]);
@@ -647,20 +794,22 @@ class AxytosActionHandler
                 // Reset failed count and timestamp for another retry cycle
                 $pending_actions[$index]["failed_at"] = gmdate("c");
                 $pending_actions[$index]["failed_count"] = 1; // Reset to 1 for new retry cycle
+                $pending_actions[$index]["fail_reason"] = $result['error_message'] ?? 'Unknown error during manual retry';
                 $updated = true;
                 $failed_count++;
 
                 $this->log(
-                    "Manual retry of broken action '{$action_data["action"]}' for order #$order_id failed, resetting for new retry cycle",
+                    "Manual retry of broken action '{$action_data["action"]}' for order #$order_id failed: {$result['error_message']}, resetting for new retry cycle",
                     "warning"
                 );
 
                 // Add note about failed retry
                 $order->add_order_note(
                     sprintf(
-                        /* translators: %s: action name */
-                        __('Manual retry of broken Axytos action "%s" failed. Action reset for new retry cycle.', 'axytos-wc'),
-                        $action_data["action"]
+                        /* translators: 1: action name, 2: error message */
+                        __('Manual retry of broken Axytos action "%1$s" failed: %2$s. Action reset for new retry cycle.', 'axytos-wc'),
+                        $action_data["action"],
+                        $result['error_message'] ?? 'Unknown error'
                     )
                 );
 

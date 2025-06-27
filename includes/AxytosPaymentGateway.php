@@ -264,95 +264,149 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
 
     public function confirmOrder($order)
     {
-        $confirm_data = createConfirmData($order);
-        $confirm_response = $this->client->orderConfirm($confirm_data);
-        if (is_wp_error($confirm_response)) {
-            // wc_add_notice(__('Payment error: Could not confirm order with Axytos API.', 'axytos-wc'), 'error');
-            throw new \Exception(
-                __("Could not confirm order with Axytos API.", "axytos-wc")
-            );
-            return false;
+        try {
+            $confirm_data = createConfirmData($order);
+            $confirm_response = $this->client->orderConfirm($confirm_data);
+            if (is_wp_error($confirm_response)) {
+                throw new \Exception(
+                    __("Could not confirm order with Axytos API.", "axytos-wc")
+                );
+            }
+            
+            // Check for API errors in response
+            $response_body = json_decode($confirm_response, true);
+            if (isset($response_body["errors"])) {
+                $error_msg = $this->formatApiErrors($response_body["errors"]);
+                throw new \Exception("Order confirmation failed: " . $error_msg);
+            }
+            
+            $order->payment_complete();
+            return true;
+        } catch (\Exception $e) {
+            // Re-throw with more context
+            throw new \Exception("Order confirmation failed: " . $e->getMessage());
         }
-        $order->payment_complete();
-        return true;
     }
 
     public function reportShipping($order)
     {
-        $statusData = createShippingData($order);
-        $result = $this->client->updateShippingStatus($statusData);
-        if (is_wp_error($result)) {
-            wp_send_json_error([
-                "message" => __(
-                    "Could not update report shipping.",
-                    "axytos-wc"
-                ),
-            ]);
-            return false;
+        try {
+            $statusData = createShippingData($order);
+            $result = $this->client->updateShippingStatus($statusData);
+            if (is_wp_error($result)) {
+                throw new \Exception(__("Could not update report shipping.", "axytos-wc"));
+            }
+            
+            $response_body = json_decode($result, true);
+            if (isset($response_body["errors"])) {
+                $error_msg = $this->formatApiErrors($response_body["errors"]);
+                throw new \Exception("Shipping report failed: " . $error_msg);
+            }
+            return true;
+        } catch (\Exception $e) {
+            // Re-throw with more context
+            throw new \Exception("Shipping report failed: " . $e->getMessage());
         }
-        $response_body = json_decode($result, true);
-        if (isset($response_body["errors"])) {
-            $msg =
-                $response_body["errors"][""][0] ?? __("Error Response from Axytos", "axytos-wc");
-            wp_send_json_error(["message" => $msg]);
-            return false;
-        }
-        return true;
     }
 
     public function createInvoice($order, $invoice_number = null)
     {
-        $invoiceData = createInvoiceData($order, $invoice_number);
-        $success = false;
         try {
+            $invoiceData = createInvoiceData($order, $invoice_number);
             $result = $this->client->createInvoice($invoiceData);
-            $success = true;
+            
             $response_body = json_decode($result, true);
             if (isset($response_body["errors"])) {
-                return false;
+                $error_msg = $this->formatApiErrors($response_body["errors"]);
+                throw new \Exception("Invoice creation failed: " . $error_msg);
             }
+            return true;
         } catch (\Exception $e) {
-            error_log(
-                "Axytos API: could not create invoice: " . $e->getMessage()
-            );
+            // Re-throw with more context
+            throw new \Exception("Invoice creation failed: " . $e->getMessage());
         }
-        return $success;
     }
 
     public function refundOrder($order)
     {
-        $refundData = createRefundData($order);
-        $result = $this->client->refundOrder($refundData);
-        if (is_wp_error($result)) {
-            return false;
-        }
+        try {
+            $refundData = createRefundData($order);
+            $result = $this->client->refundOrder($refundData);
+            if (is_wp_error($result)) {
+                throw new \Exception(__("Could not process refund with Axytos API.", "axytos-wc"));
+            }
 
-        $response_body = json_decode($result, true);
-        if (isset($response_body["errors"])) {
-            return false;
-        }
+            $response_body = json_decode($result, true);
+            if (isset($response_body["errors"])) {
+                $error_msg = $this->formatApiErrors($response_body["errors"]);
+                throw new \Exception("Refund failed: " . $error_msg);
+            }
 
-        return true;
+            return true;
+        } catch (\Exception $e) {
+            // Re-throw with more context
+            throw new \Exception("Refund failed: " . $e->getMessage());
+        }
     }
 
     public function cancelOrder($order)
     {
-        $result = $this->client->cancelOrder($order->get_order_number());
-        if (is_wp_error($result)) {
-            return false;
-        }
+        try {
+            $result = $this->client->cancelOrder($order->get_order_number());
+            if (is_wp_error($result)) {
+                throw new \Exception(__("Could not cancel order with Axytos API.", "axytos-wc"));
+            }
 
-        $response_body = json_decode($result, true);
-        if (isset($response_body["errors"])) {
-            return false;
-        }
+            $response_body = json_decode($result, true);
+            if (isset($response_body["errors"])) {
+                $error_msg = $this->formatApiErrors($response_body["errors"]);
+                throw new \Exception("Order cancellation failed: " . $error_msg);
+            }
 
-        $order->save_meta_data();
-        return true;
+            $order->save_meta_data();
+            return true;
+        } catch (\Exception $e) {
+            // Re-throw with more context
+            throw new \Exception("Order cancellation failed: " . $e->getMessage());
+        }
     }
 
     public function getAgreement()
     {
         return $this->client->getAgreement();
+    }
+
+    /**
+     * Format API errors from Axytos response for better readability
+     */
+    private function formatApiErrors($errors)
+    {
+        if (is_string($errors)) {
+            return $errors;
+        }
+        
+        if (is_array($errors)) {
+            $error_messages = [];
+            foreach ($errors as $field => $messages) {
+                if (is_array($messages)) {
+                    foreach ($messages as $message) {
+                        if (!empty($field) && $field !== '') {
+                            $error_messages[] = $field . ': ' . $message;
+                        } else {
+                            $error_messages[] = $message;
+                        }
+                    }
+                } else {
+                    if (!empty($field) && $field !== '') {
+                        $error_messages[] = $field . ': ' . $messages;
+                    } else {
+                        $error_messages[] = $messages;
+                    }
+                }
+            }
+            return implode('; ', $error_messages);
+        }
+        
+        return __("Unknown API error", "axytos-wc");
     }
 }

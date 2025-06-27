@@ -171,7 +171,7 @@ function render_pending_actions_status($order)
     echo '<div style="margin-top: 10px;">';
     foreach ($pending_actions as $action) {
         $status_text = format_action_status($action, $action_handler);
-        
+
         if (empty($action["failed_at"])) {
             $status_color = "#00a32a";
         } else {
@@ -182,7 +182,7 @@ function render_pending_actions_status($order)
                 $status_color = "#ff8c00"; // Orange for retryable actions
             }
         }
-        
+
         $failed_at = !empty($action["failed_at"]) ? $action["failed_at"] : $action["created_at"];
         $failed_time = format_action_time($failed_at);
 
@@ -199,6 +199,8 @@ function render_pending_actions_status($order)
             ';">(' .
             $status_text .
             ")</span> ";
+
+
         echo '</div>';
         echo "</div>";
     }
@@ -814,14 +816,33 @@ function bootstrap_admin()
 }
 
 /**
+ * Get count of orders with broken actions
+ */
+function get_orders_with_broken_actions_count()
+{
+    require_once plugin_dir_path(__FILE__) . "AxytosActionHandler.php";
+
+    $action_handler = new AxytosActionHandler();
+    return $action_handler->getOrdersWithBrokenActionsCount();
+}
+
+/**
  * Add pending actions management menu
  */
 function add_axytos_status_menu()
 {
+    // Get count of orders with broken actions for the red bubble
+    $broken_count = get_orders_with_broken_actions_count();
+
+    $menu_title = __("Axytos Status", "axytos-wc");
+    if ($broken_count > 0) {
+        $menu_title .= ' <span class="awaiting-mod">' . $broken_count . '</span>';
+    }
+
     add_submenu_page(
         "woocommerce",
         __("Axytos Status", "axytos-wc"),
-        __("Axytos Status", "axytos-wc"),
+        $menu_title,
         "manage_woocommerce",
         "axytos-pending-actions",
         __NAMESPACE__ . '\render_pending_actions_page'
@@ -862,7 +883,7 @@ function render_pending_actions_page()
     ) {
         $order_id = intval($_POST["order_id"]);
         $order = wc_get_order($order_id);
-        
+
         if ($order && $order->get_payment_method() === \AXYTOS_PAYMENT_ID) {
             try {
                 $result = $action_handler->retryBrokenActionsForOrder($order_id);
@@ -917,7 +938,7 @@ function render_pending_actions_page()
         $order_id = intval($_POST["order_id"]);
         $action_name = sanitize_text_field($_POST["action_name"]);
         $order = wc_get_order($order_id);
-        
+
         if ($order && $order->get_payment_method() === \AXYTOS_PAYMENT_ID) {
             try {
                 $result = $action_handler->removeFailedAction($order_id, $action_name);
@@ -1074,18 +1095,24 @@ function render_pending_actions_page()
                                     // Check if action is broken (exceeded max retries)
                                     if ($action_handler->isBroken($action)) {
                                         $broken_count++;
-                                        $broken_list[] =
-                                            $action["action"] .
-                                            " (" .
-                                            $status_text .
-                                            ")";
+                                        $broken_list[] = [
+                                            'text' => $action["action"] . " (" . $status_text . ")",
+                                            'action' => $action["action"],
+                                            'failed_at' => $action["failed_at"],
+                                            'failed_at_formatted' => format_action_time($action["failed_at"]),
+                                            'failed_count' => $action["failed_count"],
+                                            'fail_reason' => isset($action["fail_reason"]) ? $action["fail_reason"] : ''
+                                        ];
                                     } else {
                                         $retry_count++;
-                                        $retry_list[] =
-                                            $action["action"] .
-                                            " (" .
-                                            $status_text .
-                                            ")";
+                                        $retry_list[] = [
+                                            'text' => $action["action"] . " (" . $status_text . ")",
+                                            'action' => $action["action"],
+                                            'failed_at' => $action["failed_at"],
+                                            'failed_at_formatted' => format_action_time($action["failed_at"]),
+                                            'failed_count' => $action["failed_count"],
+                                            'fail_reason' => isset($action["fail_reason"]) ? $action["fail_reason"] : ''
+                                        ];
                                     }
                                 }
                             }
@@ -1112,10 +1139,19 @@ function render_pending_actions_page()
                             <td>
                                 <?php if ($retry_count > 0): ?>
                                     <div style="font-size: 13px; color: #ff8c00;">
-                                        <?php echo implode(
-                                            "<br>",
-                                            $retry_list
-                                        ); ?>
+                                        <?php foreach ($retry_list as $retry_item): ?>
+                                            <div style="margin: 3px 0;">
+                                                <?php echo esc_html($retry_item['text']); ?>
+                                                <?php if (!empty($retry_item['fail_reason'])): ?>
+                                                    <button type="button" class="button button-small axytos-error-details-btn"
+                                                            data-order-id="<?php echo esc_attr($order_id); ?>"
+                                                            data-errors="<?php echo esc_attr(json_encode([$retry_item])); ?>"
+                                                            style="background: #6c757d; color: white; border-color: #6c757d; margin-left: 5px; font-size: 10px; padding: 2px 6px;">
+                                                        <?php echo __("View Error", "axytos-wc"); ?>
+                                                    </button>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
                                     </div>
                                 <?php else: ?>
                                     -
@@ -1124,10 +1160,19 @@ function render_pending_actions_page()
                             <td>
                                 <?php if ($broken_count > 0): ?>
                                     <div style="font-size: 13px; color: #d63638;">
-                                        <?php echo implode(
-                                            "<br>",
-                                            $broken_list
-                                        ); ?>
+                                        <?php foreach ($broken_list as $broken_item): ?>
+                                            <div style="margin: 3px 0;">
+                                                <?php echo esc_html($broken_item['text']); ?>
+                                                <?php if (!empty($broken_item['fail_reason'])): ?>
+                                                    <button type="button" class="button button-small axytos-error-details-btn"
+                                                            data-order-id="<?php echo esc_attr($order_id); ?>"
+                                                            data-errors="<?php echo esc_attr(json_encode([$broken_item])); ?>"
+                                                            style="background: #6c757d; color: white; border-color: #6c757d; margin-left: 5px; font-size: 10px; padding: 2px 6px;">
+                                                        <?php echo __("View Error", "axytos-wc"); ?>
+                                                    </button>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endforeach; ?>
                                     </div>
                                 <?php else: ?>
                                     -
@@ -1139,8 +1184,8 @@ function render_pending_actions_page()
                                         <form method="post" style="margin: 0;">
                                             <?php wp_nonce_field("axytos_retry_broken_actions"); ?>
                                             <input type="hidden" name="order_id" value="<?php echo esc_attr($order_id); ?>" />
-                                            <input type="submit" name="retry_broken_actions" class="button button-small"
-                                                style="font-size: 10px; padding: 2px 6px; color: #00a32a; border-color: #00a32a;"
+                                            <input type="submit" name="retry_broken_actions" class="button button-small axytos-action-btn"
+                                                style="font-size: 10px; padding: 2px 6px; color: #00a32a; border-color: #00a32a; width: 150px;"
                                                 value="<?php echo esc_attr(__("Retry broken actions", "axytos-wc")); ?>"
                                                 title="<?php echo esc_attr(__("Retry all broken actions for this order", "axytos-wc")); ?>"
                                                 onclick="return confirm('<?php echo esc_js(__("Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately.", "axytos-wc")); ?>');" />
@@ -1151,11 +1196,11 @@ function render_pending_actions_page()
                                                     <?php wp_nonce_field("axytos_remove_failed_action"); ?>
                                                     <input type="hidden" name="order_id" value="<?php echo esc_attr($order_id); ?>" />
                                                     <input type="hidden" name="action_name" value="<?php echo esc_attr($action["action"]); ?>" />
-                                                    <input type="submit" name="remove_failed_action" class="button button-small"
-                                                        style="font-size: 10px; padding: 2px 6px; color: #d63638; border-color: #d63638;"
-                                                        value="<?php echo esc_attr(__("Remove broken action", "axytos-wc") . " " . $action["action"]); ?>"
+                                                    <input type="submit" name="remove_failed_action" class="button button-small axytos-action-btn"
+                                                        style="font-size: 10px; padding: 2px 6px; color: #d63638; border-color: #d63638; width: 150px;"
+                                                        value="<?php echo esc_attr(__("Remove broken action", "axytos-wc")); ?>"
                                                         title="<?php echo esc_attr(__("Remove this permanently failed action", "axytos-wc")); ?>"
-                                                        onclick="return confirm('<?php echo esc_js(sprintf(__("Are you sure you want to remove the failed '%s' action? This cannot be undone.", "axytos-wc"), $action["action"])); ?>');" />
+                                                        onclick="return confirm('<?php echo esc_js(sprintf(__("Are you sure you want to remove the failed '%s' action? You are responsible for communicating the necessary changes to Axytos to ensure that further processing of the order is guaranteed. This action cannot be undone.", "axytos-wc"), $action["action"])); ?>');" />
                                                 </form>
                                             <?php endif; ?>
                                         <?php endforeach; ?>
@@ -1172,5 +1217,219 @@ function render_pending_actions_page()
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- Error Details Modal -->
+    <div id="axytos-error-modal" class="axytos-modal" style="display: none;">
+        <div class="axytos-modal-content">
+            <div class="axytos-modal-header">
+                <h2><?php echo __("Error Details", "axytos-wc"); ?></h2>
+                <span class="axytos-modal-close">&times;</span>
+            </div>
+            <div class="axytos-modal-body">
+                <div id="axytos-error-content">
+                    <!-- Error content will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        // Handle error details button clicks
+        $('.axytos-error-details-btn').on('click', function(e) {
+            e.preventDefault();
+            
+            var orderId = $(this).data('order-id');
+            var errors = $(this).data('errors');
+            
+            if (!errors || errors.length === 0) {
+                return;
+            }
+            
+            // Build error content HTML
+            var errorHtml = '<div class="axytos-error-list">';
+            errorHtml += '<h3><?php echo esc_js(__("Order", "axytos-wc")); ?> #' + orderId + '</h3>';
+            
+            for (var i = 0; i < errors.length; i++) {
+                var error = errors[i];
+                
+                // Use the pre-formatted date from PHP that matches WordPress format
+                var formattedDate = error.failed_at_formatted || error.failed_at;
+                
+                errorHtml += '<div class="axytos-error-item">';
+                errorHtml += '<div class="axytos-error-header">';
+                errorHtml += '<h4>' + error.action + '</h4>';
+                errorHtml += '<span class="axytos-error-meta">';
+                errorHtml += '<?php echo esc_js(__("failed at", "axytos-wc")); ?> ' + formattedDate;
+                errorHtml += '</span>';
+                errorHtml += '</div>';
+                errorHtml += '<div class="axytos-error-message">';
+                errorHtml += '<strong><?php echo esc_js(__("Error:", "axytos-wc")); ?></strong><br>';
+                errorHtml += '<code>' + $('<div>').text(error.fail_reason).html() + '</code>';
+                errorHtml += '</div>';
+                errorHtml += '</div>';
+            }
+            
+            errorHtml += '</div>';
+            
+            // Populate modal content
+            $('#axytos-error-content').html(errorHtml);
+            
+            // Show modal
+            $('#axytos-error-modal').show();
+        });
+        
+        // Close modal handlers
+        $('.axytos-modal-close, #axytos-error-modal').on('click', function(e) {
+            if (e.target === this) {
+                $('#axytos-error-modal').hide();
+            }
+        });
+        
+        // Close on escape key
+        $(document).on('keydown.axytos-error-modal', function(e) {
+            if (e.keyCode === 27) { // ESC key
+                $('#axytos-error-modal').hide();
+                $(document).off('keydown.axytos-error-modal');
+            }
+        });
+    });
+    </script>
+
+    <style>
+    /* Error Modal Styles */
+    .axytos-modal {
+        position: fixed;
+        z-index: 100000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .axytos-modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 95%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .axytos-modal-header {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-bottom: 1px solid #eee;
+        border-radius: 4px 4px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .axytos-modal-header h2 {
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .axytos-modal-close {
+        color: #666;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .axytos-modal-close:hover,
+    .axytos-modal-close:focus {
+        color: #000;
+    }
+
+    .axytos-modal-body {
+        padding: 20px;
+    }
+
+    .axytos-error-list h3 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 16px;
+        border-bottom: 2px solid #d63638;
+        padding-bottom: 5px;
+    }
+
+    .axytos-error-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-left: 4px solid #d63638;
+        border-radius: 0 4px 4px 0;
+    }
+
+    .axytos-error-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .axytos-error-header h4 {
+        margin: 0;
+        color: #d63638;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .axytos-error-meta {
+        font-size: 12px;
+        color: #666;
+        font-style: italic;
+    }
+
+    .axytos-error-message {
+        margin-top: 10px;
+    }
+
+    .axytos-error-message strong {
+        color: #333;
+        font-size: 13px;
+    }
+
+    .axytos-error-message code {
+        display: block;
+        background: #fff;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 3px;
+        font-family: 'Courier New', Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #d63638;
+        margin-top: 5px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 782px) {
+        .axytos-modal-content {
+            margin: 2% auto;
+            width: 98%;
+        }
+        
+        .axytos-error-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .axytos-error-meta {
+            margin-top: 5px;
+        }
+    }
+    </style>
     <?php
 }

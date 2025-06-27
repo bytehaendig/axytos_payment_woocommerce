@@ -83,22 +83,54 @@ class AxytosApiClient
         $ch = curl_init($this->_BaseUrl . $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // 30 second timeout
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); // 10 second connection timeout
         if ($method === "POST") {
             curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         }
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        
         $response = curl_exec($ch);
-        if (curl_errno($ch)) {
-            echo "Curl error: " . curl_error($ch);
-        }
+        $curl_error = curl_error($ch);
+        $curl_errno = curl_errno($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-        if ($status < 200 || $status >= 300) {
-            // TODO: better error handling
-            throw new \Exception(
-                "Error in communication with Axytos (Status-Code $status)"
-            );
+        
+        // Handle cURL errors
+        if ($curl_errno !== 0) {
+            throw new \Exception("Connection error: " . $curl_error . " (cURL error code: $curl_errno)");
         }
+        
+        // Handle HTTP errors
+        if ($status < 200 || $status >= 300) {
+            $error_message = "HTTP error (Status-Code $status)";
+            
+            // Try to extract error details from response
+            if ($response && is_string($response)) {
+                $response_data = json_decode($response, true);
+                if (json_last_error() === JSON_ERROR_NONE && isset($response_data['errors'])) {
+                    // Handle Axytos API error format
+                    if (is_array($response_data['errors'])) {
+                        $error_details = [];
+                        foreach ($response_data['errors'] as $field => $messages) {
+                            if (is_array($messages)) {
+                                $error_details[] = $field . ': ' . implode(', ', $messages);
+                            } else {
+                                $error_details[] = $messages;
+                            }
+                        }
+                        if (!empty($error_details)) {
+                            $error_message .= " - " . implode('; ', $error_details);
+                        }
+                    }
+                } elseif ($response_data && isset($response_data['message'])) {
+                    $error_message .= " - " . $response_data['message'];
+                }
+            }
+            
+            throw new \Exception($error_message);
+        }
+        
         return $response;
     }
 
