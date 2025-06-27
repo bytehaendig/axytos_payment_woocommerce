@@ -43,11 +43,6 @@ function enqueue_admin_assets()
                 "Are you sure you want to %1\$s this order with invoice number: %2\$s?",
                 "axytos-wc"
             ),
-            "confirm_remove_failed_action" => __(
-                /* translators: %s: action name */
-                "Are you sure you want to remove the failed '%s' action? This cannot be undone.",
-                "axytos-wc"
-            ),
             "unexpected_error" => __(
                 "An unexpected error occurred. Please try again.",
                 "axytos-wc"
@@ -205,18 +200,6 @@ function render_pending_actions_status($order)
             $status_text .
             ")</span> ";
         echo '</div>';
-
-        // Add remove button only for broken actions (exceeded max retries)
-        if ($action_handler->isBroken($action)) {
-            echo '<button type="button" class="button button-small axytos-remove-failed-action" ' .
-                'data-order-id="' . esc_attr($order->get_id()) . '" ' .
-                'data-action-name="' . esc_attr($action["action"]) . '" ' .
-                'style="margin-left: 10px; font-size: 10px; padding: 2px 6px; color: #d63638; border-color: #d63638;" ' .
-                'title="' . esc_attr(__("Remove this permanently failed action", "axytos-wc")) . '">' .
-                __("Remove", "axytos-wc") .
-                '</button>';
-        }
-
         echo "</div>";
     }
     echo "</div>";
@@ -871,6 +854,108 @@ function render_pending_actions_page()
             "</p></div>";
     }
 
+    // Handle retry broken actions form submission
+    if (
+        isset($_POST["retry_broken_actions"]) &&
+        isset($_POST["order_id"]) &&
+        wp_verify_nonce($_POST["_wpnonce"], "axytos_retry_broken_actions")
+    ) {
+        $order_id = intval($_POST["order_id"]);
+        $order = wc_get_order($order_id);
+        
+        if ($order && $order->get_payment_method() === \AXYTOS_PAYMENT_ID) {
+            try {
+                $result = $action_handler->retryBrokenActionsForOrder($order_id);
+                if ($result && is_array($result)) {
+                    if ($result["processed"] > 0) {
+                        echo '<div class="notice notice-success"><p>' .
+                            sprintf(
+                                /* translators: 1: number of processed actions, 2: order ID */
+                                __("Successfully retried %1\$d broken actions for order #%2\$d.", "axytos-wc"),
+                                $result["processed"],
+                                $order_id
+                            ) .
+                            "</p></div>";
+                    } else {
+                        echo '<div class="notice notice-warning"><p>' .
+                            sprintf(
+                                /* translators: 1: number of failed actions, 2: order ID */
+                                __("Retry attempt completed for order #%2\$d, but %1\$d actions still failed.", "axytos-wc"),
+                                $result["failed"],
+                                $order_id
+                            ) .
+                            "</p></div>";
+                    }
+                } else {
+                    echo '<div class="notice notice-error"><p>' .
+                        __("Failed to retry actions - invalid order or no broken actions found.", "axytos-wc") .
+                        "</p></div>";
+                }
+            } catch (Exception $e) {
+                echo '<div class="notice notice-error"><p>' .
+                    sprintf(
+                        /* translators: %s: error message */
+                        __("Error retrying actions: %s", "axytos-wc"),
+                        $e->getMessage()
+                    ) .
+                    "</p></div>";
+            }
+        } else {
+            echo '<div class="notice notice-error"><p>' .
+                __("Invalid order or not an Axytos order.", "axytos-wc") .
+                "</p></div>";
+        }
+    }
+
+    // Handle remove failed action form submission
+    if (
+        isset($_POST["remove_failed_action"]) &&
+        isset($_POST["order_id"]) &&
+        isset($_POST["action_name"]) &&
+        wp_verify_nonce($_POST["_wpnonce"], "axytos_remove_failed_action")
+    ) {
+        $order_id = intval($_POST["order_id"]);
+        $action_name = sanitize_text_field($_POST["action_name"]);
+        $order = wc_get_order($order_id);
+        
+        if ($order && $order->get_payment_method() === \AXYTOS_PAYMENT_ID) {
+            try {
+                $result = $action_handler->removeFailedAction($order_id, $action_name);
+                if ($result) {
+                    echo '<div class="notice notice-success"><p>' .
+                        sprintf(
+                            /* translators: 1: action name, 2: order ID */
+                            __("Successfully removed failed action '%1\$s' from order #%2\$d.", "axytos-wc"),
+                            $action_name,
+                            $order_id
+                        ) .
+                        "</p></div>";
+                } else {
+                    echo '<div class="notice notice-error"><p>' .
+                        sprintf(
+                            /* translators: 1: action name, 2: order ID */
+                            __("Failed to remove action '%1\$s' from order #%2\$d. Action may not exist or is not broken.", "axytos-wc"),
+                            $action_name,
+                            $order_id
+                        ) .
+                        "</p></div>";
+                }
+            } catch (Exception $e) {
+                echo '<div class="notice notice-error"><p>' .
+                    sprintf(
+                        /* translators: %s: error message */
+                        __("Error removing action: %s", "axytos-wc"),
+                        $e->getMessage()
+                    ) .
+                    "</p></div>";
+            }
+        } else {
+            echo '<div class="notice notice-error"><p>' .
+                __("Invalid order or not an Axytos order.", "axytos-wc") .
+                "</p></div>";
+        }
+    }
+
     // Get orders with pending actions
     $order_ids = $action_handler->getOrdersWithPendingActions(100);
     $next_scheduled = AxytosScheduler::get_next_scheduled_times();
@@ -955,6 +1040,7 @@ function render_pending_actions_page()
                                 "Broken Actions",
                                 "axytos-wc"
                             ); ?></th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1042,6 +1128,37 @@ function render_pending_actions_page()
                                             "<br>",
                                             $broken_list
                                         ); ?>
+                                    </div>
+                                <?php else: ?>
+                                    -
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($broken_count > 0): ?>
+                                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                                        <form method="post" style="margin: 0;">
+                                            <?php wp_nonce_field("axytos_retry_broken_actions"); ?>
+                                            <input type="hidden" name="order_id" value="<?php echo esc_attr($order_id); ?>" />
+                                            <input type="submit" name="retry_broken_actions" class="button button-small"
+                                                style="font-size: 10px; padding: 2px 6px; color: #00a32a; border-color: #00a32a;"
+                                                value="<?php echo esc_attr(__("Retry broken actions", "axytos-wc")); ?>"
+                                                title="<?php echo esc_attr(__("Retry all broken actions for this order", "axytos-wc")); ?>"
+                                                onclick="return confirm('<?php echo esc_js(__("Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately.", "axytos-wc")); ?>');" />
+                                        </form>
+                                        <?php foreach ($pending_actions as $action): ?>
+                                            <?php if ($action_handler->isBroken($action)): ?>
+                                                <form method="post" style="margin: 0;">
+                                                    <?php wp_nonce_field("axytos_remove_failed_action"); ?>
+                                                    <input type="hidden" name="order_id" value="<?php echo esc_attr($order_id); ?>" />
+                                                    <input type="hidden" name="action_name" value="<?php echo esc_attr($action["action"]); ?>" />
+                                                    <input type="submit" name="remove_failed_action" class="button button-small"
+                                                        style="font-size: 10px; padding: 2px 6px; color: #d63638; border-color: #d63638;"
+                                                        value="<?php echo esc_attr(__("Remove broken action", "axytos-wc") . " " . $action["action"]); ?>"
+                                                        title="<?php echo esc_attr(__("Remove this permanently failed action", "axytos-wc")); ?>"
+                                                        onclick="return confirm('<?php echo esc_js(sprintf(__("Are you sure you want to remove the failed '%s' action? This cannot be undone.", "axytos-wc"), $action["action"])); ?>');" />
+                                                </form>
+                                            <?php endif; ?>
+                                        <?php endforeach; ?>
                                     </div>
                                 <?php else: ?>
                                     -

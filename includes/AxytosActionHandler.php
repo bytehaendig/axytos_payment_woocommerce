@@ -28,7 +28,6 @@ class AxytosActionHandler
     {
         $this->gateway = new AxytosPaymentGateway();
         $this->logger = wc_get_logger();
-        $this->registerCustomOrderStatus();
     }
 
     /**
@@ -310,7 +309,7 @@ class AxytosActionHandler
         $note = sprintf(
             /* translators: 1: action name, 2: queue timestamp */
             __(
-                'Axytos action "%1$s" processed successfully (queued at %2$s)',
+                'Axytos action "%1$s" processed successfully',
                 "axytos-wc"
             ),
             $action,
@@ -453,17 +452,9 @@ class AxytosActionHandler
         $order_id = $order->get_id();
         $action = $action_data["action"];
 
-        // Change order status to axytos_error
-        $order->update_status('axytos-error', sprintf(
-            /* translators: 1: action name, 2: number of retries */
-            __('Axytos action "%1$s" failed after %2$d retries', 'axytos-wc'),
-            $action,
-            self::MAX_RETRIES
-        ));
-
         // Log the error
         $this->log(
-            "Action '{$action}' for order #{$order_id} exceeded max retries (" . self::MAX_RETRIES . "), setting order to error status",
+            "Action '{$action}' for order #{$order_id} exceeded max retries (" . self::MAX_RETRIES . ")",
             "critical"
         );
 
@@ -534,28 +525,6 @@ class AxytosActionHandler
         return false;
     }
 
-    /**
-     * Register custom order status
-     */
-    private function registerCustomOrderStatus()
-    {
-        add_action('init', function () {
-            register_post_status('wc-axytos-error', array(
-                'label' => __('Axytos Error', 'axytos-wc'),
-                'public' => true,
-                'exclude_from_search' => false,
-                'show_in_admin_all_list' => true,
-                'show_in_admin_status_list' => true,
-                /* translators: %s: number of orders with this status */
-                'label_count' => _n_noop('Axytos Error <span class="count">(%s)</span>', 'Axytos Error <span class="count">(%s)</span>', 'axytos-wc')
-            ));
-        });
-
-        add_filter('wc_order_statuses', function ($order_statuses) {
-            $order_statuses['wc-axytos-error'] = __('Axytos Error', 'axytos-wc');
-            return $order_statuses;
-        });
-    }
 
     /**
      * Update pending actions array and save to order meta
@@ -618,6 +587,97 @@ class AxytosActionHandler
         }
 
         return false;
+    }
+
+    /**
+     * Retry broken actions for a specific order
+     * This processes broken actions even if they have exceeded max retries
+     */
+    public function retryBrokenActionsForOrder($order_id)
+    {
+        $order = wc_get_order($order_id);
+        if (!$order || $order->get_payment_method() !== \AXYTOS_PAYMENT_ID) {
+            return false;
+        }
+
+        $pending_actions = $this->getPendingActions($order);
+        if (empty($pending_actions)) {
+            return true;
+        }
+
+        $updated = false;
+        $processed_count = 0;
+        $failed_count = 0;
+
+        foreach ($pending_actions as $index => $action_data) {
+            // Only process broken actions and only if no other actions before
+            if (!$this->isBroken($action_data)) {
+                break;
+            }
+
+            $this->log(
+                "Retrying broken action '{$action_data["action"]}' for order #$order_id",
+                "info"
+            );
+
+            $success = $this->processAction($order, $action_data);
+
+            if ($success) {
+                // Move successful action to done actions
+                $this->moveActionToDone($order, $action_data);
+                unset($pending_actions[$index]);
+                $updated = true;
+                $processed_count++;
+
+                $this->addOrderNote($order, $action_data);
+                $this->log(
+                    "Successfully retried broken action '{$action_data["action"]}' for order #$order_id",
+                    "info"
+                );
+
+                // Add specific note about manual retry
+                $order->add_order_note(
+                    sprintf(
+                        /* translators: %s: action name */
+                        __('Broken Axytos action "%s" was manually retried and succeeded.', 'axytos-wc'),
+                        $action_data["action"]
+                    )
+                );
+            } else {
+                // Reset failed count and timestamp for another retry cycle
+                $pending_actions[$index]["failed_at"] = gmdate("c");
+                $pending_actions[$index]["failed_count"] = 1; // Reset to 1 for new retry cycle
+                $updated = true;
+                $failed_count++;
+
+                $this->log(
+                    "Manual retry of broken action '{$action_data["action"]}' for order #$order_id failed, resetting for new retry cycle",
+                    "warning"
+                );
+
+                // Add note about failed retry
+                $order->add_order_note(
+                    sprintf(
+                        /* translators: %s: action name */
+                        __('Manual retry of broken Axytos action "%s" failed. Action reset for new retry cycle.', 'axytos-wc'),
+                        $action_data["action"]
+                    )
+                );
+
+                // Stop processing further actions if this one failed
+                break;
+            }
+        }
+
+        if ($updated) {
+            $this->updatePendingActions($order, $pending_actions);
+        }
+
+        return [
+            "processed" => $processed_count,
+            "failed" => $failed_count,
+            "total_broken" => count(array_filter($this->getPendingActions($order), [$this, 'isBroken']))
+        ];
     }
 
     /**

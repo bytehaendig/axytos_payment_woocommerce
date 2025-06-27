@@ -1,128 +1,89 @@
 (function ($) {
-    $(document).ready(function () {
-        $('.axytos-action-button').on('click', function () {
-            const $button = $(this);
-            const orderId = $button.data('order-id');
-            const actionType = $button.data('action');
-            const nonce = AxytosActions.nonce;
+  $(document).ready(function () {
+    $('.axytos-action-button').on('click', function () {
+      const $button = $(this);
+      const orderId = $button.data('order-id');
+      const actionType = $button.data('action');
+      const nonce = AxytosActions.nonce;
 
-            // Handle shipped action differently
-            if (actionType === 'shipped') {
-                const invoiceNumber = prompt(AxytosActions.i18n.invoice_prompt);
-                
-                if (invoiceNumber === null) {
-                    // User cancelled the dialog
-                    return;
-                }
-                
-                if (!invoiceNumber || invoiceNumber.trim() === '') {
-                    alert(AxytosActions.i18n.invoice_required);
-                    return;
-                }
+      // Handle shipped action differently
+      if (actionType === 'shipped') {
+        const invoiceNumber = prompt(AxytosActions.i18n.invoice_prompt);
 
-                if (!confirm(AxytosActions.i18n.confirm_action_with_invoice.replace('%1$s', actionType).replace('%2$s', invoiceNumber))) {
-                    return;
-                }
+        if (invoiceNumber === null) {
+          // User cancelled the dialog
+          return;
+        }
 
-                $button.prop('disabled', true).text('Processing...');
+        if (!invoiceNumber || invoiceNumber.trim() === '') {
+          alert(AxytosActions.i18n.invoice_required);
+          return;
+        }
 
-                $.ajax({
-                    url: AxytosActions.ajax_url,
-                    type: 'POST',
-                    data: {
-                        action: 'axytos_action',
-                        security: nonce,
-                        order_id: orderId,
-                        action_type: actionType,
-                        invoice_number: invoiceNumber.trim()
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            alert(response.data.message);
-                            location.reload();
-                        } else {
-                            alert(response.data.message);
-                        }
-                    },
-                    error: function () {
-                        alert(AxytosActions.i18n.unexpected_error);
-                    },
-                    complete: function () {
-                        $button.prop('disabled', false).text('Report Shipping');
-                    }
-                });
+        if (!confirm(AxytosActions.i18n.confirm_action_with_invoice.replace('%1$s', actionType).replace('%2$s', invoiceNumber))) {
+          return;
+        }
+
+        $button.prop('disabled', true).text('Processing...');
+
+        $.ajax({
+          url: AxytosActions.ajax_url,
+          type: 'POST',
+          data: {
+            action: 'axytos_action',
+            security: nonce,
+            order_id: orderId,
+            action_type: actionType,
+            invoice_number: invoiceNumber.trim()
+          },
+          success: function (response) {
+            if (response.success) {
+              alert(response.data.message);
+              location.reload();
             } else {
-                // Handle other actions as before
-                if (!confirm(AxytosActions.i18n.confirm_action.replace('%s', actionType))) {
-                    return;
-                }
-
-                $button.prop('disabled', true).text('Processing...');
-
-                $.ajax({
-                    url: AxytosActions.ajax_url,
-                    type: 'POST',
-                    data: {
-                        action: 'axytos_action',
-                        security: nonce,
-                        order_id: orderId,
-                        action_type: actionType
-                    },
-                    success: function (response) {
-                        if (response.success) {
-                            alert(response.data.message);
-                            location.reload();
-                        } else {
-                            alert(response.data.message);
-                        }
-                    },
-                    error: function () {
-                        alert(AxytosActions.i18n.unexpected_error);
-                    },
-                    complete: function () {
-                        $button.prop('disabled', false).text(actionType.charAt(0).toUpperCase() + actionType.slice(1));
-                    }
-                });
+              alert(response.data.message);
             }
+          },
+          error: function () {
+            alert(AxytosActions.i18n.unexpected_error);
+          },
+          complete: function () {
+            $button.prop('disabled', false).text('Report Shipping');
+          }
         });
+      } else {
+        // Handle other actions as before
+        if (!confirm(AxytosActions.i18n.confirm_action.replace('%s', actionType))) {
+          return;
+        }
 
-        // Handle remove failed action button
-        $('.axytos-remove-failed-action').on('click', function () {
-            const $button = $(this);
-            const orderId = $button.data('order-id');
-            const actionName = $button.data('action-name');
-            const nonce = AxytosActions.nonce;
+        $button.prop('disabled', true).text('Processing...');
 
-            if (!confirm(AxytosActions.i18n.confirm_remove_failed_action.replace('%s', actionName))) {
-                return;
+        $.ajax({
+          url: AxytosActions.ajax_url,
+          type: 'POST',
+          data: {
+            action: 'axytos_action',
+            security: nonce,
+            order_id: orderId,
+            action_type: actionType
+          },
+          success: function (response) {
+            if (response.success) {
+              alert(response.data.message);
+              location.reload();
+            } else {
+              alert(response.data.message);
             }
-
-            $button.prop('disabled', true).text('Removing...');
-
-            $.ajax({
-                url: AxytosActions.ajax_url,
-                type: 'POST',
-                data: {
-                    action: 'axytos_remove_failed_action',
-                    security: nonce,
-                    order_id: orderId,
-                    action_name: actionName
-                },
-                success: function (response) {
-                    if (response.success) {
-                        alert(response.data.message);
-                        location.reload();
-                    } else {
-                        alert(response.data.message);
-                    }
-                },
-                error: function () {
-                    alert(AxytosActions.i18n.unexpected_error);
-                },
-                complete: function () {
-                    $button.prop('disabled', false).text('Remove');
-                }
-            });
+          },
+          error: function () {
+            alert(AxytosActions.i18n.unexpected_error);
+          },
+          complete: function () {
+            $button.prop('disabled', false).text(actionType.charAt(0).toUpperCase() + actionType.slice(1));
+          }
         });
+      }
     });
+  });
 })(jQuery);

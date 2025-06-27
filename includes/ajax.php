@@ -159,58 +159,6 @@ function handle_manual_processing()
     }
 }
 
-/**
- * Handle removing failed action via AJAX (admin only)
- */
-function handle_remove_failed_action()
-{
-    if (!current_user_can("manage_woocommerce")) {
-        wp_send_json_error([
-            "message" => __("Insufficient permissions.", "axytos-wc"),
-        ]);
-    }
-
-    // Verify nonce
-    if (!check_ajax_referer("axytos_action_nonce", "security", false)) {
-        wp_send_json_error([
-            "message" => __("Security check failed.", "axytos-wc"),
-        ]);
-    }
-
-    $order_id = absint($_POST["order_id"]);
-    $action_name = sanitize_text_field($_POST["action_name"]);
-
-    if (!$order_id || !$action_name) {
-        wp_send_json_error([
-            "message" => __("Invalid order or action.", "axytos-wc"),
-        ]);
-    }
-
-    try {
-        $action_handler = new AxytosActionHandler();
-        $success = $action_handler->removeFailedAction($order_id, $action_name);
-
-        if ($success) {
-            wp_send_json_success([
-                "message" => sprintf(
-                    /* translators: %s: action name */
-                    __("Failed action '%s' has been removed.", "axytos-wc"),
-                    $action_name
-                ),
-            ]);
-        } else {
-            wp_send_json_error([
-                "message" => __("Failed to remove action. Action may not exist or is not failed.", "axytos-wc"),
-            ]);
-        }
-    } catch (\Exception $e) {
-        wp_send_json_error([
-            "message" =>
-                __("Error removing action: ", "axytos-wc") . $e->getMessage(),
-        ]);
-    }
-}
-
 function bootstrap_ajax()
 {
     add_action("wp_ajax_axytos_action", __NAMESPACE__ . "\\handle_ajax_action");
@@ -230,8 +178,6 @@ function bootstrap_ajax()
         "wp_ajax_axytos_manual_processing",
         __NAMESPACE__ . "\\handle_manual_processing"
     );
-    add_action(
-        "wp_ajax_axytos_remove_failed_action",
-        __NAMESPACE__ . "\\handle_remove_failed_action"
-    );
+    // Note: Removed axytos_remove_failed_action and axytos_retry_broken_actions
+    // as they are now handled via form submissions in admin.php
 }
