@@ -3,6 +3,7 @@
 namespace Axytos\WooCommerce;
 
 require_once __DIR__ . "/AxytosApiClient.php";
+require_once __DIR__ . "/AxytosApiException.php";
 require_once __DIR__ . "/axytos-data.php";
 require_once __DIR__ . "/AxytosEncryptionService.php";
 
@@ -249,17 +250,21 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
 
     public function doPrecheck($order)
     {
-        $data = createPrecheckData($order);
-        $response = $this->client->invoicePrecheck($data);
-        if (is_wp_error($response)) {
-            // wc_add_notice(__('Payment error: Could not connect to Axytos API.', 'axytos-wc'), 'error');
-            throw new \Exception(__("Could not connect to Axytos API.", "axytos-wc"));
-            return [];
+        try {
+            $data = createPrecheckData($order);
+            $response = $this->client->invoicePrecheck($data);
+            $order->update_meta_data("precheck_response", $response);
+            $response_body = json_decode($response, true);
+            $decision_code = $response_body["decision"];
+            return $decision_code;
+        } catch (AxytosApiException $e) {
+            // Re-throw with user-friendly message for API connection errors
+            if ($e->isConnectionError()) {
+                throw new \Exception(__("Could not connect to Axytos API.", "axytos-wc"), 0, $e);
+            }
+            // Re-throw other API errors as-is
+            throw $e;
         }
-        $order->update_meta_data("precheck_response", $response);
-        $response_body = json_decode($response, true);
-        $decision_code = $response_body["decision"];
-        return $decision_code;
     }
 
     public function confirmOrder($order)
@@ -267,11 +272,6 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         try {
             $confirm_data = createConfirmData($order);
             $confirm_response = $this->client->orderConfirm($confirm_data);
-            if (is_wp_error($confirm_response)) {
-                throw new \Exception(
-                    __("Could not confirm order with Axytos API.", "axytos-wc")
-                );
-            }
             
             // Check for API errors in response
             $response_body = json_decode($confirm_response, true);
@@ -282,9 +282,16 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
             
             $order->payment_complete();
             return true;
+        } catch (AxytosApiException $e) {
+            // Provide user-friendly message for API connection errors
+            if ($e->isConnectionError()) {
+                throw new \Exception(__("Could not confirm order with Axytos API.", "axytos-wc"), 0, $e);
+            }
+            // Re-throw with more context for other API errors
+            throw new \Exception("Order confirmation failed: " . $e->getMessage(), 0, $e);
         } catch (\Exception $e) {
-            // Re-throw with more context
-            throw new \Exception("Order confirmation failed: " . $e->getMessage());
+            // Re-throw with more context for other errors
+            throw new \Exception("Order confirmation failed: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -293,9 +300,6 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         try {
             $statusData = createShippingData($order);
             $result = $this->client->updateShippingStatus($statusData);
-            if (is_wp_error($result)) {
-                throw new \Exception(__("Could not update report shipping.", "axytos-wc"));
-            }
             
             $response_body = json_decode($result, true);
             if (isset($response_body["errors"])) {
@@ -303,9 +307,16 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
                 throw new \Exception("Shipping report failed: " . $error_msg);
             }
             return true;
+        } catch (AxytosApiException $e) {
+            // Provide user-friendly message for API connection errors
+            if ($e->isConnectionError()) {
+                throw new \Exception(__("Could not update report shipping.", "axytos-wc"), 0, $e);
+            }
+            // Re-throw with more context for other API errors
+            throw new \Exception("Shipping report failed: " . $e->getMessage(), 0, $e);
         } catch (\Exception $e) {
-            // Re-throw with more context
-            throw new \Exception("Shipping report failed: " . $e->getMessage());
+            // Re-throw with more context for other errors
+            throw new \Exception("Shipping report failed: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -323,7 +334,7 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
             return true;
         } catch (\Exception $e) {
             // Re-throw with more context
-            throw new \Exception("Invoice creation failed: " . $e->getMessage());
+            throw new \Exception("Invoice creation failed: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -332,9 +343,6 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         try {
             $refundData = createRefundData($order);
             $result = $this->client->refundOrder($refundData);
-            if (is_wp_error($result)) {
-                throw new \Exception(__("Could not process refund with Axytos API.", "axytos-wc"));
-            }
 
             $response_body = json_decode($result, true);
             if (isset($response_body["errors"])) {
@@ -343,9 +351,16 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
             }
 
             return true;
+        } catch (AxytosApiException $e) {
+            // Provide user-friendly message for API connection errors
+            if ($e->isConnectionError()) {
+                throw new \Exception(__("Could not process refund with Axytos API.", "axytos-wc"), 0, $e);
+            }
+            // Re-throw with more context for other API errors
+            throw new \Exception("Refund failed: " . $e->getMessage(), 0, $e);
         } catch (\Exception $e) {
-            // Re-throw with more context
-            throw new \Exception("Refund failed: " . $e->getMessage());
+            // Re-throw with more context for other errors
+            throw new \Exception("Refund failed: " . $e->getMessage(), 0, $e);
         }
     }
 
@@ -353,9 +368,6 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
     {
         try {
             $result = $this->client->cancelOrder($order->get_order_number());
-            if (is_wp_error($result)) {
-                throw new \Exception(__("Could not cancel order with Axytos API.", "axytos-wc"));
-            }
 
             $response_body = json_decode($result, true);
             if (isset($response_body["errors"])) {
@@ -365,9 +377,16 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
 
             $order->save_meta_data();
             return true;
+        } catch (AxytosApiException $e) {
+            // Provide user-friendly message for API connection errors
+            if ($e->isConnectionError()) {
+                throw new \Exception(__("Could not cancel order with Axytos API.", "axytos-wc"), 0, $e);
+            }
+            // Re-throw with more context for other API errors
+            throw new \Exception("Order cancellation failed: " . $e->getMessage(), 0, $e);
         } catch (\Exception $e) {
-            // Re-throw with more context
-            throw new \Exception("Order cancellation failed: " . $e->getMessage());
+            // Re-throw with more context for other errors
+            throw new \Exception("Order cancellation failed: " . $e->getMessage(), 0, $e);
         }
     }
 

@@ -1,6 +1,7 @@
 <?php
 
 use Axytos\WooCommerce\AxytosApiClient;
+use Axytos\WooCommerce\AxytosApiException;
 
 class AxytosApiClientTest extends WP_UnitTestCase
 {
@@ -53,7 +54,7 @@ class AxytosApiClientTest extends WP_UnitTestCase
             
             // Simulate cURL errors
             if ($curlError !== 0) {
-                return new WP_Error('http_request_failed', $curlErrorMessage);
+                return new WP_Error($curlError, $curlErrorMessage);
             }
             
             return [
@@ -297,10 +298,16 @@ class AxytosApiClientTest extends WP_UnitTestCase
         
         $client = new AxytosApiClient($this->testApiKey);
         
-        $this->expectException(Exception::class);
+        $this->expectException(AxytosApiException::class);
         $this->expectExceptionMessage("HTTP error (Status-Code $statusCode)");
         
-        $client->invoicePrecheck(['test' => 'data']);
+        try {
+            $client->invoicePrecheck(['test' => 'data']);
+        } catch (AxytosApiException $e) {
+            $this->assertTrue($e->isHttpError(), 'Exception should be marked as HTTP error');
+            $this->assertFalse($e->isConnectionError(), 'Exception should not be marked as connection error');
+            throw $e; // Re-throw for expectException to catch
+        }
     }
 
     /**
@@ -313,10 +320,19 @@ class AxytosApiClientTest extends WP_UnitTestCase
         
         $client = new AxytosApiClient($this->testApiKey);
         
-        $this->expectException(Exception::class);
+        $this->expectException(AxytosApiException::class);
         $this->expectExceptionMessage('Connection error: Operation timed out after 30000 milliseconds');
         
-        $client->invoicePrecheck(['test' => 'data']);
+        try {
+            $client->invoicePrecheck(['test' => 'data']);
+        } catch (AxytosApiException $e) {
+            $this->assertTrue($e->isConnectionError(), 'Exception should be marked as connection error');
+            $this->assertFalse($e->isHttpError(), 'Exception should not be marked as HTTP error');
+            $context = $e->getErrorContext();
+            $this->assertArrayHasKey('wp_error_code', $context, 'Error context should contain WP error code');
+            $this->assertEquals(28, $context['wp_error_code'], 'WP error code should match');
+            throw $e; // Re-throw for expectException to catch
+        }
     }
 
     /**
@@ -329,10 +345,18 @@ class AxytosApiClientTest extends WP_UnitTestCase
         
         $client = new AxytosApiClient($this->testApiKey);
         
-        $this->expectException(Exception::class);
+        $this->expectException(AxytosApiException::class);
         $this->expectExceptionMessage('Connection error: Could not connect to host');
         
-        $client->invoicePrecheck(['test' => 'data']);
+        try {
+            $client->invoicePrecheck(['test' => 'data']);
+        } catch (AxytosApiException $e) {
+            $this->assertTrue($e->isConnectionError(), 'Exception should be marked as connection error');
+            $context = $e->getErrorContext();
+            $this->assertArrayHasKey('wp_error_code', $context, 'Error context should contain WP error code');
+            $this->assertEquals(7, $context['wp_error_code'], 'WP error code should match');
+            throw $e; // Re-throw for expectException to catch
+        }
     }
 
     /**
@@ -344,10 +368,15 @@ class AxytosApiClientTest extends WP_UnitTestCase
         $this->mockHttpRequest(199, 'Response');
         $client = new AxytosApiClient($this->testApiKey);
         
-        $this->expectException(Exception::class);
+        $this->expectException(AxytosApiException::class);
         $this->expectExceptionMessage('HTTP error (Status-Code 199)');
         
-        $client->invoicePrecheck(['test' => 'data']);
+        try {
+            $client->invoicePrecheck(['test' => 'data']);
+        } catch (AxytosApiException $e) {
+            $this->assertTrue($e->isHttpError(), 'Exception should be marked as HTTP error');
+            throw $e; // Re-throw for expectException to catch
+        }
     }
 
     public function test_boundary_status_code_300()
@@ -356,10 +385,15 @@ class AxytosApiClientTest extends WP_UnitTestCase
         $this->mockHttpRequest(300, 'Response');
         $client = new AxytosApiClient($this->testApiKey);
         
-        $this->expectException(Exception::class);
+        $this->expectException(AxytosApiException::class);
         $this->expectExceptionMessage('HTTP error (Status-Code 300)');
         
-        $client->invoicePrecheck(['test' => 'data']);
+        try {
+            $client->invoicePrecheck(['test' => 'data']);
+        } catch (AxytosApiException $e) {
+            $this->assertTrue($e->isHttpError(), 'Exception should be marked as HTTP error');
+            throw $e; // Re-throw for expectException to catch
+        }
     }
 
     /**

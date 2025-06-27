@@ -2,6 +2,8 @@
 
 namespace Axytos\WooCommerce;
 
+require_once __DIR__ . "/AxytosApiException.php";
+
 /**
  * Axytos API Client for WooCommerce Plugin
  *
@@ -69,7 +71,7 @@ class AxytosApiClient
      * @param string $method The HTTP method (GET, POST, etc.)
      * @param array $data The request payload for POST requests
      * @return string The API response body
-     * @throws Exception When API returns non-2xx status code or connection fails
+     * @throws AxytosApiException When API returns non-2xx status code or connection fails
      */
     private function makeRequest($url, $method = "GET", $data = []): string|bool
     {
@@ -100,7 +102,14 @@ class AxytosApiClient
         if (is_wp_error($response)) {
             $error_message = "Connection error: " . $response->get_error_message();
             $error_code = $response->get_error_code();
-            throw new \Exception($error_message . " (Error code: $error_code)");
+            throw AxytosApiException::connectionError(
+                $error_message . " (Error code: $error_code)",
+                [
+                    'wp_error_code' => $error_code,
+                    'wp_error_message' => $response->get_error_message(),
+                    'url' => $this->_BaseUrl . $url
+                ]
+            );
         }
 
         // Get response details
@@ -134,7 +143,11 @@ class AxytosApiClient
                 }
             }
             
-            throw new \Exception($error_message);
+            throw AxytosApiException::httpError($error_message, [
+                'status_code' => $status,
+                'response_body' => $body,
+                'url' => $this->_BaseUrl . $url
+            ]);
         }
         
         return $body;
@@ -145,7 +158,7 @@ class AxytosApiClient
      *
      * @param array $requestData The order data for precheck validation
      * @return string JSON response from the API
-     * @throws Exception When API communication fails
+     * @throws AxytosApiException When API communication fails
      */
     public function invoicePrecheck($requestData)
     {
@@ -159,7 +172,7 @@ class AxytosApiClient
      *
      * @param array $requestData The order confirmation data
      * @return string JSON response from the API
-     * @throws Exception When API communication fails
+     * @throws AxytosApiException When API communication fails
      */
     public function orderConfirm($requestData)
     {
@@ -173,7 +186,7 @@ class AxytosApiClient
      *
      * @param array $requestData The shipping status update data
      * @return string JSON response from the API
-     * @throws Exception When API communication fails
+     * @throws AxytosApiException When API communication fails
      */
     public function updateShippingStatus($requestData)
     {
@@ -187,7 +200,7 @@ class AxytosApiClient
      *
      * @param array $requestData The return items data
      * @return string JSON response from the API
-     * @throws Exception When API communication fails
+     * @throws AxytosApiException When API communication fails
      */
     public function returnItems($requestData)
     {
@@ -201,7 +214,7 @@ class AxytosApiClient
      *
      * @param array $requestData The refund data
      * @return string JSON response from the API
-     * @throws Exception When API communication fails
+     * @throws AxytosApiException When API communication fails
      */
     public function refundOrder($requestData)
     {
@@ -215,7 +228,7 @@ class AxytosApiClient
      *
      * @param array $requestData The invoice creation data
      * @return string JSON response from the API
-     * @throws Exception When API communication fails
+     * @throws AxytosApiException When API communication fails
      */
     public function createInvoice($requestData)
     {
@@ -229,7 +242,7 @@ class AxytosApiClient
      *
      * @param string|int $orderID The order identifier
      * @return string JSON response containing payment status
-     * @throws Exception When API communication fails
+     * @throws AxytosApiException When API communication fails
      */
     public function getPaymentStatus($orderID)
     {
@@ -243,7 +256,7 @@ class AxytosApiClient
      *
      * @param string|int $orderID The order identifier to cancel
      * @return string JSON response from the API
-     * @throws Exception When API communication fails
+     * @throws AxytosApiException When API communication fails
      */
     public function cancelOrder($orderID)
     {
@@ -256,7 +269,7 @@ class AxytosApiClient
      * Get the credit check agreement content
      *
      * @return string JSON response containing agreement content
-     * @throws Exception When API communication fails
+     * @throws AxytosApiException When API communication fails
      */
     public function getAgreement()
     {

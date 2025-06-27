@@ -18,6 +18,10 @@
 - `mise run lint` - Check coding standards
 - Uses WordPress Coding Standards via `.phpcs.xml.dist`
 
+### General
+
+- always ignore backup files ( filename ends with `~`)
+
 ## Code Style
 
 ### PHP
