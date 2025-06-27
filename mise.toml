@@ -1,9 +1,21 @@
 [vars]
 ddev_exec = "ddev exec -d /var/www/html/wp-content/plugins/axytos-woocommerce"
 
+[tasks.exec]
+description = "Exec inside plugin directory"
+run = "{{ vars.ddev_exec}}"
+
 [tasks.unit-tests]
 description = "Run unit tests"
 run = "{{ vars.ddev_exec }} vendor/bin/phpunit"
+
+[tasks.lint]
+description = "Lint the code"
+run = "{{ vars.ddev_exec }} vendor/bin/phpcs"
+
+[tasks.composer]
+description = "Run composer"
+run = "{{ vars.ddev_exec }} composer"
 
 [tasks.i18n-pot]
 description = "Generate .pot file for translations"
