@@ -368,11 +368,15 @@ function add_webhook_settings_script()
         // Add generate button for webhook API key
         if ($('#woocommerce_axytoswc_webhook_api_key').length) {
             var $webhookKeyField = $('#woocommerce_axytoswc_webhook_api_key');
-            var $generateBtn = $('<button type="button" class="button button-secondary" style="margin-left: 10px;"><?php echo esc_js(
+            var $generateBtn = $('<button type="button" class="button button-primary" style="margin-left: 10px;"><?php echo esc_js(
                 __("Generate Secure Key", "axytos-wc")
             ); ?></button>');
+            
+            var $infoBtn = $('<button type="button" class="button axytos-info-btn" style="margin-left: 10px; background: #6c757d; border-color: #6c757d; color: white;"><?php echo esc_js(
+                __("Webhook Information", "axytos-wc")
+            ); ?></button>');
 
-            $webhookKeyField.after($generateBtn);
+            $webhookKeyField.after($infoBtn).after($generateBtn);
 
             $generateBtn.on('click', function(e) {
                 e.preventDefault();
@@ -401,32 +405,185 @@ function add_webhook_settings_script()
                 }, 5000);
             });
 
-            // Add webhook endpoint info
-            var webhookUrl = '<?php echo esc_js(
-                rest_url("axytos/v1/order-update")
-            ); ?>';
-            var $infoHtml = $(
-                '<div class="axytos-webhook-info" style="margin-top: 10px; padding: 10px; background: #f9f9f9; border-left: 4px solid #00a0d2;">' +
-                '<strong><?php echo esc_js(
-                    __("Webhook Endpoint Information:", "axytos-wc")
-                ); ?></strong><br>' +
-                '<strong><?php echo esc_js(
-                    __("URL:", "axytos-wc")
-                ); ?></strong> <code>' + webhookUrl + '</code><br>' +
-                '<strong><?php echo esc_js(
-                    __("Method:", "axytos-wc")
-                ); ?></strong> POST<br>' +
-                '<strong><?php echo esc_js(
-                    __("Authentication:", "axytos-wc")
-                ); ?></strong> <?php echo esc_js(
-                    __("Send API key in X-Axytos-Webhook-Key header", "axytos-wc")
-                ); ?><br>' +
-                '<strong><?php echo esc_js(
-                    __("Content-Type:", "axytos-wc")
-                ); ?></strong> application/json' +
-                '</div>'
-            );
-            $webhookKeyField.closest('tr').after($('<tr><td colspan="2"></td></tr>').find('td').append($infoHtml).end());
+            // Add webhook information modal functionality
+            $infoBtn.on('click', function(e) {
+                e.preventDefault();
+                openWebhookInfoModal();
+            });
+
+            // Create and show webhook information modal
+            function openWebhookInfoModal() {
+                var webhookUrl = '<?php echo esc_js(
+                    rest_url("axytos/v1/order-update")
+                ); ?>';
+                
+                var modalHtml =
+                    '<div id="axytos-webhook-modal" class="axytos-modal">' +
+                        '<div class="axytos-modal-content">' +
+                            '<div class="axytos-modal-header">' +
+                                '<h2><?php echo esc_js(
+                                    __("Webhook Endpoint Information", "axytos-wc")
+                                ); ?></h2>' +
+                                '<span class="axytos-modal-close">&times;</span>' +
+                            '</div>' +
+                            '<div class="axytos-modal-body">' +
+                                '<div class="axytos-webhook-info-content">' +
+                                    '<div class="axytos-webhook-description">' +
+                                        '<p><?php echo esc_js(
+                                            __("This webhook enables seamless integration between external systems (such as ERP software) and the Axytos plugin. It allows your systems to automatically notify the plugin about order status changes and provide critical information like invoice numbers.", "axytos-wc")
+                                        ); ?></p>' +
+                                        '<p><?php echo esc_js(
+                                            __("Invoice numbers are particularly important for Axytos payment processing, making this webhook an essential tool for automating data flow between your ERP system, WooCommerce, and the Axytos payment provider.", "axytos-wc")
+                                        ); ?></p>' +
+                                    '</div>' +
+                                    '<h3><?php echo esc_js(
+                                        __("General Information", "axytos-wc")
+                                    ); ?></h3>' +
+                                    '<div class="axytos-info-section">' +
+                                        '<p><strong><?php echo esc_js(
+                                            __("URL:", "axytos-wc")
+                                        ); ?></strong></p>' +
+                                        '<p><code class="axytos-webhook-url">' + webhookUrl + '</code></p>' +
+                                        '<p><strong><?php echo esc_js(
+                                            __("Method:", "axytos-wc")
+                                        ); ?></strong> POST</p>' +
+                                        '<p><strong><?php echo esc_js(
+                                            __("Headers:", "axytos-wc")
+                                        ); ?></strong></p>' +
+                                        '<ul class="axytos-header-list">' +
+                                            '<li><code>X-Axytos-Webhook-Key: &lt;<?php echo esc_js(
+                                                __("your webhook key", "axytos-wc")
+                                            ); ?>&gt;</code></li>' +
+                                            '<li><code>Content-Type: application/json</code></li>' +
+                                        '</ul>' +
+                                        '<p><strong><?php echo esc_js(
+                                            __("Body:", "axytos-wc")
+                                        ); ?></strong></p>' +
+                                        '<p><?php echo esc_js(
+                                            __("JSON payload containing order status updates with fields:", "axytos-wc")
+                                        ); ?></p>' +
+                                        '<ul class="axytos-body-fields">' +
+                                            '<li><code>order_id</code> - <?php echo esc_js(
+                                                __("The WooCommerce order ID (required)", "axytos-wc")
+                                            ); ?></li>' +
+                                            '<li><code>new_status</code> - <?php echo esc_js(
+                                                __("The new order status (required)", "axytos-wc")
+                                            ); ?></li>' +
+                                            '<li><code>curr_status</code> - <?php echo esc_js(
+                                                __("The current order status (optional)", "axytos-wc")
+                                            ); ?></li>' +
+                                            '<li><code>invoice_number</code> - <?php echo esc_js(
+                                                __("Invoice number (optional)", "axytos-wc")
+                                            ); ?></li>' +
+                                            '<li><code>tracking_number</code> - <?php echo esc_js(
+                                                __("Tracking number (optional)", "axytos-wc")
+                                            ); ?></li>' +
+                                        '</ul>' +
+                                    '</div>' +
+                                    '<h3><?php echo esc_js(
+                                        __("Example", "axytos-wc")
+                                    ); ?></h3>' +
+                                    '<div class="axytos-info-section">' +
+                                        '<h4><?php echo esc_js(
+                                            __("Curl", "axytos-wc")
+                                        ); ?></h4>' +
+                                        '<pre class="axytos-code-example"><code>' +
+                                        'curl -X POST "' + webhookUrl + '" \\\n' +
+                                        '  -H "X-Axytos-Webhook-Key: your_webhook_key_here" \\\n' +
+                                        '  -H "Content-Type: application/json" \\\n' +
+                                        '  -d \'{\n' +
+                                        '    "order_id": 12345,\n' +
+                                        '    "new_status": "shipped",\n' +
+                                        '    "curr_status": "processing",    // optional\n' +
+                                        '    "invoice_number": "INV-2024-001",    // optional\n' +
+                                        '    "tracking_number": "1Z999AA1234567890"  // optional\n' +
+                                        '  }\'' +
+                                        '</code></pre>' +
+                                        '<h4><?php echo esc_js(
+                                            __("Python (requests)", "axytos-wc")
+                                        ); ?></h4>' +
+                                        '<pre class="axytos-code-example"><code>' +
+                                        'import requests\n' +
+                                        'import json\n\n' +
+                                        'url = "' + webhookUrl + '"\n' +
+                                        'headers = {\n' +
+                                        '    "X-Axytos-Webhook-Key": "your_webhook_key_here",\n' +
+                                        '    "Content-Type": "application/json"\n' +
+                                        '}\n' +
+                                        'data = {\n' +
+                                        '    "order_id": 12345,  # required\n' +
+                                        '    "new_status": "shipped",  # required\n' +
+                                        '    "curr_status": "processing",  # optional\n' +
+                                        '    "invoice_number": "INV-2024-001",  # optional\n' +
+                                        '    "tracking_number": "1Z999AA1234567890"  # optional\n' +
+                                        '}\n\n' +
+                                        'response = requests.post(url, headers=headers, json=data)\n' +
+                                        'print(f"Status Code: {response.status_code}")\n' +
+                                        'print(f"Response: {response.text}")' +
+                                        '</code></pre>' +
+                                        '<h4><?php echo esc_js(
+                                            __("PHP", "axytos-wc")
+                                        ); ?></h4>' +
+                                        '<pre class="axytos-code-example"><code>' +
+                                        '&lt;?php\n' +
+                                        '$url = "' + webhookUrl + '";\n' +
+                                        '$data = [\n' +
+                                        '    "order_id" => 12345,  // required\n' +
+                                        '    "new_status" => "shipped",  // required\n' +
+                                        '    "curr_status" => "processing",  // optional\n' +
+                                        '    "invoice_number" => "INV-2024-001",  // optional\n' +
+                                        '    "tracking_number" => "1Z999AA1234567890"  // optional\n' +
+                                        '];\n\n' +
+                                        '$ch = curl_init();\n' +
+                                        'curl_setopt($ch, CURLOPT_URL, $url);\n' +
+                                        'curl_setopt($ch, CURLOPT_POST, true);\n' +
+                                        'curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));\n' +
+                                        'curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);\n' +
+                                        'curl_setopt($ch, CURLOPT_HTTPHEADER, [\n' +
+                                        '    "X-Axytos-Webhook-Key: your_webhook_key_here",\n' +
+                                        '    "Content-Type: application/json"\n' +
+                                        ']);\n\n' +
+                                        '$response = curl_exec($ch);\n' +
+                                        '$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);\n' +
+                                        '$error = curl_error($ch);\n' +
+                                        'curl_close($ch);\n\n' +
+                                        'if ($error) {\n' +
+                                        '    echo "cURL Error: " . $error . "\\n";\n' +
+                                        '} else {\n' +
+                                        '    echo "Status Code: " . $http_code . "\\n";\n' +
+                                        '    echo "Response: " . $response . "\\n";\n' +
+                                        '}' +
+                                        '</code></pre>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+
+                // Remove existing modal if any
+                $('#axytos-webhook-modal').remove();
+                
+                // Add modal to body
+                $('body').append(modalHtml);
+                
+                // Show modal
+                $('#axytos-webhook-modal').show();
+                
+                // Close modal handlers
+                $('.axytos-modal-close, #axytos-webhook-modal').on('click', function(e) {
+                    if (e.target === this) {
+                        $('#axytos-webhook-modal').hide().remove();
+                    }
+                });
+                
+                // Close on escape key
+                $(document).on('keydown.axytos-modal', function(e) {
+                    if (e.keyCode === 27) { // ESC key
+                        $('#axytos-webhook-modal').hide().remove();
+                        $(document).off('keydown.axytos-modal');
+                    }
+                });
+            }
         }
 
         function generateSecureKey(length) {
@@ -451,12 +608,178 @@ function add_webhook_settings_script()
     });
     </script>
     <style>
-    .axytos-webhook-info code {
+    /* Modal Styles */
+    .axytos-modal {
+        display: none;
+        position: fixed;
+        z-index: 100000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .axytos-modal-content {
+        background-color: #fff;
+        margin: 5% auto;
+        padding: 0;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 95%;
+        max-width: 800px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .axytos-modal-header {
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-bottom: 1px solid #eee;
+        border-radius: 4px 4px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .axytos-modal-header h2 {
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .axytos-modal-close {
+        color: #666;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        line-height: 1;
+    }
+
+    .axytos-modal-close:hover,
+    .axytos-modal-close:focus {
+        color: #000;
+    }
+
+    .axytos-modal-body {
+        padding: 20px;
+    }
+
+    .axytos-webhook-info-content p {
+        margin: 10px 0;
+    }
+
+    .axytos-webhook-info-content strong {
+        color: #333;
+    }
+
+    .axytos-webhook-description {
+        background: #f0f8ff;
+        padding: 15px;
+        border-radius: 5px;
+        border-left: 4px solid #0073aa;
+        margin-bottom: 20px;
+    }
+
+    .axytos-webhook-description p {
+        margin: 0;
+        line-height: 1.6;
+        color: #333;
+    }
+
+    .axytos-webhook-url {
         background: #f1f1f1;
-        padding: 2px 4px;
+        padding: 8px 12px;
         border-radius: 3px;
         font-family: monospace;
         word-break: break-all;
+        display: block;
+        margin: 5px 0;
+        border: 1px solid #ddd;
+    }
+
+    .axytos-webhook-info-content h3 {
+        color: #333;
+        font-size: 16px;
+        margin: 20px 0 10px 0;
+        padding-bottom: 5px;
+        border-bottom: 2px solid #0073aa;
+    }
+
+    .axytos-webhook-info-content h4 {
+        color: #555;
+        font-size: 14px;
+        margin: 15px 0 8px 0;
+    }
+
+    .axytos-info-section {
+        margin-bottom: 20px;
+    }
+
+    .axytos-header-list,
+    .axytos-body-fields {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+
+    .axytos-header-list li,
+    .axytos-body-fields li {
+        margin: 5px 0;
+        font-family: inherit;
+    }
+
+    .axytos-header-list code,
+    .axytos-body-fields code {
+        background: #f8f8f8;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 13px;
+        border: 1px solid #e1e1e1;
+    }
+
+    .axytos-code-example {
+        background: #2d3748;
+        color: #e2e8f0;
+        padding: 15px;
+        border-radius: 5px;
+        overflow-x: auto;
+        margin: 10px 0;
+        border: 1px solid #4a5568;
+    }
+
+    .axytos-code-example code {
+        font-family: 'Courier New', Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.4;
+        white-space: pre;
+        color: inherit;
+        background: none;
+        padding: 0;
+        border: none;
+    }
+
+    .axytos-modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    /* Webhook info button hover effect */
+    .axytos-info-btn:hover {
+        background: #5a6268 !important;
+        border-color: #5a6268 !important;
+    }
+
+    /* Responsive spacing for webhook buttons */
+    @media (max-width: 782px) {
+        #woocommerce_axytoswc_webhook_api_key + .button {
+            margin-top: 0.5em;
+            margin-left: 0 !important;
+        }
+        
+        #woocommerce_axytoswc_webhook_api_key + .button + .button {
+            margin-top: 0.5em;
+            margin-left: 10px !important;
+        }
     }
     </style>
     <?php
