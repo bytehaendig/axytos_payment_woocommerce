@@ -84,122 +84,92 @@ msgstr "Keine ausstehenden Aktionen"
 msgid "Pending Axytos Actions"
 msgstr "Ausstehende Aktionen"
 
-#: includes/admin.php:175
+#: includes/admin.php:289
 msgid "pending"
 msgstr "ausstehend"
 
-#. translators: %d: number of failed attempts
-#: includes/admin.php:178
-#, php-format
-msgid "failed (%dx)"
-msgstr "fehlgeschlagen (%dx)"
-
-#: includes/admin.php:219
+#: includes/admin.php:226
 msgid "Completed Axytos Actions"
 msgstr "Abgeschlossene Aktionen"
 
-#: includes/admin.php:263
+#: includes/admin.php:270
 msgid "Unknown"
 msgstr "Unbekannt"
 
-#: includes/admin.php:289
+#: includes/admin.php:320
 msgid "Report Shipping"
 msgstr "Versand melden"
 
-#: includes/admin.php:294
+#: includes/admin.php:325
 msgid "Cancel"
 msgstr "Stornieren"
 
-#: includes/admin.php:302
+#: includes/admin.php:333
 msgid "Refund"
 msgstr "Rückerstattung"
 
-#: includes/admin.php:324
+#: includes/admin.php:355
 msgid "Generate Secure Key"
 msgstr "Sicheren Schlüssel generieren"
 
-#: includes/admin.php:338
+#: includes/admin.php:376
 msgid "Secure webhook API key generated. Make sure to save your settings."
 msgstr "Sicherer Webhook-API-Schlüssel generiert. Stellen Sie sicher, dass Sie Ihre Einstellungen speichern."
 
-#: includes/admin.php:360
-msgid "Webhook Endpoint Information:"
-msgstr "Informationen zum Webhook-Endpunkt:"
-
-#: includes/admin.php:363
+#: includes/admin.php:427
 msgid "URL:"
 msgstr "URL:"
 
-#: includes/admin.php:366
+#: includes/admin.php:431
 msgid "Method:"
 msgstr "Methode:"
 
-#: includes/admin.php:369
-msgid "Authentication:"
-msgstr "Authentifizierung:"
-
-#: includes/admin.php:371
-msgid "Send API key in X-Axytos-Webhook-Key header"
-msgstr "API-Schlüssel im X-Axytos-Webhook-Key-Header senden"
-
-#: includes/admin.php:374
-msgid "Content-Type:"
-msgstr "Content-Type:"
-
-#: includes/admin.php:506
+#: includes/admin.php:965
 msgid "Axytos Pending Actions"
 msgstr "Ausstehende Axytos-Aktionen"
 
 #. translators: 1: number of processed orders, 2: number of failed orders
-#: includes/admin.php:493
+#: includes/admin.php:850
 #: includes/ajax.php:146
 #, php-format
 msgid "Processed %1$d orders, %2$d failed."
 msgstr "%1$d Bestellungen verarbeitet, %2$d fehlgeschlagen."
 
-#: includes/admin.php:509
+#: includes/admin.php:968
 msgid "Cron Status"
 msgstr "Cron-Status"
 
-#: includes/admin.php:528
+#: includes/admin.php:987
 msgid "Next Processing Run"
 msgstr "Nächste Verarbeitung"
 
-#: includes/admin.php:539
+#: includes/admin.php:998
 msgid "Not scheduled"
 msgstr "Nicht geplant"
 
-#: includes/admin.php:549
+#: includes/admin.php:1008
 msgid "Process All Pending Actions Now"
 msgstr "Alle ausstehenden Aktionen jetzt verarbeiten"
 
-#: includes/admin.php:557
+#: includes/admin.php:1016
 msgid "Orders with Pending Actions"
 msgstr "Bestellungen mit ausstehenden Aktionen"
 
-#: includes/admin.php:562
+#: includes/admin.php:1021
 msgid "No orders with pending actions found."
 msgstr "Keine Bestellungen mit ausstehenden Aktionen gefunden."
 
-#: includes/admin.php:570
+#: includes/admin.php:1029
 msgid "Order ID"
 msgstr "Bestell-ID"
 
-#: includes/admin.php:571
+#: includes/admin.php:1030
 msgid "Status"
 msgstr "Status"
 
-#: includes/admin.php:572
+#: includes/admin.php:1031
 msgid "Pending Actions"
 msgstr "Ausstehende Aktionen"
-
-#: includes/admin.php:576
-msgid "Failed Actions"
-msgstr "Fehlgeschlagene Aktionen"
-
-#: includes/admin.php:580
-msgid "Completed Actions"
-msgstr "Abgeschlossene Aktionen"
 
 #: includes/ajax.php:27
 msgid "Invalid order or action."
@@ -242,31 +212,25 @@ msgid "Error processing actions: "
 msgstr "Fehler beim Verarbeiten der Aktionen: "
 
 #. translators: 1: action name, 2: queue timestamp
-#: includes/AxytosActionHandler.php:336
+#: includes/AxytosActionHandler.php:311
 #, php-format
-msgid "Axytos action \"%1$s\" processed successfully (queued at %2$s)"
-msgstr "Axytos-Aktion \"%1$s\" erfolgreich verarbeitet (eingereiht am %2$s)"
+msgid "Axytos action \"%1$s\" processed successfully"
+msgstr "Axytos-Aktion \"%1$s\" wurde erfolgreich verarbeitet"
 
 #. translators: 1: action name, 2: number of retries
-#: includes/AxytosActionHandler.php:483
-#, php-format
-msgid "Axytos action \"%1$s\" failed after %2$d retries"
-msgstr "Axytos-Aktion \"%1$s\" nach %2$d Wiederholungen fehlgeschlagen"
-
-#. translators: 1: action name, 2: number of retries
-#: includes/AxytosActionHandler.php:500
+#: includes/AxytosActionHandler.php:467
 #, php-format
 msgid "Axytos action \"%1$s\" failed permanently after %2$d retries. Order requires manual attention."
-msgstr "Axytos-Aktion \"%1$s\" nach %2$d Wiederholungen dauerhaft fehlgeschlagen. Bestellung benötigt manuelle Überprüfung."
+msgstr "Axytos-Aktion \"%1$s\" ist nach %2$d Wiederholungen dauerhaft fehlgeschlagen. Bestellung benötigt manuelle Überprüfung."
 
 #. translators: 1: site name, 2: order number
-#: includes/AxytosActionHandler.php:517
+#: includes/AxytosActionHandler.php:484
 #, php-format
 msgid "[%1$s] Axytos Payment Action Failed - Order #%2$s"
 msgstr "[%1$s] Axytos-Zahlungsaktion fehlgeschlagen - Bestellung #%2$s"
 
 #. translators: 1: order number, 2: action name, 3: max retries, 4: order edit URL
-#: includes/AxytosActionHandler.php:524
+#: includes/AxytosActionHandler.php:491
 #, php-format
 msgid ""
 "An Axytos payment action has failed permanently and requires manual attention.\n"
@@ -288,19 +252,6 @@ msgstr ""
 "Bitte überprüfen Sie die Bestellung in Ihrem WooCommerce-Admin und kontaktieren Sie bei Bedarf den Axytos-Support.\n"
 "\n"
 "Bestell-URL: %4$s"
-
-#: includes/AxytosActionHandler.php:560
-#: includes/AxytosActionHandler.php:571
-msgid "Axytos Error"
-msgstr "Axytos-Fehler"
-
-#. translators: %s: number of orders with this status
-#: includes/AxytosActionHandler.php:566
-#, php-format
-msgid "Axytos Error <span class=\"count\">(%s)</span>"
-msgid_plural "Axytos Error <span class=\"count\">(%s)</span>"
-msgstr[0] "Axytos-Fehler <span class=\"count\">(%s)</span>"
-msgstr[1] "Axytos-Fehler <span class=\"count\">(%s)</span>"
 
 #: includes/AxytosPaymentGateway.php:25
 #: includes/AxytosPaymentGateway.php:112
@@ -369,7 +320,7 @@ msgstr "Vereinbarung anzeigen"
 
 #: includes/AxytosPaymentGateway.php:199
 msgid "Webhook API Key"
-msgstr "Webhook API-Schlüssel"
+msgstr "Webhook-Schlüssel"
 
 #: includes/AxytosPaymentGateway.php:201
 msgid "Enter a secure API key for webhook authentication. This key will be used to authenticate incoming webhook requests from your ERP system."
@@ -407,73 +358,14 @@ msgstr "Versandbericht konnte nicht aktualisiert werden."
 msgid "Error Response from Axytos"
 msgstr "Fehlerantwort von Axytos"
 
-#: includes/AxytosWebhookHandler.php:139
-msgid "Too many requests. Please try again later."
-msgstr "Zu viele Anfragen. Bitte versuchen Sie es später erneut."
-
-#: includes/AxytosWebhookHandler.php:156
-msgid "Webhook endpoint not properly configured."
-msgstr "Webhook-Endpunkt nicht ordnungsgemäß konfiguriert."
-
-#: includes/AxytosWebhookHandler.php:177
-msgid "Content-Type must be application/json."
-msgstr "Content-Type muss application/json sein."
-
-#: includes/AxytosWebhookHandler.php:197
-msgid "API key is required in X-Axytos-Webhook-Key header."
-msgstr "API-Schlüssel ist im X-Axytos-Webhook-Key-Header erforderlich."
-
-#: includes/AxytosWebhookHandler.php:215
-#: includes/AxytosWebhookHandler.php:234
-msgid "Invalid API key provided."
-msgstr "Ungültiger API-Schlüssel."
-
-#: includes/AxytosWebhookHandler.php:274
-msgid "Request payload too large."
-msgstr "Anfrage-Payload zu groß."
-
-#: includes/AxytosWebhookHandler.php:293
-msgid "Invalid JSON payload."
-msgstr "Ungültige JSON-Payload."
-
-#. translators: %d: order ID
-#: includes/AxytosWebhookHandler.php:315
-#, php-format
-msgid "Order with ID %d not found."
-msgstr "Bestellung mit ID %d nicht gefunden."
-
-#. translators: %d: order ID
-#: includes/AxytosWebhookHandler.php:335
-#, php-format
-msgid "Order %d does not use Axytos payment method."
-msgstr "Bestellung %d verwendet nicht die Axytos-Zahlungsmethode."
-
-#. translators: 1: current status, 2: expected status
-#: includes/AxytosWebhookHandler.php:363
-#, php-format
-msgid "Current order status (%1$s) does not match expected status (%2$s). Update may be outdated."
-msgstr "Aktueller Bestellstatus (%1$s) stimmt nicht mit dem erwarteten Status (%2$s) überein. Die Aktualisierung ist möglicherweise veraltet."
-
-#. translators: %d: order ID
-#: includes/AxytosWebhookHandler.php:396
-#, php-format
-msgid "Order %d updated successfully."
-msgstr "Bestellung %d erfolgreich aktualisiert."
-
-#. translators: 1: order ID, 2: error message
-#: includes/AxytosWebhookHandler.php:415
-#, php-format
-msgid "Error processing webhook for order %1$d: %2$s"
-msgstr "Fehler beim Verarbeiten des Webhooks für Bestellung %1$d: %2$s"
-
 #. translators: %s: invoice number
-#: includes/AxytosWebhookHandler.php:482
+#: includes/AxytosWebhookHandler.php:464
 #, php-format
 msgid "Invoice: %s"
 msgstr "Rechnung: %s"
 
 #. translators: %s: tracking number
-#: includes/AxytosWebhookHandler.php:497
+#: includes/AxytosWebhookHandler.php:479
 #, php-format
 msgid "Tracking: %s"
 msgstr "Sendungsverfolgung: %s"
@@ -482,35 +374,203 @@ msgstr "Sendungsverfolgung: %s"
 msgid "Order on-hold, waiting for admin approval."
 msgstr "Bestellung in Wartezustand, warte auf Admin-Genehmigung."
 
-#. translators: 1: WooCommerce status, 2: ERP status
-#: includes/AxytosWebhookHandler.php:466
-#, php-format
-msgid "Invalid WooCommerce status '%1$s' mapped from webhook status '%2$s'"
-msgstr "Ungültiger WooCommerce status '%1$s' gemapped vom Webhook status '%2%s'"
-
-#. translators: 1: old status, 2: new status
-#: includes/AxytosWebhookHandler.php:520
-#, php-format
-msgid "Order status updated from %1$s to %2$s via webhook."
-msgstr "Bestellstatus vom Webhook geändert von %1$s zu %2$s."
-
-#: includes/AxytosWebhookHandler.php:536
+#: includes/AxytosWebhookHandler.php:507
 msgid "Webhook added information"
 msgstr "Webhook fügte Informationen hinzu"
 
-#: includes/admin.php:466
-#: includes/admin.php:467
+#: includes/admin.php:823
+#: includes/admin.php:824
 msgid "Axytos Status"
-msgstr ""
+msgstr "Axytos Status"
 
-#: includes/admin.php:512
+#: includes/admin.php:971
 msgid "Last Processing Run"
 msgstr "Letzte Ausführung"
 
-#: includes/admin.php:523
+#: includes/admin.php:982
 msgid "Never"
 msgstr "Nie"
 
 #: includes/ajax.php:97
 msgid "The change of the order was successful."
 msgstr "Die Anpassung der Bestellung wurde vermerkt."
+
+#. translators: %d: number of failed attempts
+#: includes/admin.php:295
+#, php-format
+msgid "failed %dx, broken"
+msgstr "%dx fehlgeschlagen, defekt"
+
+#. translators: %d: number of failed attempts
+#: includes/admin.php:301
+#, php-format
+msgid "failed %dx, will retry"
+msgstr "%dx fehlgeschlagen, wird wiederholt"
+
+#: includes/admin.php:359
+msgid "Webhook Information"
+msgstr "Webhook-Informationen"
+
+#: includes/admin.php:408
+msgid "Webhook Endpoint Information"
+msgstr "Webhook-Endpunkt-Informationen"
+
+#: includes/admin.php:416
+msgid "This webhook enables seamless integration between external systems (such as ERP software) and the Axytos plugin. It allows your systems to automatically notify the plugin about order status changes and provide critical information like invoice numbers."
+msgstr "Dieser Webhook ermöglicht eine nahtlose Integration zwischen externen Systemen (wie ERP-Software) und dem Axytos-Plugin. Er erlaubt es Ihren Systemen, das Plugin automatisch über Bestellstatusänderungen zu benachrichtigen und wichtige Informationen wie Rechnungsnummern bereitzustellen."
+
+#: includes/admin.php:419
+msgid "Invoice numbers are particularly important for Axytos payment processing, making this webhook an essential tool for automating data flow between your ERP system, WooCommerce, and the Axytos payment provider."
+msgstr "Rechnungsnummern sind besonders wichtig für die Axytos-Zahlungsabwicklung, wodurch dieser Webhook zu einem wesentlichen Werkzeug für die Automatisierung des Datenflusses zwischen Ihrem ERP-System, WooCommerce und dem Axytos-Zahlungsanbieter wird."
+
+#: includes/admin.php:423
+msgid "General Information"
+msgstr "Allgemeine Informationen"
+
+#: includes/admin.php:434
+msgid "Headers:"
+msgstr "Header:"
+
+#: includes/admin.php:438
+msgid "your webhook key"
+msgstr "Ihr Webhook-Schlüssel"
+
+#: includes/admin.php:443
+msgid "Body:"
+msgstr "Body:"
+
+#: includes/admin.php:446
+msgid "JSON payload containing order status updates with fields:"
+msgstr "JSON-Payload mit Bestellstatus-Updates mit folgenden Feldern:"
+
+#: includes/admin.php:450
+msgid "The WooCommerce order ID (required)"
+msgstr "Die WooCommerce-Bestell-ID (erforderlich)"
+
+#: includes/admin.php:453
+msgid "The new order status (required)"
+msgstr "Der neue Bestellstatus (erforderlich)"
+
+#: includes/admin.php:456
+msgid "The current order status (optional)"
+msgstr "Der aktuelle Bestellstatus (optional)"
+
+#: includes/admin.php:459
+msgid "Invoice number (optional)"
+msgstr "Rechnungsnummer (optional)"
+
+#: includes/admin.php:462
+msgid "Tracking number (optional)"
+msgstr "Sendungsverfolgungsnummer (optional)"
+
+#: includes/admin.php:467
+msgid "Example"
+msgstr "Beispiel"
+
+#: includes/admin.php:471
+msgid "Curl"
+msgstr "Curl"
+
+#: includes/admin.php:486
+msgid "Python (requests)"
+msgstr "Python (requests)"
+
+#: includes/admin.php:508
+msgid "PHP"
+msgstr "PHP"
+
+#. translators: 1: number of processed actions, 2: order ID
+#: includes/admin.php:874
+#, php-format
+msgid "Successfully retried %1$d broken actions for order #%2$d."
+msgstr "Erfolgreich %1$d defekte Aktionen für Bestellung #%2$d wiederholt."
+
+#. translators: 1: number of failed actions, 2: order ID
+#: includes/admin.php:883
+#, php-format
+msgid "Retry attempt completed for order #%2$d, but %1$d actions still failed."
+msgstr "Wiederholungsversuch für Bestellung #%2$d abgeschlossen, aber %1$d Aktionen sind weiterhin fehlgeschlagen."
+
+#: includes/admin.php:891
+msgid "Failed to retry actions - invalid order or no broken actions found."
+msgstr "Wiederholung der Aktionen fehlgeschlagen - ungültige Bestellung oder keine defekten Aktionen gefunden."
+
+#. translators: %s: error message
+#: includes/admin.php:898
+#, php-format
+msgid "Error retrying actions: %s"
+msgstr "Fehler beim Wiederholen der Aktionen: %s"
+
+#: includes/admin.php:905
+#: includes/admin.php:954
+msgid "Invalid order or not an Axytos order."
+msgstr "Ungültige Bestellung oder keine Axytos-Bestellung."
+
+#. translators: 1: action name, 2: order ID
+#: includes/admin.php:928
+#, php-format
+msgid "Successfully removed failed action '%1$s' from order #%2$d."
+msgstr "Fehlgeschlagene Aktion '%1$s' erfolgreich von Bestellung #%2$d entfernt."
+
+#. translators: 1: action name, 2: order ID
+#: includes/admin.php:937
+#, php-format
+msgid "Failed to remove action '%1$s' from order #%2$d. Action may not exist or is not broken."
+msgstr "Entfernung der Aktion '%1$s' von Bestellung #%2$d fehlgeschlagen. Aktion existiert möglicherweise nicht oder ist nicht defekt."
+
+#. translators: %s: error message
+#: includes/admin.php:947
+#, php-format
+msgid "Error removing action: %s"
+msgstr "Fehler beim Entfernen der Aktion: %s"
+
+#: includes/admin.php:1035
+msgid "Retry Actions"
+msgstr "Aktionen wiederholen"
+
+#: includes/admin.php:1039
+msgid "Broken Actions"
+msgstr "Defekte Aktionen"
+
+#: includes/admin.php:1144
+msgid "Retry broken actions"
+msgstr "Defekte Aktionen wiederholen"
+
+#: includes/admin.php:1145
+msgid "Retry all broken actions for this order"
+msgstr "Alle defekten Aktionen für diese Bestellung wiederholen"
+
+#: includes/admin.php:1146
+msgid "Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately."
+msgstr "Sind Sie sicher, dass Sie alle defekten Aktionen für diese Bestellung wiederholen möchten? Dies wird versuchen, sie sofort zu verarbeiten."
+
+#: includes/admin.php:1156
+msgid "Remove broken action"
+msgstr "Defekte Aktion entfernen"
+
+#: includes/admin.php:1157
+msgid "Remove this permanently failed action"
+msgstr "Diese dauerhaft fehlgeschlagene Aktion entfernen"
+
+#: includes/admin.php:1158
+#, php-format
+msgid "Are you sure you want to remove the failed '%s' action? This cannot be undone."
+msgstr "Sind Sie sicher, dass Sie die fehlgeschlagene '%s'-Aktion entfernen möchten? Dies kann nicht rückgängig gemacht werden."
+
+#. translators: %s: action name
+#: includes/AxytosActionHandler.php:571
+#, php-format
+msgid "Failed Axytos action \"%s\" was manually removed by admin."
+msgstr "Fehlgeschlagene Axytos-Aktion \"%s\" wurde manuell vom Administrator entfernt."
+
+#. translators: %s: action name
+#: includes/AxytosActionHandler.php:642
+#, php-format
+msgid "Broken Axytos action \"%s\" was manually retried and succeeded."
+msgstr "Defekte Axytos-Aktion \"%s\" wurde manuell wiederholt und war erfolgreich."
+
+#. translators: %s: action name
+#: includes/AxytosActionHandler.php:662
+#, php-format
+msgid "Manual retry of broken Axytos action \"%s\" failed. Action reset for new retry cycle."
+msgstr "Manuelle Wiederholung der defekten Axytos-Aktion \"%s\" fehlgeschlagen. Aktion für neuen Wiederholungszyklus zurückgesetzt."
