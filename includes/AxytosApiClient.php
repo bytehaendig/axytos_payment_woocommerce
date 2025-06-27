@@ -63,51 +63,57 @@ class AxytosApiClient
     }
 
     /**
-     * Make an HTTP request to the Axytos API
+     * Make an HTTP request to the Axytos API using WordPress HTTP API
      *
      * @param string $url The API endpoint URL (relative to base URL)
      * @param string $method The HTTP method (GET, POST, etc.)
      * @param array $data The request payload for POST requests
      * @return string The API response body
-     * @throws Exception When API returns non-2xx status code
+     * @throws Exception When API returns non-2xx status code or connection fails
      */
     private function makeRequest($url, $method = "GET", $data = []): string|bool
     {
-        $headers = [
-            "Content-type: application/json",
-            "accept: application/json",
-            "X-API-Key: " . $this->_AxytosAPIKey,
-            "User-Agent: " . $this->_UserAgent,
+        $args = [
+            'method' => strtoupper($method),
+            'timeout' => 30,
+            'redirection' => 5,
+            'httpversion' => '1.1',
+            'user-agent' => $this->_UserAgent,
+            'headers' => [
+                'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
+                'X-API-Key' => $this->_AxytosAPIKey,
+            ],
+            'sslverify' => true,
+            'blocking' => true,
         ];
 
-        $ch = curl_init($this->_BaseUrl . $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30); // 30 second timeout
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10); // 10 second connection timeout
-        if ($method === "POST") {
-            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        // Add request body for POST requests
+        if ($method === "POST" && !empty($data)) {
+            $args['body'] = json_encode($data);
         }
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        
-        $response = curl_exec($ch);
-        $curl_error = curl_error($ch);
-        $curl_errno = curl_errno($ch);
-        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        // Handle cURL errors
-        if ($curl_errno !== 0) {
-            throw new \Exception("Connection error: " . $curl_error . " (cURL error code: $curl_errno)");
+
+        // Make the HTTP request using WordPress HTTP API
+        $response = wp_remote_request($this->_BaseUrl . $url, $args);
+
+        // Handle WordPress HTTP API errors
+        if (is_wp_error($response)) {
+            $error_message = "Connection error: " . $response->get_error_message();
+            $error_code = $response->get_error_code();
+            throw new \Exception($error_message . " (Error code: $error_code)");
         }
+
+        // Get response details
+        $status = wp_remote_retrieve_response_code($response);
+        $body = wp_remote_retrieve_body($response);
         
         // Handle HTTP errors
         if ($status < 200 || $status >= 300) {
             $error_message = "HTTP error (Status-Code $status)";
             
             // Try to extract error details from response
-            if ($response && is_string($response)) {
-                $response_data = json_decode($response, true);
+            if ($body && is_string($body)) {
+                $response_data = json_decode($body, true);
                 if (json_last_error() === JSON_ERROR_NONE && isset($response_data['errors'])) {
                     // Handle Axytos API error format
                     if (is_array($response_data['errors'])) {
@@ -131,7 +137,7 @@ class AxytosApiClient
             throw new \Exception($error_message);
         }
         
-        return $response;
+        return $body;
     }
 
     /**

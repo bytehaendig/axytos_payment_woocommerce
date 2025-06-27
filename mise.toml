@@ -5,6 +5,10 @@ ddev_exec = "ddev exec -d /var/www/html/wp-content/plugins/axytos-woocommerce"
 description = "Exec inside plugin directory"
 run = "{{ vars.ddev_exec}}"
 
+[tasks.setup-tests]
+description = "Install wp-test environment needed for unit-tests"
+run = "{{ vars.ddev_exec }} bin/install-wp-tests.sh db_test db db db"
+
 [tasks.unit-tests]
 description = "Run unit tests"
 run = "{{ vars.ddev_exec }} vendor/bin/phpunit"
