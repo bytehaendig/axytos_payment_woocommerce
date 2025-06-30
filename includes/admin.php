@@ -203,10 +203,10 @@ function render_pending_actions_status( $order ) {
 		echo '<span style="color: #666;">' .
 			esc_html( $failed_time ) .
 			'</span>';
-		echo '<br/><span style="color: ' .
-			$status_color .
-			';">(' .
-			$status_text .
+		echo '<br/><span style=\"color: ' .
+			esc_attr( $status_color ) .
+			';\">(' .
+			esc_html( $status_text ) .
 			')</span> ';
 
 		echo '</div>';
@@ -1269,13 +1269,12 @@ function render_pending_actions_page() {
 							<td>
 								<a href="
 								<?php
-								echo get_edit_post_link(
-									$order_id
-								);
-								?>
-											">#<?php echo $order_id; ?></a>
+							echo esc_url( get_edit_post_link(
+								$order_id
+							) );								?>
+											\">#<?php echo esc_html( $order_id ); ?></a>
 							</td>
-							<td><?php echo $order->get_status(); ?></td>
+							<td><?php echo esc_html( $order->get_status() ); ?></td>
 							<td>
 								<?php if ( $pending_count > 0 ) : ?>
 									<div style="font-size: 13px;">
