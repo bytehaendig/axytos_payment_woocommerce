@@ -19,7 +19,6 @@ class AxytosActionHandler
     public const META_KEY_BROKEN = "_axytos_broken";
     public const META_KEY_INVOICE_NUMBER = "axytos_ext_invoice_nr";
     public const META_KEY_TRACKING_NUMBER = "axytos_ext_tracking_nr";
-    public const RETRY_INTERVAL = 60 * 10; // Default 10 min
     public const MAX_RETRIES = 3;
 
     private $gateway;
@@ -165,18 +164,6 @@ class AxytosActionHandler
 
         $updated = false;
         foreach ($pending_actions as $index => $action_data) {
-            // Check if this action failed and if retry interval has passed
-            if (!empty($action_data["failed_at"])) {
-                $retry_interval = self::RETRY_INTERVAL;
-                $failed_time = strtotime($action_data["failed_at"]);
-                $current_time = current_time("timestamp");
-
-                if ($current_time - $failed_time < $retry_interval) {
-                    // Not enough time has passed for retry, stop processing this order
-                    break;
-                }
-            }
-
             $result = $this->processAction($order, $action_data);
 
             if ($result['success']) {
