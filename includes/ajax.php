@@ -73,6 +73,13 @@ function handle_ajax_action()
                     __("Order cancelled via Axytos action.", "axytos-wc")
                 );
                 break;
+            case "reverse_cancel":
+                // will trigger axytos reverse cancellation process (see orders.php)
+                $order->update_status(
+                    "processing",
+                    __("Order cancellation reversed via Axytos action.", "axytos-wc")
+                );
+                break;
             case "refund":
                 // will trigger axytos refund process (see orders.php)
                 $order->update_status(

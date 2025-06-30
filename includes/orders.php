@@ -57,6 +57,10 @@ function determine_status_actions($old_status, $new_status)
     }
 
     if ($new_status === "processing") {
+        // If transitioning from cancelled to processing, reverse the cancellation
+        if ($old_status === "cancelled") {
+            return ["reverse_cancel"];
+        }
         return ["confirm"];
     }
 

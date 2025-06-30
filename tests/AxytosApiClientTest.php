@@ -272,6 +272,26 @@ class AxytosApiClientTest extends WP_UnitTestCase
     }
 
     /**
+     * Test reverseCancelOrder method (POST endpoint with order ID in request body)
+     */
+    public function test_reverse_cancel_order_with_request_body()
+    {
+        $this->mockHttpRequest(200, '{"reverseCancelled": true}');
+        
+        $client = new AxytosApiClient($this->testApiKey);
+        $orderId = '12345';
+        
+        $result = $client->reverseCancelOrder($orderId);
+        
+        // Verify response
+        $this->assertEquals('{"reverseCancelled": true}', $result);
+        
+        // Verify the correct URL and method were used (POST with order ID in request body)
+        $expectedData = ['externalOrderId' => $orderId];
+        $this->assertLastRequestMatches('/Payments/invoice/order/reverseCancellation', 'POST', $expectedData);
+    }
+
+    /**
      * Data provider for HTTP error status codes
      */
     public function httpErrorStatusProvider()
@@ -488,6 +508,14 @@ class AxytosApiClientTest extends WP_UnitTestCase
         
         // Test with integer order ID for cancel
         $result = $client->cancelOrder(67890);
+        $this->assertEquals('{"success": true}', $result);
+        
+        // Test with string order ID for reverse cancel
+        $result = $client->reverseCancelOrder('54321');
+        $this->assertEquals('{"success": true}', $result);
+        
+        // Test with integer order ID for reverse cancel
+        $result = $client->reverseCancelOrder(54321);
         $this->assertEquals('{"success": true}', $result);
     }
 

@@ -335,6 +335,14 @@ function render_action_buttons($order)
             __("Refund", "axytos-wc") .
             "</button>";
         echo "</div>";
+    } elseif ($order_status === "cancelled") {
+        echo '<div class="axytos-action-buttons-wrapper">';
+        echo '<button class="button axytos-action-button" data-order-id="' .
+            esc_attr($order_id) .
+            '" data-action="reverse_cancel">' .
+            __("Reverse Cancel", "axytos-wc") .
+            "</button>";
+        echo "</div>";
     }
 }
 

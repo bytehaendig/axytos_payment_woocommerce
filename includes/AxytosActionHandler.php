@@ -242,6 +242,9 @@ class AxytosActionHandler
                 case "cancel":
                     return $this->processCancelAction($order, $action_data);
 
+                case "reverse_cancel":
+                    return $this->processReverseCancelAction($order, $action_data);
+
                 case "refund":
                     return $this->processRefundAction($order, $action_data);
 
@@ -364,6 +367,19 @@ class AxytosActionHandler
         try {
             $success = $this->gateway->cancelOrder($order);
             return ['success' => $success, 'error_message' => $success ? null : 'Order cancellation failed'];
+        } catch (\Exception $e) {
+            return ['success' => false, 'error_message' => $this->categorizeError($e)];
+        }
+    }
+
+    /**
+     * Process reverse cancel action
+     */
+    private function processReverseCancelAction($order, $action_data)
+    {
+        try {
+            $success = $this->gateway->reverseCancelOrder($order);
+            return ['success' => $success, 'error_message' => $success ? null : 'Order reverse cancellation failed'];
         } catch (\Exception $e) {
             return ['success' => false, 'error_message' => $this->categorizeError($e)];
         }

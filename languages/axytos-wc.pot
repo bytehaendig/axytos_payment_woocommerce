@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Axytos WooCommerce Payment Gateway plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Axytos WooCommerce Payment Gateway 0.12.7\n"
+"Project-Id-Version: Axytos WooCommerce Payment Gateway 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/axytos-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-06-30T11:57:58+02:00\n"
+"POT-Creation-Date: 2025-06-30T12:47:22+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: axytos-wc\n"
@@ -121,267 +121,271 @@ msgstr ""
 msgid "Refund"
 msgstr ""
 
-#: includes/admin.php:357
+#: includes/admin.php:343
+msgid "Reverse Cancel"
+msgstr ""
+
+#: includes/admin.php:365
 msgid "Generate Secure Key"
 msgstr ""
 
-#: includes/admin.php:361
+#: includes/admin.php:369
 msgid "Webhook Information"
 msgstr ""
 
-#: includes/admin.php:378
+#: includes/admin.php:386
 msgid "Secure webhook API key generated. Make sure to save your settings."
 msgstr ""
 
-#: includes/admin.php:410
+#: includes/admin.php:418
 msgid "Webhook Endpoint Information"
 msgstr ""
 
-#: includes/admin.php:418
+#: includes/admin.php:426
 msgid "This webhook enables seamless integration between external systems (such as ERP software) and the Axytos plugin. It allows your systems to automatically notify the plugin about order status changes and provide critical information like invoice numbers."
 msgstr ""
 
-#: includes/admin.php:421
+#: includes/admin.php:429
 msgid "Invoice numbers are particularly important for Axytos payment processing, making this webhook an essential tool for automating data flow between your ERP system, WooCommerce, and the Axytos payment provider."
 msgstr ""
 
-#: includes/admin.php:425
+#: includes/admin.php:433
 msgid "General Information"
 msgstr ""
 
-#: includes/admin.php:429
+#: includes/admin.php:437
 msgid "URL:"
 msgstr ""
 
-#: includes/admin.php:433
+#: includes/admin.php:441
 msgid "Method:"
 msgstr ""
 
-#: includes/admin.php:436
+#: includes/admin.php:444
 msgid "Headers:"
 msgstr ""
 
-#: includes/admin.php:440
+#: includes/admin.php:448
 msgid "your webhook key"
 msgstr ""
 
-#: includes/admin.php:445
+#: includes/admin.php:453
 msgid "Body:"
 msgstr ""
 
-#: includes/admin.php:448
+#: includes/admin.php:456
 msgid "JSON payload containing order status updates with fields:"
 msgstr ""
 
-#: includes/admin.php:452
+#: includes/admin.php:460
 msgid "The WooCommerce order ID (required)"
 msgstr ""
 
-#: includes/admin.php:455
+#: includes/admin.php:463
 msgid "The new order status (required)"
 msgstr ""
 
-#: includes/admin.php:458
+#: includes/admin.php:466
 msgid "The current order status (optional)"
 msgstr ""
 
-#: includes/admin.php:461
+#: includes/admin.php:469
 msgid "Invoice number (optional)"
 msgstr ""
 
-#: includes/admin.php:464
+#: includes/admin.php:472
 msgid "Tracking number (optional)"
 msgstr ""
 
-#: includes/admin.php:469
+#: includes/admin.php:477
 msgid "Example"
 msgstr ""
 
-#: includes/admin.php:473
+#: includes/admin.php:481
 msgid "Curl"
 msgstr ""
 
-#: includes/admin.php:488
+#: includes/admin.php:496
 msgid "Python (requests)"
 msgstr ""
 
-#: includes/admin.php:510
+#: includes/admin.php:518
 msgid "PHP"
 msgstr ""
 
-#: includes/admin.php:837
-#: includes/admin.php:844
+#: includes/admin.php:845
+#: includes/admin.php:852
 msgid "Axytos Status"
 msgstr ""
 
 #. translators: 1: number of processed orders, 2: number of failed orders
-#: includes/admin.php:871
-#: includes/ajax.php:146
+#: includes/admin.php:879
+#: includes/ajax.php:153
 #, php-format
 msgid "Processed %1$d orders, %2$d failed."
 msgstr ""
 
 #. translators: 1: number of processed actions, 2: order ID
-#: includes/admin.php:895
+#: includes/admin.php:903
 #, php-format
 msgid "Successfully retried %1$d broken actions for order #%2$d."
 msgstr ""
 
 #. translators: 1: number of failed actions, 2: order ID
-#: includes/admin.php:904
+#: includes/admin.php:912
 #, php-format
 msgid "Retry attempt completed for order #%2$d, but %1$d actions still failed."
 msgstr ""
 
-#: includes/admin.php:912
+#: includes/admin.php:920
 msgid "Failed to retry actions - invalid order or no broken actions found."
 msgstr ""
 
 #. translators: %s: error message
-#: includes/admin.php:919
+#: includes/admin.php:927
 #, php-format
 msgid "Error retrying actions: %s"
 msgstr ""
 
-#: includes/admin.php:926
-#: includes/admin.php:975
+#: includes/admin.php:934
+#: includes/admin.php:983
 msgid "Invalid order or not an Axytos order."
 msgstr ""
 
 #. translators: 1: action name, 2: order ID
-#: includes/admin.php:949
+#: includes/admin.php:957
 #, php-format
 msgid "Successfully removed failed action '%1$s' from order #%2$d."
 msgstr ""
 
 #. translators: 1: action name, 2: order ID
-#: includes/admin.php:958
+#: includes/admin.php:966
 #, php-format
 msgid "Failed to remove action '%1$s' from order #%2$d. Action may not exist or is not broken."
 msgstr ""
 
 #. translators: %s: error message
-#: includes/admin.php:968
+#: includes/admin.php:976
 #, php-format
 msgid "Error removing action: %s"
 msgstr ""
 
-#: includes/admin.php:987
+#: includes/admin.php:995
 msgid "Axytos Pending Actions"
 msgstr ""
 
-#: includes/admin.php:990
-#: includes/admin.php:994
+#: includes/admin.php:998
+#: includes/admin.php:1002
 msgid "Cron Status"
 msgstr ""
 
-#: includes/admin.php:998
+#: includes/admin.php:1006
 msgid "✓ Working"
 msgstr ""
 
-#: includes/admin.php:998
+#: includes/admin.php:1006
 msgid "⚠ Issue Detected"
 msgstr ""
 
-#: includes/admin.php:1001
+#: includes/admin.php:1009
 msgid "External Cron"
 msgstr ""
 
-#: includes/admin.php:1001
+#: includes/admin.php:1009
 msgid "Traffic-Based"
 msgstr ""
 
-#: includes/admin.php:1017
+#: includes/admin.php:1025
 msgid "Last Processing Run"
 msgstr ""
 
-#: includes/admin.php:1025
+#: includes/admin.php:1033
 msgid "Never"
 msgstr ""
 
-#: includes/admin.php:1030
+#: includes/admin.php:1038
 msgid "Next Processing Run"
 msgstr ""
 
-#: includes/admin.php:1038
+#: includes/admin.php:1046
 msgid "Not scheduled"
 msgstr ""
 
-#: includes/admin.php:1048
+#: includes/admin.php:1056
 msgid "Process All Pending Actions Now"
 msgstr ""
 
-#: includes/admin.php:1056
+#: includes/admin.php:1064
 msgid "Orders with Pending Actions"
 msgstr ""
 
-#: includes/admin.php:1061
+#: includes/admin.php:1069
 msgid "No orders with pending actions found."
 msgstr ""
 
-#: includes/admin.php:1069
+#: includes/admin.php:1077
 msgid "Order ID"
 msgstr ""
 
-#: includes/admin.php:1070
+#: includes/admin.php:1078
 msgid "Status"
 msgstr ""
 
-#: includes/admin.php:1071
+#: includes/admin.php:1079
 msgid "Pending Actions"
 msgstr ""
 
-#: includes/admin.php:1075
+#: includes/admin.php:1083
 msgid "Retry Actions"
 msgstr ""
 
-#: includes/admin.php:1079
+#: includes/admin.php:1087
 msgid "Broken Actions"
 msgstr ""
 
-#: includes/admin.php:1169
-#: includes/admin.php:1190
+#: includes/admin.php:1177
+#: includes/admin.php:1198
 msgid "View Error"
 msgstr ""
 
-#: includes/admin.php:1208
+#: includes/admin.php:1216
 msgid "Retry broken actions"
 msgstr ""
 
-#: includes/admin.php:1209
+#: includes/admin.php:1217
 msgid "Retry all broken actions for this order"
 msgstr ""
 
-#: includes/admin.php:1210
+#: includes/admin.php:1218
 msgid "Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately."
 msgstr ""
 
-#: includes/admin.php:1220
+#: includes/admin.php:1228
 msgid "Remove broken action"
 msgstr ""
 
-#: includes/admin.php:1221
+#: includes/admin.php:1229
 msgid "Remove this permanently failed action"
 msgstr ""
 
-#: includes/admin.php:1222
+#: includes/admin.php:1230
 #, php-format
 msgid "Are you sure you want to remove the failed '%s' action? You are responsible for communicating the necessary changes to Axytos to ensure that further processing of the order is guaranteed. This action cannot be undone."
 msgstr ""
 
-#: includes/admin.php:1244
+#: includes/admin.php:1252
 msgid "Error Details"
 msgstr ""
 
-#: includes/admin.php:1270
+#: includes/admin.php:1278
 msgid "Order"
 msgstr ""
 
-#: includes/admin.php:1282
+#: includes/admin.php:1290
 msgid "failed at"
 msgstr ""
 
-#: includes/admin.php:1286
+#: includes/admin.php:1294
 msgid "Error:"
 msgstr ""
 
@@ -402,53 +406,57 @@ msgid "Order cancelled via Axytos action."
 msgstr ""
 
 #: includes/ajax.php:80
-msgid "Order refunded via Axytos action."
+msgid "Order cancellation reversed via Axytos action."
 msgstr ""
 
 #: includes/ajax.php:87
+msgid "Order refunded via Axytos action."
+msgstr ""
+
+#: includes/ajax.php:94
 msgid "Order confirmed via Axytos action."
 msgstr ""
 
-#: includes/ajax.php:92
+#: includes/ajax.php:99
 msgid "Invalid action."
 msgstr ""
 
-#: includes/ajax.php:97
+#: includes/ajax.php:104
 msgid "The change of the order was successful."
 msgstr ""
 
-#: includes/ajax.php:102
+#: includes/ajax.php:109
 msgid "Error processing action: "
 msgstr ""
 
-#: includes/ajax.php:135
+#: includes/ajax.php:142
 msgid "Insufficient permissions."
 msgstr ""
 
-#: includes/ajax.php:156
+#: includes/ajax.php:163
 msgid "Error processing actions: "
 msgstr ""
 
 #. translators: 1: action name, 2: queue timestamp
-#: includes/AxytosActionHandler.php:396
+#: includes/AxytosActionHandler.php:412
 #, php-format
 msgid "Axytos action \"%1$s\" processed successfully"
 msgstr ""
 
 #. translators: 1: action name, 2: number of retries
-#: includes/AxytosActionHandler.php:584
+#: includes/AxytosActionHandler.php:600
 #, php-format
 msgid "Axytos action \"%1$s\" failed permanently after %2$d retries. Order requires manual attention."
 msgstr ""
 
 #. translators: 1: site name, 2: order number
-#: includes/AxytosActionHandler.php:601
+#: includes/AxytosActionHandler.php:617
 #, php-format
 msgid "[%1$s] Axytos Payment Action Failed - Order #%2$s"
 msgstr ""
 
 #. translators: 1: order number, 2: action name, 3: max retries, 4: order edit URL
-#: includes/AxytosActionHandler.php:608
+#: includes/AxytosActionHandler.php:624
 #, php-format
 msgid ""
 "An Axytos payment action has failed permanently and requires manual attention.\n"
@@ -463,19 +471,19 @@ msgid ""
 msgstr ""
 
 #. translators: %s: action name
-#: includes/AxytosActionHandler.php:718
+#: includes/AxytosActionHandler.php:734
 #, php-format
 msgid "Failed Axytos action \"%s\" was manually removed by admin."
 msgstr ""
 
 #. translators: %s: action name
-#: includes/AxytosActionHandler.php:789
+#: includes/AxytosActionHandler.php:805
 #, php-format
 msgid "Broken Axytos action \"%s\" was manually retried and succeeded."
 msgstr ""
 
 #. translators: 1: action name, 2: error message
-#: includes/AxytosActionHandler.php:810
+#: includes/AxytosActionHandler.php:826
 #, php-format
 msgid "Manual retry of broken Axytos action \"%1$s\" failed: %2$s. Action reset for new retry cycle."
 msgstr ""
@@ -589,7 +597,11 @@ msgstr ""
 msgid "Could not cancel order with Axytos API."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:429
+#: includes/AxytosPaymentGateway.php:409
+msgid "Could not reverse cancel order with Axytos API."
+msgstr ""
+
+#: includes/AxytosPaymentGateway.php:455
 msgid "Unknown API error"
 msgstr ""
 

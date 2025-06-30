@@ -390,6 +390,32 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway
         }
     }
 
+    public function reverseCancelOrder($order)
+    {
+        try {
+            $result = $this->client->reverseCancelOrder($order->get_order_number());
+
+            $response_body = json_decode($result, true);
+            if (isset($response_body["errors"])) {
+                $error_msg = $this->formatApiErrors($response_body["errors"]);
+                throw new \Exception("Order reverse cancellation failed: " . $error_msg);
+            }
+
+            $order->save_meta_data();
+            return true;
+        } catch (AxytosApiException $e) {
+            // Provide user-friendly message for API connection errors
+            if ($e->isConnectionError()) {
+                throw new \Exception(__("Could not reverse cancel order with Axytos API.", "axytos-wc"), 0, $e);
+            }
+            // Re-throw with more context for other API errors
+            throw new \Exception("Order reverse cancellation failed: " . $e->getMessage(), 0, $e);
+        } catch (\Exception $e) {
+            // Re-throw with more context for other errors
+            throw new \Exception("Order reverse cancellation failed: " . $e->getMessage(), 0, $e);
+        }
+    }
+
     public function getAgreement()
     {
         return $this->client->getAgreement();

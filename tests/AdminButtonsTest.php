@@ -47,7 +47,9 @@ class AdminButtonsTest extends WP_UnitTestCase
         column_html('axytos_actions', $order);
         $output = ob_get_clean();
 
-        $this->assertStringNotContainsString('data-action="', $output, 'Action buttons should not be present for cancelled orders.');
+        $this->assertStringContainsString('data-action="reverse_cancel"', $output, 'Reverse cancel button should be present for cancelled orders.');
+        $this->assertStringNotContainsString('data-action="shipped"', $output, 'Shipped button should not be present for cancelled orders.');
+        $this->assertStringNotContainsString('data-action="cancel"', $output, 'Cancel button should not be present for cancelled orders.');
     }
 
 }

@@ -266,6 +266,21 @@ class AxytosApiClient
     }
 
     /**
+     * Reverse Cancellation of an order
+     *
+     * @param string|int $orderID The order identifier to cancel
+     * @return string JSON response from the API
+     * @throws AxytosApiException When API communication fails
+     */
+    public function reverseCancelOrder($orderID)
+    {
+        $apiUrl = "/Payments/invoice/order/reverseCancellation";
+        $requestData = array("externalOrderId" => $orderID);
+        $response = $this->makeRequest($apiUrl, "POST", $requestData);
+        return $response;
+    }
+
+    /**
      * Get the credit check agreement content
      *
      * @return string JSON response containing agreement content
