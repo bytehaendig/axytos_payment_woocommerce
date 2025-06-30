@@ -981,19 +981,41 @@ function render_pending_actions_page()
     $order_ids = $action_handler->getOrdersWithPendingActions(100);
     $next_scheduled = AxytosScheduler::get_next_scheduled_times();
     $last_processing_run = AxytosScheduler::get_last_processing_run();
+    $cron_health = AxytosScheduler::get_cron_health();
     ?>
     <div class="wrap">
         <h1><?php echo __("Axytos Pending Actions", "axytos-wc"); ?></h1>
 
         <div class="card">
             <h2><?php echo __("Cron Status", "axytos-wc"); ?></h2>
-            <table class="form-table">
+            
+            <table class="form-table" style="margin-top: 0;">
                 <tr>
-                    <th><?php echo __(
-                        "Last Processing Run",
-                        "axytos-wc"
-                    ); ?></th>
-                    <td>
+                    <th style="width: 200px; padding: 8px 10px;"><?php echo __("Cron Status", "axytos-wc"); ?></th>
+                    <td style="padding: 8px 10px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="color: <?php echo $cron_health['is_working'] ? '#46b450' : '#dc3232'; ?>; font-weight: 600;">
+                                <?php echo $cron_health['is_working'] ? __('✓ Working', 'axytos-wc') : __('⚠ Issue Detected', 'axytos-wc'); ?>
+                            </span>
+                            <span style="padding: 2px 8px; background: #f0f0f1; border-radius: 12px; font-size: 0.85em; color: #666;">
+                                <?php echo $cron_health['cron_type'] === 'external' ? __('External Cron', 'axytos-wc') : __('Traffic-Based', 'axytos-wc'); ?>
+                            </span>
+                        </div>
+                        <?php if (!empty($cron_health['message'])): ?>
+                            <div style="margin-top: 5px; font-size: 0.9em; color: #666;">
+                                <?php echo esc_html($cron_health['message']); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (!empty($cron_health['recommendation'])): ?>
+                            <div style="margin-top: 5px; font-size: 0.85em; color: #666; font-style: italic;">
+                                <?php echo esc_html($cron_health['recommendation']); ?>
+                            </div>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <tr>
+                    <th style="padding: 8px 10px;"><?php echo __("Last Processing Run", "axytos-wc"); ?></th>
+                    <td style="padding: 8px 10px;">
                         <?php if ($last_processing_run) {
                             echo wp_date(
                                 get_option("date_format") . " " . get_option("time_format"),
@@ -1005,11 +1027,8 @@ function render_pending_actions_page()
                     </td>
                 </tr>
                 <tr>
-                    <th><?php echo __(
-                        "Next Processing Run",
-                        "axytos-wc"
-                    ); ?></th>
-                    <td>
+                    <th style="padding: 8px 10px;"><?php echo __("Next Processing Run", "axytos-wc"); ?></th>
+                    <td style="padding: 8px 10px;">
                         <?php if ($next_scheduled["process_pending"]) {
                             echo wp_date(
                                 get_option("date_format") . " " . get_option("time_format"),
@@ -1020,8 +1039,8 @@ function render_pending_actions_page()
                         } ?>
                     </td>
                 </tr>
-
             </table>
+
 
             <form method="post">
                 <?php wp_nonce_field("axytos_manual_process"); ?>

@@ -124,50 +124,51 @@ msgstr "URL:"
 msgid "Method:"
 msgstr "Methode:"
 
-#: includes/admin.php:988
+#: includes/admin.php:987
 msgid "Axytos Pending Actions"
 msgstr "Ausstehende Axytos-Aktionen"
 
 #. translators: 1: number of processed orders, 2: number of failed orders
-#: includes/admin.php:873
+#: includes/admin.php:871
 #: includes/ajax.php:146
 #, php-format
 msgid "Processed %1$d orders, %2$d failed."
 msgstr "%1$d Bestellungen verarbeitet, %2$d fehlgeschlagen."
 
-#: includes/admin.php:991
+#: includes/admin.php:990
+#: includes/admin.php:994
 msgid "Cron Status"
 msgstr "Cron-Status"
 
-#: includes/admin.php:1010
+#: includes/admin.php:1030
 msgid "Next Processing Run"
 msgstr "Nächste Verarbeitung"
 
-#: includes/admin.php:1021
+#: includes/admin.php:1038
 msgid "Not scheduled"
 msgstr "Nicht geplant"
 
-#: includes/admin.php:1031
+#: includes/admin.php:1048
 msgid "Process All Pending Actions Now"
 msgstr "Alle ausstehenden Aktionen jetzt verarbeiten"
 
-#: includes/admin.php:1039
+#: includes/admin.php:1056
 msgid "Orders with Pending Actions"
 msgstr "Bestellungen mit ausstehenden Aktionen"
 
-#: includes/admin.php:1044
+#: includes/admin.php:1061
 msgid "No orders with pending actions found."
 msgstr "Keine Bestellungen mit ausstehenden Aktionen gefunden."
 
-#: includes/admin.php:1052
+#: includes/admin.php:1069
 msgid "Order ID"
 msgstr "Bestell-ID"
 
-#: includes/admin.php:1053
+#: includes/admin.php:1070
 msgid "Status"
 msgstr "Status"
 
-#: includes/admin.php:1054
+#: includes/admin.php:1071
 msgid "Pending Actions"
 msgstr "Ausstehende Aktionen"
 
@@ -253,104 +254,104 @@ msgstr ""
 "\n"
 "Bestell-URL: %4$s"
 
-#: includes/AxytosPaymentGateway.php:25
-#: includes/AxytosPaymentGateway.php:112
+#: includes/AxytosPaymentGateway.php:26
+#: includes/AxytosPaymentGateway.php:113
 msgid "Axytos"
 msgstr "Axytos"
 
-#: includes/AxytosPaymentGateway.php:26
+#: includes/AxytosPaymentGateway.php:27
 msgid "Payment gateway for Axytos."
 msgstr "Zahlungsgateway für Axytos."
 
-#: includes/AxytosPaymentGateway.php:100
+#: includes/AxytosPaymentGateway.php:101
 msgid "Enable/Disable"
 msgstr "Aktivieren/Deaktivieren"
 
-#: includes/AxytosPaymentGateway.php:102
+#: includes/AxytosPaymentGateway.php:103
 msgid "Enable Axytos Payment"
 msgstr "Axytos-Zahlung aktivieren"
 
-#: includes/AxytosPaymentGateway.php:106
+#: includes/AxytosPaymentGateway.php:107
 msgid "Title"
 msgstr "Titel"
 
-#: includes/AxytosPaymentGateway.php:108
+#: includes/AxytosPaymentGateway.php:109
 msgid "This controls the title which the user sees during checkout."
 msgstr "Dies steuert den Titel, den der Benutzer beim Checkout sieht."
 
-#: includes/AxytosPaymentGateway.php:116
+#: includes/AxytosPaymentGateway.php:117
 msgid "Description"
 msgstr "Beschreibung"
 
-#: includes/AxytosPaymentGateway.php:118
+#: includes/AxytosPaymentGateway.php:119
 msgid "This controls the description which the user sees during checkout."
 msgstr "Dies steuert die Beschreibung, die der Benutzer beim Checkout sieht."
 
-#: includes/AxytosPaymentGateway.php:122
+#: includes/AxytosPaymentGateway.php:123
 msgid "Pay using Axytos."
 msgstr "Kauf auf Rechnung"
 
-#: includes/AxytosPaymentGateway.php:179
+#: includes/AxytosPaymentGateway.php:180
 msgid "Axytos API Key"
 msgstr "Axytos API-Schlüssel"
 
-#: includes/AxytosPaymentGateway.php:181
+#: includes/AxytosPaymentGateway.php:182
 msgid "Enter your Axytos API Key for authentication."
 msgstr "Geben Sie Ihren Axytos API-Schlüssel für die Authentifizierung ein."
 
-#: includes/AxytosPaymentGateway.php:189
+#: includes/AxytosPaymentGateway.php:190
 msgid "Use API Sandbox"
 msgstr "API-Sandbox verwenden"
 
-#: includes/AxytosPaymentGateway.php:191
+#: includes/AxytosPaymentGateway.php:192
 msgid "Send API requests to the API sandbox for testing"
 msgstr "API-Anfragen zu Testzwecken an die API-Sandbox senden"
 
-#: includes/AxytosPaymentGateway.php:169
+#: includes/AxytosPaymentGateway.php:170
 msgid "Precheck Agreement Link Text"
 msgstr "Vereinbarungs-Linktext"
 
-#: includes/AxytosPaymentGateway.php:171
+#: includes/AxytosPaymentGateway.php:172
 msgid "Enter text you want to as link to get agreement."
 msgstr "Geben Sie den Text ein, den Sie als Link zur Vereinbarung verwenden möchten."
 
-#: includes/AxytosPaymentGateway.php:175
+#: includes/AxytosPaymentGateway.php:176
 msgid "click to see agreement"
 msgstr "Vereinbarung anzeigen"
 
-#: includes/AxytosPaymentGateway.php:199
+#: includes/AxytosPaymentGateway.php:200
 msgid "Webhook API Key"
 msgstr "Webhook-Schlüssel"
 
-#: includes/AxytosPaymentGateway.php:201
+#: includes/AxytosPaymentGateway.php:202
 msgid "Enter a secure API key for webhook authentication. This key will be used to authenticate incoming webhook requests from your ERP system."
 msgstr "Geben Sie einen sicheren API-Schlüssel für die Webhook-Authentifizierung ein. Dieser Schlüssel wird zur Authentifizierung eingehender Webhook-Anfragen aus Ihrem ERP-System verwendet."
 
-#: includes/AxytosPaymentGateway.php:207
+#: includes/AxytosPaymentGateway.php:208
 msgid "Generate a secure random key..."
 msgstr "Einen sicheren Zufallsschlüssel generieren..."
 
-#: includes/AxytosPaymentGateway.php:225
+#: includes/AxytosPaymentGateway.php:226
 msgid "Axytos precheck accepted"
 msgstr "Axytos-Vorabprüfung akzeptiert"
 
-#: includes/AxytosPaymentGateway.php:238
+#: includes/AxytosPaymentGateway.php:239
 msgid "Axytos precheck declined"
 msgstr "Axytos-Vorabprüfung abgelehnt"
 
-#: includes/AxytosPaymentGateway.php:241
+#: includes/AxytosPaymentGateway.php:242
 msgid "This Payment Method is not allowed for this order. Please try a different payment method."
 msgstr "Diese Zahlungsmethode ist für diese Bestellung nicht möglich. Bitte wählen Sie eine andere Zahlungsmethode."
 
-#: includes/AxytosPaymentGateway.php:256
+#: includes/AxytosPaymentGateway.php:263
 msgid "Could not connect to Axytos API."
 msgstr "Verbindung zur Zahlungs-API konnte nicht hergestellt werden."
 
-#: includes/AxytosPaymentGateway.php:272
+#: includes/AxytosPaymentGateway.php:288
 msgid "Could not confirm order with Axytos API."
 msgstr "Bestellung konnte nicht mit bei der API bestätigt werden."
 
-#: includes/AxytosPaymentGateway.php:297
+#: includes/AxytosPaymentGateway.php:313
 msgid "Could not update report shipping."
 msgstr "Versandbericht konnte nicht aktualisiert werden."
 
@@ -374,16 +375,16 @@ msgstr "Bestellung in Wartezustand, warte auf Admin-Genehmigung."
 msgid "Webhook added information"
 msgstr "Webhook fügte Informationen hinzu"
 
-#: includes/admin.php:839
-#: includes/admin.php:846
+#: includes/admin.php:837
+#: includes/admin.php:844
 msgid "Axytos Status"
 msgstr "Axytos Status"
 
-#: includes/admin.php:994
+#: includes/admin.php:1017
 msgid "Last Processing Run"
 msgstr "Letzte Ausführung"
 
-#: includes/admin.php:1005
+#: includes/admin.php:1025
 msgid "Never"
 msgstr "Nie"
 
@@ -476,79 +477,79 @@ msgid "PHP"
 msgstr "PHP"
 
 #. translators: 1: number of processed actions, 2: order ID
-#: includes/admin.php:897
+#: includes/admin.php:895
 #, php-format
 msgid "Successfully retried %1$d broken actions for order #%2$d."
 msgstr "Erfolgreich %1$d defekte Aktionen für Bestellung #%2$d wiederholt."
 
 #. translators: 1: number of failed actions, 2: order ID
-#: includes/admin.php:906
+#: includes/admin.php:904
 #, php-format
 msgid "Retry attempt completed for order #%2$d, but %1$d actions still failed."
 msgstr "Wiederholungsversuch für Bestellung #%2$d abgeschlossen, aber %1$d Aktionen sind weiterhin fehlgeschlagen."
 
-#: includes/admin.php:914
+#: includes/admin.php:912
 msgid "Failed to retry actions - invalid order or no broken actions found."
 msgstr "Wiederholung der Aktionen fehlgeschlagen - ungültige Bestellung oder keine defekten Aktionen gefunden."
 
 #. translators: %s: error message
-#: includes/admin.php:921
+#: includes/admin.php:919
 #, php-format
 msgid "Error retrying actions: %s"
 msgstr "Fehler beim Wiederholen der Aktionen: %s"
 
-#: includes/admin.php:928
-#: includes/admin.php:977
+#: includes/admin.php:926
+#: includes/admin.php:975
 msgid "Invalid order or not an Axytos order."
 msgstr "Ungültige Bestellung oder keine Axytos-Bestellung."
 
 #. translators: 1: action name, 2: order ID
-#: includes/admin.php:951
+#: includes/admin.php:949
 #, php-format
 msgid "Successfully removed failed action '%1$s' from order #%2$d."
 msgstr "Fehlgeschlagene Aktion '%1$s' erfolgreich von Bestellung #%2$d entfernt."
 
 #. translators: 1: action name, 2: order ID
-#: includes/admin.php:960
+#: includes/admin.php:958
 #, php-format
 msgid "Failed to remove action '%1$s' from order #%2$d. Action may not exist or is not broken."
 msgstr "Entfernung der Aktion '%1$s' von Bestellung #%2$d fehlgeschlagen. Aktion existiert möglicherweise nicht oder ist nicht defekt."
 
 #. translators: %s: error message
-#: includes/admin.php:970
+#: includes/admin.php:968
 #, php-format
 msgid "Error removing action: %s"
 msgstr "Fehler beim Entfernen der Aktion: %s"
 
-#: includes/admin.php:1058
+#: includes/admin.php:1075
 msgid "Retry Actions"
 msgstr "Aktionen wiederholen"
 
-#: includes/admin.php:1062
+#: includes/admin.php:1079
 msgid "Broken Actions"
 msgstr "Defekte Aktionen"
 
-#: includes/admin.php:1191
+#: includes/admin.php:1208
 msgid "Retry broken actions"
 msgstr "Defekte Aktionen wiederholen"
 
-#: includes/admin.php:1192
+#: includes/admin.php:1209
 msgid "Retry all broken actions for this order"
 msgstr "Alle defekten Aktionen für diese Bestellung wiederholen"
 
-#: includes/admin.php:1193
+#: includes/admin.php:1210
 msgid "Are you sure you want to retry all broken actions for this order? This will attempt to process them immediately."
 msgstr "Sind Sie sicher, dass Sie alle defekten Aktionen für diese Bestellung wiederholen möchten? Dies wird versuchen, sie sofort zu verarbeiten."
 
-#: includes/admin.php:1203
+#: includes/admin.php:1220
 msgid "Remove broken action"
 msgstr "Defekte Aktion entfernen"
 
-#: includes/admin.php:1204
+#: includes/admin.php:1221
 msgid "Remove this permanently failed action"
 msgstr "Diese dauerhaft fehlgeschlagene Aktion entfernen"
 
-#: includes/admin.php:1205
+#: includes/admin.php:1222
 #, php-format
 msgid "Are you sure you want to remove the failed '%s' action? You are responsible for communicating the necessary changes to Axytos to ensure that further processing of the order is guaranteed. This action cannot be undone."
 msgstr "Sind Sie sicher, dass Sie die fehlgeschlagene '%s'-Aktion entfernen möchten? Sie sind dafür verantwortlich, die notwendigen Änderungen an Axytos zu kommunizieren, um sicherzustellen, dass die weitere Verarbeitung der Bestellung gewährleistet ist. Diese Aktion kann nicht rückgängig gemacht werden."
@@ -565,24 +566,24 @@ msgstr "Fehlgeschlagene Axytos-Aktion \"%s\" wurde manuell vom Administrator ent
 msgid "Broken Axytos action \"%s\" was manually retried and succeeded."
 msgstr "Defekte Axytos-Aktion \"%s\" wurde manuell wiederholt und war erfolgreich."
 
-#: includes/admin.php:1152
-#: includes/admin.php:1173
+#: includes/admin.php:1169
+#: includes/admin.php:1190
 msgid "View Error"
 msgstr "Fehler anzeigen"
 
-#: includes/admin.php:1227
+#: includes/admin.php:1244
 msgid "Error Details"
 msgstr "Fehlerdetails"
 
-#: includes/admin.php:1253
+#: includes/admin.php:1270
 msgid "Order"
 msgstr "Bestellung"
 
-#: includes/admin.php:1265
+#: includes/admin.php:1282
 msgid "failed at"
 msgstr "fehlgeschlagen am"
 
-#: includes/admin.php:1269
+#: includes/admin.php:1286
 msgid "Error:"
 msgstr "Fehler:"
 
@@ -592,14 +593,67 @@ msgstr "Fehler:"
 msgid "Manual retry of broken Axytos action \"%1$s\" failed: %2$s. Action reset for new retry cycle."
 msgstr "Manuelle Wiederholung der defekten Axytos-Aktion \"%1$s\" fehlgeschlagen: %2$s. Aktion für neuen Wiederholungszyklus zurückgesetzt."
 
-#: includes/AxytosPaymentGateway.php:336
+#: includes/AxytosPaymentGateway.php:357
 msgid "Could not process refund with Axytos API."
 msgstr "Rückerstattung konnte nicht mit der Axytos-API verarbeitet werden."
 
-#: includes/AxytosPaymentGateway.php:357
+#: includes/AxytosPaymentGateway.php:383
 msgid "Could not cancel order with Axytos API."
 msgstr "Bestellung konnte nicht mit der Axytos-API storniert werden."
 
-#: includes/AxytosPaymentGateway.php:410
+#: includes/AxytosPaymentGateway.php:429
 msgid "Unknown API error"
 msgstr "Unbekannter API-Fehler"
+
+#: includes/admin.php:998
+msgid "✓ Working"
+msgstr "✓ Funktioniert"
+
+#: includes/admin.php:998
+msgid "⚠ Issue Detected"
+msgstr "⚠ Problem erkannt"
+
+#: includes/admin.php:1001
+msgid "External Cron"
+msgstr "Externer Cron"
+
+#: includes/admin.php:1001
+msgid "Traffic-Based"
+msgstr "Traffic-basiert"
+
+#: includes/cron.php:173
+msgid "External cron is configured and working properly."
+msgstr "Externer Cron ist konfiguriert und funktioniert ordnungsgemäß."
+
+#: includes/cron.php:175
+msgid "External cron is configured but not working. Check your server cron job."
+msgstr "Externer Cron ist konfiguriert, funktioniert aber nicht. Überprüfen Sie Ihren Server-Cron-Job."
+
+#: includes/cron.php:176
+msgid "Ensure your server cron calls: wget -q -O - "
+msgstr "Stellen Sie sicher, dass Ihr Server-Cron aufruft: wget -q -O - "
+
+#: includes/cron.php:180
+msgid "No cron job scheduled. Try deactivating and reactivating the plugin."
+msgstr "Kein Cron-Job geplant. Versuchen Sie, das Plugin zu deaktivieren und wieder zu aktivieren."
+
+#: includes/cron.php:184
+#, php-format
+msgid "Traffic-based cron appears stuck. Last run was %s hours ago."
+msgstr "Traffic-basierter Cron scheint hängen zu bleiben. Letzte Ausführung war vor %s Stunden."
+
+#: includes/cron.php:187
+msgid "Consider switching to external cron for better reliability, especially on low-traffic sites."
+msgstr "Erwägen Sie den Wechsel zu externem Cron für bessere Zuverlässigkeit, besonders bei Websites mit wenig Traffic."
+
+#: includes/cron.php:189
+msgid "Traffic-based cron has never run. This may be normal for a new installation or low-traffic site."
+msgstr "Traffic-basierter Cron wurde noch nie ausgeführt. Dies kann bei einer neuen Installation oder einer Website mit wenig Traffic normal sein."
+
+#: includes/cron.php:190
+msgid "For reliable processing, consider configuring external cron."
+msgstr "Für zuverlässige Verarbeitung erwägen Sie die Konfiguration eines externen Cron."
+
+#: includes/cron.php:192
+msgid "Traffic-based cron is working normally."
+msgstr "Traffic-basierter Cron funktioniert normal."
