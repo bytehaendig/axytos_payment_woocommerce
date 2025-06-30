@@ -1,4 +1,9 @@
 <?php
+/**
+ * Cron functionality for Axytos WooCommerce plugin.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 

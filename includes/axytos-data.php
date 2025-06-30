@@ -1,7 +1,19 @@
 <?php
+/**
+ * Data formatting functions for Axytos API integration.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 
+/**
+ * Create basket data for Axytos API.
+ *
+ * @param \WC_Order $order The order to create basket data for.
+ * @param string    $style The style of basket data ('order', 'invoice', 'refund').
+ * @return array Formatted basket data.
+ */
 function createBasketData( $order, $style = 'order' ) {
 	assert( $style === 'order' || $style === 'invoice' || $style === 'refund' );
 	$with_tax_groups = false;

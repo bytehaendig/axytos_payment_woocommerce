@@ -1,4 +1,9 @@
 <?php
+/**
+ * AJAX handlers for Axytos WooCommerce plugin.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 
@@ -190,6 +195,9 @@ function handle_manual_processing() {
 	}
 }
 
+/**
+ * Bootstrap AJAX functionality.
+ */
 function bootstrap_ajax() {
 	add_action( 'wp_ajax_axytos_action', __NAMESPACE__ . '\\handle_ajax_action' );
 	add_action(

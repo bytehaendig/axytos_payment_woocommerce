@@ -1,4 +1,9 @@
 <?php
+/**
+ * Action handler for Axytos WooCommerce plugin.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 
@@ -10,7 +15,7 @@ require_once __DIR__ . '/AxytosPaymentGateway.php';
 require_once __DIR__ . '/axytos-data.php';
 
 /**
- * Handles pending Axytos actions with retry logic for robustness
+ * Handles pending Axytos actions with retry logic for robustness.
  */
 class AxytosActionHandler {
 
@@ -21,9 +26,23 @@ class AxytosActionHandler {
 	public const META_KEY_TRACKING_NUMBER = 'axytos_ext_tracking_nr';
 	public const MAX_RETRIES              = 3;
 
+	/**
+	 * Payment gateway instance.
+	 *
+	 * @var AxytosPaymentGateway
+	 */
 	private $gateway;
+
+	/**
+	 * Logger instance.
+	 *
+	 * @var \WC_Logger
+	 */
 	private $logger;
 
+	/**
+	 * Constructor for the action handler.
+	 */
 	public function __construct() {
 		$this->gateway = new AxytosPaymentGateway();
 		$this->logger  = wc_get_logger();

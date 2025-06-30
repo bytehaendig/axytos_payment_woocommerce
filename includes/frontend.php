@@ -1,4 +1,9 @@
 <?php
+/**
+ * Frontend functionality for Axytos WooCommerce plugin.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 

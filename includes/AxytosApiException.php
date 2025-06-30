@@ -1,4 +1,9 @@
 <?php
+/**
+ * Custom exception class for Axytos API errors.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 

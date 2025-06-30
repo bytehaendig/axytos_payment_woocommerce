@@ -15,7 +15,7 @@ run = "{{ vars.ddev_exec }} vendor/bin/phpunit"
 
 [tasks.lint]
 description = "Lint the code"
-run = "{{ vars.ddev_exec }} vendor/bin/phpcs"
+run = "{{ vars.ddev_exec }} vendor/bin/phpcs includes/ axytos-woocommerce.php"
 
 [tasks.composer]
 description = "Run composer"

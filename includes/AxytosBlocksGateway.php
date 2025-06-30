@@ -1,4 +1,10 @@
 <?php
+/**
+ * Axytos Blocks Gateway for WooCommerce Blocks integration.
+ *
+ * @package Axytos\WooCommerce
+ */
+
 namespace Axytos\WooCommerce;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;

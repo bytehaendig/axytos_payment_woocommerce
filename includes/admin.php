@@ -1,4 +1,9 @@
 <?php
+/**
+ * Admin functionality for Axytos WooCommerce plugin.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 
@@ -867,6 +872,9 @@ function add_webhook_settings_script() {
 	<?php
 }
 
+/**
+ * Bootstrap admin functionality.
+ */
 function bootstrap_admin() {
 	// Enqueue admin scripts and styles
 	add_action(

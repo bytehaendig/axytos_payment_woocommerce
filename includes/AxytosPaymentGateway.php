@@ -1,4 +1,9 @@
 <?php
+/**
+ * Axytos Payment Gateway for WooCommerce.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 
@@ -7,8 +12,18 @@ require_once __DIR__ . '/AxytosApiException.php';
 require_once __DIR__ . '/axytos-data.php';
 require_once __DIR__ . '/AxytosEncryptionService.php';
 
+/**
+ * Axytos Payment Gateway class.
+ *
+ * Extends WooCommerce payment gateway to provide Axytos payment functionality.
+ */
 class AxytosPaymentGateway extends \WC_Payment_Gateway {
 
+	/**
+	 * Axytos API client instance.
+	 *
+	 * @var AxytosApiClient
+	 */
 	protected $client;
 
 	/**
@@ -18,6 +33,9 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 	 */
 	private $encryption_service;
 
+	/**
+	 * Constructor for the payment gateway.
+	 */
 	public function __construct() {
 		$this->id                 = \AXYTOS_PAYMENT_ID;
 		$this->icon               = ''; // URL of the icon that will be displayed on the checkout page
@@ -62,11 +80,23 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		);
 	}
 
+	/**
+	 * Encrypt sensitive settings before saving.
+	 *
+	 * @param array $settings Settings array to encrypt.
+	 * @return array Encrypted settings array.
+	 */
 	public function encrypt_settings( $settings ) {
 		return $this->encryption_service->encrypt_settings( $settings );
 	}
 
-	// Get decrypted value when using get_option
+	/**
+	 * Get decrypted value when using get_option.
+	 *
+	 * @param string $key Option key to retrieve.
+	 * @param mixed  $empty_value Default value if option is empty.
+	 * @return mixed Decrypted option value.
+	 */
 	public function get_option( $key, $empty_value = null ) {
 		$value = parent::get_option( $key, $empty_value );
 		if (
@@ -78,6 +108,12 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		return $value;
 	}
 
+	/**
+	 * Add gateway to block checkout.
+	 *
+	 * @param array $gateways Array of payment gateways.
+	 * @return array Modified gateways array.
+	 */
 	public function add_gateway_to_block_checkout( $gateways ) {
 		$options = get_option( 'woocommerce_dummy_settings', array() );
 		if ( isset( $options['hide_for_non_admin_users'] ) ) {
@@ -95,7 +131,9 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		return $gateways;
 	}
 
-	// Initialize form fields for the admin settings page
+	/**
+	 * Initialize form fields for the admin settings page.
+	 */
 	public function init_form_fields() {
 		$this->form_fields = array(
 			'enabled'           => array(
@@ -214,6 +252,13 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		);
 	}
 
+	/**
+	 * Process the payment for an order.
+	 *
+	 * @param int $order_id The order ID to process payment for.
+	 * @return array Payment processing result.
+	 * @throws \Exception If payment is declined.
+	 */
 	public function process_payment( $order_id ) {
 		$order         = wc_get_order( $order_id );
 		$decision_code = $this->doPrecheck( $order );
@@ -248,6 +293,12 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		return array();
 	}
 
+	/**
+	 * Perform precheck for an order with Axytos API.
+	 *
+	 * @param \WC_Order $order The order to precheck.
+	 * @return string Decision code from Axytos API.
+	 */
 	public function doPrecheck( $order ) {
 		try {
 			$data     = createPrecheckData( $order );
@@ -266,6 +317,13 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		}
 	}
 
+	/**
+	 * Confirm an order with Axytos API.
+	 *
+	 * @param \WC_Order $order The order to confirm.
+	 * @return bool True if confirmation successful.
+	 * @throws \Exception If confirmation fails.
+	 */
 	public function confirmOrder( $order ) {
 		try {
 			$confirm_data     = createConfirmData( $order );
@@ -293,6 +351,13 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		}
 	}
 
+	/**
+	 * Report shipping status to Axytos API.
+	 *
+	 * @param \WC_Order $order The order to report shipping for.
+	 * @return bool True if reporting successful.
+	 * @throws \Exception If reporting fails.
+	 */
 	public function reportShipping( $order ) {
 		try {
 			$statusData = createShippingData( $order );
@@ -317,6 +382,14 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		}
 	}
 
+	/**
+	 * Create invoice with Axytos API.
+	 *
+	 * @param \WC_Order $order The order to create invoice for.
+	 * @param string    $invoice_number Optional invoice number.
+	 * @return bool True if invoice creation successful.
+	 * @throws \Exception If invoice creation fails.
+	 */
 	public function createInvoice( $order, $invoice_number = null ) {
 		try {
 			$invoiceData = createInvoiceData( $order, $invoice_number );
@@ -334,6 +407,13 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		}
 	}
 
+	/**
+	 * Refund an order with Axytos API.
+	 *
+	 * @param \WC_Order $order The order to refund.
+	 * @return bool True if refund successful.
+	 * @throws \Exception If refund fails.
+	 */
 	public function refundOrder( $order ) {
 		try {
 			$refundData = createRefundData( $order );
@@ -359,6 +439,13 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		}
 	}
 
+	/**
+	 * Cancel an order with Axytos API.
+	 *
+	 * @param \WC_Order $order The order to cancel.
+	 * @return bool True if cancellation successful.
+	 * @throws \Exception If cancellation fails.
+	 */
 	public function cancelOrder( $order ) {
 		try {
 			$result = $this->client->cancelOrder( $order->get_order_number() );
@@ -384,6 +471,13 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		}
 	}
 
+	/**
+	 * Reverse cancel an order with Axytos API.
+	 *
+	 * @param \WC_Order $order The order to reverse cancel.
+	 * @return bool True if reverse cancellation successful.
+	 * @throws \Exception If reverse cancellation fails.
+	 */
 	public function reverseCancelOrder( $order ) {
 		try {
 			$result = $this->client->reverseCancelOrder( $order->get_order_number() );
@@ -409,12 +503,23 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		}
 	}
 
+	/**
+	 * Get agreement from Axytos API.
+	 *
+	 * @return string Agreement content.
+	 */
 	public function getAgreement() {
 		return $this->client->getAgreement();
 	}
 
 	/**
 	 * Format API errors from Axytos response for better readability
+	 */
+	/**
+	 * Format API errors for display.
+	 *
+	 * @param mixed $errors Error data from API response.
+	 * @return string Formatted error message.
 	 */
 	private function formatApiErrors( $errors ) {
 		if ( is_string( $errors ) ) {

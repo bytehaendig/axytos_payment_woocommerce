@@ -1,4 +1,9 @@
 <?php
+/**
+ * Encryption service for Axytos WooCommerce plugin.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 

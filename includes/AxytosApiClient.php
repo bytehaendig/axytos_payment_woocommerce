@@ -1,4 +1,9 @@
 <?php
+/**
+ * Axytos API Client for WooCommerce integration.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 

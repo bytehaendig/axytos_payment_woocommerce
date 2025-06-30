@@ -1,4 +1,9 @@
 <?php
+/**
+ * Plugin initialization and bootstrap functionality.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 
@@ -39,6 +44,9 @@ function initialize_woocommerce() {
 	}
 }
 
+/**
+ * Bootstrap the payment gateway functionality.
+ */
 function bootstrap_gateway() {
 	require_once plugin_dir_path( __FILE__ ) . 'AxytosPaymentGateway.php';
 	add_filter(
@@ -47,6 +55,9 @@ function bootstrap_gateway() {
 	);
 }
 
+/**
+ * Bootstrap the webhook handler functionality.
+ */
 function bootstrap_webhooks() {
 	require_once plugin_dir_path( __FILE__ ) . 'AxytosWebhookHandler.php';
 	$handler = new AxytosWebhookHandler();
@@ -89,13 +100,19 @@ function is_rest_request() {
 }
 
 /**
- * Add Axytos gateway to WooCommerce payment gateways
+ * Add Axytos gateway to WooCommerce payment gateways.
+ *
+ * @param array $gateways Array of payment gateway classes.
+ * @return array Modified array of payment gateway classes.
  */
 function add_gateway_class( $gateways ) {
 	$gateways[] = 'Axytos\\WooCommerce\\AxytosPaymentGateway';
 	return $gateways;
 }
 
+/**
+ * Bootstrap the entire plugin.
+ */
 function bootstrap() {
 	// Initialize everything
 	add_action( 'plugins_loaded', __NAMESPACE__ . '\\initialize_woocommerce' );

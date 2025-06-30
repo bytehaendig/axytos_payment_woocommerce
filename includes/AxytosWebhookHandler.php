@@ -1,4 +1,9 @@
 <?php
+/**
+ * Webhook handler for Axytos WooCommerce plugin.
+ *
+ * @package Axytos\WooCommerce
+ */
 
 namespace Axytos\WooCommerce;
 
