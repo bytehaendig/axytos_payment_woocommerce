@@ -3,7 +3,7 @@
 /**
 Plugin Name: Axytos WooCommerce Payment Gateway
 Description: Axytos Payment Gateway for WooCommerce.
-Version: 0.12.7
+Version: 1.0.0
 Author: Bytehändig Software Manufaktur
 Author URI: https://bytehaendig.de
 Text Domain: axytos-wc
@@ -15,7 +15,7 @@ if (!defined("ABSPATH")) {
     exit();
 }
 
-define("AXYTOS_PLUGIN_VERSION", "0.12.7");
+define("AXYTOS_PLUGIN_VERSION", "1.0.0");
 define("AXYTOS_PAYMENT_ID", "axytoswc");
 
 // Load all plugin functionality
