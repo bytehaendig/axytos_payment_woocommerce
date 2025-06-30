@@ -34,19 +34,25 @@ function enqueue_admin_assets()
                 "axytos-wc"
             ),
             "confirm_action" => __(
-                /* translators: %s: action name (e.g., 'report', 'cancel') */
+                /* translators: %s: translated action name */
                 "Are you sure you want to %s this order?",
                 "axytos-wc"
             ),
             "confirm_action_with_invoice" => __(
-                /* translators: 1: action name (e.g., 'report', 'cancel'), 2: invoice number */
-                "Are you sure you want to %1\$s this order with invoice number: %2\$s?",
+                /* translators: 1: translated action name, 2: invoice number */
+                "Are you sure you want to %1\$s this order with invoice number %2\$s?",
                 "axytos-wc"
             ),
             "unexpected_error" => __(
                 "An unexpected error occurred. Please try again.",
                 "axytos-wc"
             ),
+            "actions" => [
+                "shipped" => __("mark as shipped", "axytos-wc"),
+                "cancel" => __("cancel", "axytos-wc"),
+                "refund" => __("refund", "axytos-wc"),
+                "reverse_cancel" => __("restore", "axytos-wc"),
+            ],
         ],
     ]);
 

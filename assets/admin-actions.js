@@ -20,7 +20,8 @@
           return;
         }
 
-        if (!confirm(AxytosActions.i18n.confirm_action_with_invoice.replace('%1$s', actionType).replace('%2$s', invoiceNumber))) {
+        const translatedAction = AxytosActions.i18n.actions[actionType] || actionType;
+        if (!confirm(AxytosActions.i18n.confirm_action_with_invoice.replace('%1$s', translatedAction).replace('%2$s', invoiceNumber))) {
           return;
         }
 
@@ -53,7 +54,8 @@
         });
       } else {
         // Handle other actions as before
-        if (!confirm(AxytosActions.i18n.confirm_action.replace('%s', actionType))) {
+        const translatedAction = AxytosActions.i18n.actions[actionType] || actionType;
+        if (!confirm(AxytosActions.i18n.confirm_action.replace('%s', translatedAction))) {
           return;
         }
 

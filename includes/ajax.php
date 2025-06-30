@@ -63,6 +63,11 @@ function handle_ajax_action()
                     "completed",
                     __("Order shipped via Axytos action.", "axytos-wc")
                 );
+                $success_message = sprintf(
+                    /* translators: %s: invoice number */
+                    __("Shipping report with invoice number %s has been initiated. The action will be processed by Axytos.", "axytos-wc"),
+                    $invoice_number
+                );
                 break;
             // TODO: maybe get rid of 'cancel', 'refund' and 'confirm' actions - just use regular wooCommerce actions
             case "cancel":
@@ -72,6 +77,7 @@ function handle_ajax_action()
                     "cancelled",
                     __("Order cancelled via Axytos action.", "axytos-wc")
                 );
+                $success_message = __("Order cancellation has been initiated. The action will be processed by Axytos.", "axytos-wc");
                 break;
             case "reverse_cancel":
                 // will trigger axytos reverse cancellation process (see orders.php)
@@ -79,6 +85,7 @@ function handle_ajax_action()
                     "processing",
                     __("Order cancellation reversed via Axytos action.", "axytos-wc")
                 );
+                $success_message = __("Order cancellation reversal has been initiated. The action will be processed by Axytos.", "axytos-wc");
                 break;
             case "refund":
                 // will trigger axytos refund process (see orders.php)
@@ -86,6 +93,7 @@ function handle_ajax_action()
                     "refunded",
                     __("Order refunded via Axytos action.", "axytos-wc")
                 );
+                $success_message = __("Order refund has been initiated. The action will be processed by Axytos.", "axytos-wc");
                 break;
             case "confirm":
                 // will trigger axytos confirmation process (see orders.php)
@@ -93,6 +101,7 @@ function handle_ajax_action()
                     "processing",
                     __("Order confirmed via Axytos action.", "axytos-wc")
                 );
+                $success_message = __("Order confirmation has been initiated. The action will be processed by Axytos.", "axytos-wc");
                 break;
             default:
                 wp_send_json_error([
@@ -101,7 +110,7 @@ function handle_ajax_action()
         }
 
         wp_send_json_success([
-            "message" => __("The change of the order was successful.", "axytos-wc"),
+            "message" => $success_message,
         ]);
     } catch (\Exception $e) {
         wp_send_json_error([

@@ -110,5 +110,5 @@ function add_gateway_class($gateways)
 function bootstrap()
 {
     // Initialize everything
-    add_action("plugins_loaded", __NAMESPACE__ . "\initialize_woocommerce");
+    add_action("plugins_loaded", __NAMESPACE__ . "\\initialize_woocommerce");
 }
