@@ -40,6 +40,9 @@ echo -e "${YELLOW}Copying core files...${NC}"
 cp "$PLUGIN_DIR/axytos-woocommerce.php" "$RELEASE_DIR/"
 cp "$PLUGIN_DIR/index.php" "$RELEASE_DIR/"
 cp "$PLUGIN_DIR/README.md" "$RELEASE_DIR/"
+if [ -f "$PLUGIN_DIR/CHANGELOG.md" ]; then
+    cp "$PLUGIN_DIR/CHANGELOG.md" "$RELEASE_DIR/"
+fi
 
 # Note: composer.json and composer.lock excluded as they contain only dev dependencies
 
