@@ -8,16 +8,16 @@ Author: Bytehändig Software Manufaktur
 Author URI: https://bytehaendig.de
 Text Domain: axytos-wc
 Domain Path: /languages
-*/
+ */
 
 // Exit if accessed directly
-if (!defined("ABSPATH")) {
-    exit();
+if ( ! defined( 'ABSPATH' ) ) {
+	exit();
 }
 
-define("AXYTOS_PLUGIN_VERSION", "1.0.0");
-define("AXYTOS_PAYMENT_ID", "axytoswc");
+define( 'AXYTOS_PLUGIN_VERSION', '1.0.0' );
+define( 'AXYTOS_PAYMENT_ID', 'axytoswc' );
 
 // Load all plugin functionality
-require_once __DIR__ . "/includes/init.php";
+require_once __DIR__ . '/includes/init.php';
 Axytos\WooCommerce\bootstrap();

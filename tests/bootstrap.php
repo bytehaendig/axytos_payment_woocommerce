@@ -29,8 +29,8 @@ require_once "{$_tests_dir}/includes/functions.php";
  * Manually load the plugin being tested.
  */
 function _manually_load_plugin() {
-	require dirname( dirname( dirname(  __FILE__ ) ) ) . '/woocommerce/woocommerce.php';
-	require dirname( dirname( __FILE__ ) ) . '/axytos-woocommerce.php';
+	require dirname( dirname( __DIR__ ) ) . '/woocommerce/woocommerce.php';
+	require dirname( __DIR__ ) . '/axytos-woocommerce.php';
 }
 
 tests_add_filter( 'muplugins_loaded', '_manually_load_plugin' );
@@ -42,5 +42,4 @@ require "{$_tests_dir}/includes/bootstrap.php";
 require_once ABSPATH . 'wp-admin/includes/admin.php';
 
 // Load plugin admin functions
-require_once dirname( dirname( __FILE__ ) ) . '/includes/admin.php';
-
+require_once dirname( __DIR__ ) . '/includes/admin.php';
