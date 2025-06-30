@@ -5,7 +5,7 @@
  */
 
 // Load WordPress
-$wp_load_path = __DIR__ . '/../../../wp-load.php';
+$wp_load_path = __DIR__ . '/../../../../wp-load.php';
 if ( ! file_exists( $wp_load_path ) ) {
 	die( 'Error: Could not find wp-load.php' );
 }
@@ -13,7 +13,7 @@ if ( ! file_exists( $wp_load_path ) ) {
 require_once $wp_load_path;
 
 // Load our classes
-require_once __DIR__ . '/includes/AxytosActionHandler.php';
+require_once __DIR__ . '/../includes/AxytosActionHandler.php';
 
 use Axytos\WooCommerce\AxytosActionHandler;
 
