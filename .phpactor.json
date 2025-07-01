@@ -1,4 +1,20 @@
 {
     "$schema": "/phpactor.schema.json",
-    "php_code_sniffer.enabled": true
+    "php_code_sniffer.enabled": true,
+    "php_code_sniffer.bin": "vendor/bin/phpcs",
+    "php_code_sniffer.args": ["--standard=.phpcs.xml.dist"],
+    "language_server_phpstan.enabled": false,
+    "language_server_psalm.enabled": false,
+    "indexer.stub_paths": [
+        "%project_root%/vendor/php-stubs/wordpress-stubs",
+        "%project_root%/vendor/php-stubs/woocommerce-stubs"
+    ],
+    "indexer.include_patterns": [
+        "/**/*.php"
+    ],
+    "indexer.exclude_patterns": [
+        "/vendor/**/*",
+        "/node_modules/**/*",
+        "/wp-tests-dir/**/*"
+    ]
 }
