@@ -884,7 +884,7 @@ class AxytosActionHandler {
 			$level,
 			$message,
 			array(
-				'source' => 'axytos-action-handler',
+				'source' => 'axytos-actions',
 			)
 		);
 	}

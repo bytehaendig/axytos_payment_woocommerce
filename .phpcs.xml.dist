@@ -40,4 +40,12 @@
 			<property name="blank_line_check" value="true"/>
 		</properties>
 	</rule>
+	
+	<!-- Exclude admin.php from certain formatting rules that break JavaScript strings -->
+	<rule ref="WordPress.Arrays.MultipleStatementAlignment">
+		<exclude-pattern>includes/admin.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WhiteSpace.OperatorSpacing">
+		<exclude-pattern>includes/admin.php</exclude-pattern>
+	</rule>
 </ruleset>

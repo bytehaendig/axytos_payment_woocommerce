@@ -308,12 +308,27 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 			$decision_code = $response_body['decision'];
 			return $decision_code;
 		} catch ( AxytosApiException $e ) {
-			// Re-throw with user-friendly message for API connection errors
-			if ( $e->isConnectionError() ) {
-				throw new \Exception( __( 'Could not connect to Axytos API.', 'axytos-wc' ), 0, $e );
-			}
-			// Re-throw other API errors as-is
-			throw $e;
+			// Log the technical error for shop admin (both WC logger and error_log)
+			$error_message = sprintf(
+				'Axytos precheck failed for order #%d: %s',
+				$order->get_id(),
+				$e->getMessage()
+			);
+			
+			// Log to WooCommerce logger
+			$logger = wc_get_logger();
+			$context = array( 'source' => 'axytos-checkout' );
+			$logger->error( $error_message, $context );
+			
+			// Log to standard WordPress/PHP error log as warning
+			error_log( 'WARNING: ' . $error_message );
+			
+			// Provide user-friendly messages for all API errors
+			throw new \Exception( 
+				__( 'This payment method is currently not available. Please choose another payment method.', 'axytos-wc' ), 
+				0, 
+				$e 
+			);
 		}
 	}
 
