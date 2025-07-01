@@ -75,9 +75,6 @@ function determine_status_actions( $old_status, $new_status ) {
 		return array( 'refund' );
 	}
 
-	error_log(
-		"Axytos: No action determined for order status change from '$old_status' to '$new_status'"
-	);
 	return array();
 }
 

@@ -2,14 +2,14 @@
 # This file is distributed under the same license as the Axytos WooCommerce Payment Gateway plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Axytos WooCommerce Payment Gateway 1.0.0\n"
+"Project-Id-Version: Axytos WooCommerce Payment Gateway 1.0.1\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/axytos-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-07-01T10:58:08+02:00\n"
+"POT-Creation-Date: 2025-07-01T14:59:29+02:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: axytos-wc\n"
@@ -522,120 +522,124 @@ msgstr ""
 msgid "Manual retry of broken Axytos action \"%1$s\" failed: %2$s. Action reset for new retry cycle."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:45
-#: includes/AxytosPaymentGateway.php:158
+#: includes/AxytosPaymentGateway.php:43
+#: includes/AxytosPaymentGateway.php:152
 msgid "Axytos"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:46
+#: includes/AxytosPaymentGateway.php:44
 msgid "Payment gateway for Axytos."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:146
+#: includes/AxytosPaymentGateway.php:140
 msgid "Enable/Disable"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:148
+#: includes/AxytosPaymentGateway.php:142
 msgid "Enable Axytos Payment"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:152
+#: includes/AxytosPaymentGateway.php:146
 msgid "Title"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:154
+#: includes/AxytosPaymentGateway.php:148
 msgid "This controls the title which the user sees during checkout."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:162
+#: includes/AxytosPaymentGateway.php:156
 msgid "Description"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:164
+#: includes/AxytosPaymentGateway.php:158
 msgid "This controls the description which the user sees during checkout."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:168
+#: includes/AxytosPaymentGateway.php:162
 msgid "Pay using Axytos."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:215
+#: includes/AxytosPaymentGateway.php:209
 msgid "Precheck Agreement Link Text"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:217
+#: includes/AxytosPaymentGateway.php:211
 msgid "Enter text you want to as link to get agreement."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:221
+#: includes/AxytosPaymentGateway.php:215
 msgid "click to see agreement"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:225
+#: includes/AxytosPaymentGateway.php:219
 msgid "Axytos API Key"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:227
+#: includes/AxytosPaymentGateway.php:221
 msgid "Enter your Axytos API Key for authentication."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:235
+#: includes/AxytosPaymentGateway.php:229
 msgid "Use API Sandbox"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:237
+#: includes/AxytosPaymentGateway.php:231
 msgid "Send API requests to the API sandbox for testing"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:245
+#: includes/AxytosPaymentGateway.php:239
 msgid "Webhook API Key"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:247
+#: includes/AxytosPaymentGateway.php:241
 msgid "Enter a secure API key for webhook authentication. This key will be used to authenticate incoming webhook requests from your ERP system."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:253
+#: includes/AxytosPaymentGateway.php:247
 msgid "Generate a secure random key..."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:278
+#: includes/AxytosPaymentGateway.php:271
 msgid "Axytos precheck accepted"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:291
+#: includes/AxytosPaymentGateway.php:284
 msgid "Axytos precheck declined"
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:294
+#: includes/AxytosPaymentGateway.php:287
 msgid "This Payment Method is not allowed for this order. Please try a different payment method."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:321
+#: includes/AxytosPaymentGateway.php:313
+msgid "Axytos precheck failed"
+msgstr ""
+
+#: includes/AxytosPaymentGateway.php:332
 msgid "This payment method is currently not available. Please choose another payment method."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:353
+#: includes/AxytosPaymentGateway.php:363
 msgid "Could not confirm order with Axytos API."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:385
+#: includes/AxytosPaymentGateway.php:394
 msgid "Could not update report shipping."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:444
+#: includes/AxytosPaymentGateway.php:451
 msgid "Could not process refund with Axytos API."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:477
+#: includes/AxytosPaymentGateway.php:483
 msgid "Could not cancel order with Axytos API."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:510
+#: includes/AxytosPaymentGateway.php:515
 msgid "Could not reverse cancel order with Axytos API."
 msgstr ""
 
-#: includes/AxytosPaymentGateway.php:565
+#: includes/AxytosPaymentGateway.php:568
 msgid "Unknown API error"
 msgstr ""
 

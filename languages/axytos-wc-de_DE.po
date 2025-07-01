@@ -254,100 +254,100 @@ msgstr ""
 "\n"
 "Bestell-URL: %4$s"
 
-#: includes/AxytosPaymentGateway.php:45
-#: includes/AxytosPaymentGateway.php:158
+#: includes/AxytosPaymentGateway.php:43
+#: includes/AxytosPaymentGateway.php:152
 msgid "Axytos"
 msgstr "Axytos"
 
-#: includes/AxytosPaymentGateway.php:46
+#: includes/AxytosPaymentGateway.php:44
 msgid "Payment gateway for Axytos."
 msgstr "Zahlungsgateway für Axytos."
 
-#: includes/AxytosPaymentGateway.php:146
+#: includes/AxytosPaymentGateway.php:140
 msgid "Enable/Disable"
 msgstr "Aktivieren/Deaktivieren"
 
-#: includes/AxytosPaymentGateway.php:148
+#: includes/AxytosPaymentGateway.php:142
 msgid "Enable Axytos Payment"
 msgstr "Axytos-Zahlung aktivieren"
 
-#: includes/AxytosPaymentGateway.php:152
+#: includes/AxytosPaymentGateway.php:146
 msgid "Title"
 msgstr "Titel"
 
-#: includes/AxytosPaymentGateway.php:154
+#: includes/AxytosPaymentGateway.php:148
 msgid "This controls the title which the user sees during checkout."
 msgstr "Dies steuert den Titel, den der Benutzer beim Checkout sieht."
 
-#: includes/AxytosPaymentGateway.php:162
+#: includes/AxytosPaymentGateway.php:156
 msgid "Description"
 msgstr "Beschreibung"
 
-#: includes/AxytosPaymentGateway.php:164
+#: includes/AxytosPaymentGateway.php:158
 msgid "This controls the description which the user sees during checkout."
 msgstr "Dies steuert die Beschreibung, die der Benutzer beim Checkout sieht."
 
-#: includes/AxytosPaymentGateway.php:168
+#: includes/AxytosPaymentGateway.php:162
 msgid "Pay using Axytos."
 msgstr "Kauf auf Rechnung"
 
-#: includes/AxytosPaymentGateway.php:225
+#: includes/AxytosPaymentGateway.php:219
 msgid "Axytos API Key"
 msgstr "Axytos API-Schlüssel"
 
-#: includes/AxytosPaymentGateway.php:227
+#: includes/AxytosPaymentGateway.php:221
 msgid "Enter your Axytos API Key for authentication."
 msgstr "Geben Sie Ihren Axytos API-Schlüssel für die Authentifizierung ein."
 
-#: includes/AxytosPaymentGateway.php:235
+#: includes/AxytosPaymentGateway.php:229
 msgid "Use API Sandbox"
 msgstr "API-Sandbox verwenden"
 
-#: includes/AxytosPaymentGateway.php:237
+#: includes/AxytosPaymentGateway.php:231
 msgid "Send API requests to the API sandbox for testing"
 msgstr "API-Anfragen zu Testzwecken an die API-Sandbox senden"
 
-#: includes/AxytosPaymentGateway.php:215
+#: includes/AxytosPaymentGateway.php:209
 msgid "Precheck Agreement Link Text"
 msgstr "Vereinbarungs-Linktext"
 
-#: includes/AxytosPaymentGateway.php:217
+#: includes/AxytosPaymentGateway.php:211
 msgid "Enter text you want to as link to get agreement."
 msgstr "Geben Sie den Text ein, den Sie als Link zur Vereinbarung verwenden möchten."
 
-#: includes/AxytosPaymentGateway.php:221
+#: includes/AxytosPaymentGateway.php:215
 msgid "click to see agreement"
 msgstr "Vereinbarung anzeigen"
 
-#: includes/AxytosPaymentGateway.php:245
+#: includes/AxytosPaymentGateway.php:239
 msgid "Webhook API Key"
 msgstr "Webhook-Schlüssel"
 
-#: includes/AxytosPaymentGateway.php:247
+#: includes/AxytosPaymentGateway.php:241
 msgid "Enter a secure API key for webhook authentication. This key will be used to authenticate incoming webhook requests from your ERP system."
 msgstr "Geben Sie einen sicheren API-Schlüssel für die Webhook-Authentifizierung ein. Dieser Schlüssel wird zur Authentifizierung eingehender Webhook-Anfragen aus Ihrem ERP-System verwendet."
 
-#: includes/AxytosPaymentGateway.php:253
+#: includes/AxytosPaymentGateway.php:247
 msgid "Generate a secure random key..."
 msgstr "Einen sicheren Zufallsschlüssel generieren..."
 
-#: includes/AxytosPaymentGateway.php:278
+#: includes/AxytosPaymentGateway.php:271
 msgid "Axytos precheck accepted"
 msgstr "Axytos-Vorabprüfung akzeptiert"
 
-#: includes/AxytosPaymentGateway.php:291
+#: includes/AxytosPaymentGateway.php:284
 msgid "Axytos precheck declined"
 msgstr "Axytos-Vorabprüfung abgelehnt"
 
-#: includes/AxytosPaymentGateway.php:294
+#: includes/AxytosPaymentGateway.php:287
 msgid "This Payment Method is not allowed for this order. Please try a different payment method."
 msgstr "Diese Zahlungsmethode ist für diese Bestellung nicht möglich. Bitte wählen Sie eine andere Zahlungsmethode."
 
-#: includes/AxytosPaymentGateway.php:353
+#: includes/AxytosPaymentGateway.php:363
 msgid "Could not confirm order with Axytos API."
 msgstr "Bestellung konnte nicht mit bei der API bestätigt werden."
 
-#: includes/AxytosPaymentGateway.php:385
+#: includes/AxytosPaymentGateway.php:394
 msgid "Could not update report shipping."
 msgstr "Versandbericht konnte nicht aktualisiert werden."
 
@@ -585,15 +585,15 @@ msgstr "Fehler:"
 msgid "Manual retry of broken Axytos action \"%1$s\" failed: %2$s. Action reset for new retry cycle."
 msgstr "Manuelle Wiederholung der defekten Axytos-Aktion \"%1$s\" fehlgeschlagen: %2$s. Aktion für neuen Wiederholungszyklus zurückgesetzt."
 
-#: includes/AxytosPaymentGateway.php:444
+#: includes/AxytosPaymentGateway.php:451
 msgid "Could not process refund with Axytos API."
 msgstr "Rückerstattung konnte nicht mit der Axytos-API verarbeitet werden."
 
-#: includes/AxytosPaymentGateway.php:477
+#: includes/AxytosPaymentGateway.php:483
 msgid "Could not cancel order with Axytos API."
 msgstr "Bestellung konnte nicht mit der Axytos-API storniert werden."
 
-#: includes/AxytosPaymentGateway.php:565
+#: includes/AxytosPaymentGateway.php:568
 msgid "Unknown API error"
 msgstr "Unbekannter API-Fehler"
 
@@ -658,7 +658,7 @@ msgstr "Reaktivieren"
 msgid "Order cancellation reversed via Axytos action."
 msgstr "Bestellungsstornierung bei Axytos rückgängig gemacht."
 
-#: includes/AxytosPaymentGateway.php:510
+#: includes/AxytosPaymentGateway.php:515
 msgid "Could not reverse cancel order with Axytos API."
 msgstr "Stornierung der Bestellung konnte nicht mit der Axytos-API rückgängig gemacht werden."
 
@@ -700,6 +700,10 @@ msgstr "Bestellungserstattung wurde eingeleitet. Die Aktion wird von Axytos vera
 msgid "Order confirmation has been initiated. The action will be processed by Axytos."
 msgstr "Bestellungsbestätigung wurde eingeleitet. Die Aktion wird von Axytos verarbeitet."
 
-#: includes/AxytosPaymentGateway.php:321
+#: includes/AxytosPaymentGateway.php:332
 msgid "This payment method is currently not available. Please choose another payment method."
 msgstr "Diese Zahlungsmethode ist derzeit nicht verfügbar. Bitte wählen Sie eine andere Zahlungsmethode."
+
+#: includes/AxytosPaymentGateway.php:313
+msgid "Axytos precheck failed"
+msgstr "Axytos-Vorabprüfung ist fehlgeschlagen"

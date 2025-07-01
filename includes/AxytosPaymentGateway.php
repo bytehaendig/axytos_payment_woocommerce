@@ -38,14 +38,14 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 	 */
 	public function __construct() {
 		$this->id                 = \AXYTOS_PAYMENT_ID;
-		$this->icon               = ''; // URL of the icon that will be displayed on the checkout page
+		$this->icon               = ''; // URL of the icon that will be displayed on the checkout page.
 		$this->has_fields         = true;
 		$this->method_title       = __( 'Axytos', 'axytos-wc' );
 		$this->method_description = __(
 			'Payment gateway for Axytos.',
 			'axytos-wc'
 		);
-		// Load the settings
+		// Load the settings.
 		$this->encryption_service = new AxytosEncryptionService();
 		$this->init_form_fields();
 		$this->init_settings();
@@ -55,7 +55,7 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 		$AxytosAPIKey      = $this->get_option( 'AxytosAPIKey' );
 		$useSandbox        = $this->get_option( 'useSandbox' ) == 'yes';
 		$this->client      = new AxytosApiClient( $AxytosAPIKey, $useSandbox );
-		// Save settings
+		// Save settings.
 		add_action(
 			'woocommerce_update_options_payment_gateways_' . $this->id,
 			array(
@@ -308,26 +308,30 @@ class AxytosPaymentGateway extends \WC_Payment_Gateway {
 			$decision_code = $response_body['decision'];
 			return $decision_code;
 		} catch ( AxytosApiException $e ) {
+			$order->update_status(
+				'failed',
+				__( 'Axytos precheck failed', 'axytos-wc' )
+			);
 			// Log the technical error for shop admin (both WC logger and error_log)
 			$error_message = sprintf(
 				'Axytos precheck failed for order #%d: %s',
 				$order->get_id(),
 				$e->getMessage()
 			);
-			
+
 			// Log to WooCommerce logger
-			$logger = wc_get_logger();
+			$logger  = wc_get_logger();
 			$context = array( 'source' => 'axytos-checkout' );
 			$logger->error( $error_message, $context );
-			
+
 			// Log to standard WordPress/PHP error log as warning
 			error_log( 'WARNING: ' . $error_message );
-			
+
 			// Provide user-friendly messages for all API errors
-			throw new \Exception( 
-				__( 'This payment method is currently not available. Please choose another payment method.', 'axytos-wc' ), 
-				0, 
-				$e 
+			throw new \Exception(
+				__( 'This payment method is currently not available. Please choose another payment method.', 'axytos-wc' ),
+				0,
+				$e
 			);
 		}
 	}
