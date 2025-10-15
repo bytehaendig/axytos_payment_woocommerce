@@ -19,9 +19,9 @@ function filter_available_gateways( $available_gateways ) {
 	if ( WC()->session && $order_id = WC()->session->get( 'order_awaiting_payment' ) ?? WC()->session->get( 'store_api_draft_order' ) ) {
 		// Check if transient is set to disable Axytos
 		if ( get_transient( 'disable_axitos_for_' . $order_id ) ) {
-			$chosen_payment_method = \AXYTOS_PAYMENT_ID;
-			if ( isset( $available_gateways[ $chosen_payment_method ] ) ) {
-				unset( $available_gateways[ $chosen_payment_method ] );
+			$axytos_payment_id = \AXYTOS_PAYMENT_ID;
+			if ( isset( $available_gateways[ $axytos_payment_id ] ) ) {
+				unset( $available_gateways[ $axytos_payment_id ] );
 			}
 		}
 	}

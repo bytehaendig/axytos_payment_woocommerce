@@ -19,7 +19,7 @@ final class AxytosBlocksGateway extends AbstractPaymentMethodType {
 	/**
 	 * The gateway instance.
 	 *
-	 * @var WC_Gateway_Axytos
+	 * @var AxytosPaymentGateway|null
 	 */
 	private $gateway;
 
@@ -35,8 +35,21 @@ final class AxytosBlocksGateway extends AbstractPaymentMethodType {
 	 */
 	public function initialize(): void {
 		$this->settings = get_option( 'woocommerce_axytoswc_settings', array() );
-		$gateways       = WC()->payment_gateways->payment_gateways();
-		$this->gateway  = $gateways[ $this->name ];
+	}
+
+	/**
+	 * Get the gateway instance.
+	 *
+	 * @return AxytosPaymentGateway|null
+	 */
+	private function get_gateway() {
+		if ( null === $this->gateway ) {
+			$gateways = WC()->payment_gateways->payment_gateways();
+			if ( isset( $gateways[ $this->name ] ) ) {
+				$this->gateway = $gateways[ $this->name ];
+			}
+		}
+		return $this->gateway;
 	}
 
 	/**
@@ -45,7 +58,8 @@ final class AxytosBlocksGateway extends AbstractPaymentMethodType {
 	 * @return boolean
 	 */
 	public function is_active(): bool {
-		return $this->gateway->is_available();
+		$gateway = $this->get_gateway();
+		return $gateway && $gateway->is_available();
 	}
 
 	/**
@@ -80,7 +94,6 @@ final class AxytosBlocksGateway extends AbstractPaymentMethodType {
 				plugin_dir_path( __FILE__ ) . 'languages/'
 			);
 		}
-		// return [];
 		return array( 'wc-axytoswc-payments-blocks' );
 	}
 
@@ -90,6 +103,7 @@ final class AxytosBlocksGateway extends AbstractPaymentMethodType {
 	 * @return array
 	 */
 	public function get_payment_method_data() {
+		$gateway = $this->get_gateway();
 		return array(
 			'title'       => $this->get_setting( 'title' ),
 			'description' =>
@@ -97,13 +111,13 @@ final class AxytosBlocksGateway extends AbstractPaymentMethodType {
 				'<br><a href="#" class="axytos-agreement-link">' .
 				$this->get_setting( 'PrecheckAgreeText' ) .
 				'</a>',
-			'supports'    => array_filter(
-				$this->gateway->supports,
+			'supports'    => $gateway ? array_filter(
+				$gateway->supports,
 				array(
-					$this->gateway,
+					$gateway,
 					'supports',
 				)
-			),
+			) : array(),
 		);
 	}
 }
