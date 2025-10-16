@@ -70,14 +70,14 @@ final class AxytosBlocksGateway extends AbstractPaymentMethodType {
 	public function get_payment_method_script_handles() {
 		$script_path       = 'assets/js/frontend/blocks.js';
 		$script_asset_path =
-			plugin_dir_path( __FILE__ ) . 'assets/js/frontend/blocks.asset.php';
+			dirname( plugin_dir_path( __FILE__ ) ) . '/' . 'assets/js/frontend/blocks.asset.php';
 		$script_asset      = file_exists( $script_asset_path )
 			? require $script_asset_path
 			: array(
 				'dependencies' => array(),
 				'version'      => '1.2.0',
 			);
-		$script_url        = plugin_dir_url( __FILE__ ) . $script_path;
+		$script_url        = dirname( plugin_dir_url( __FILE__ ) ) . '/' . $script_path;
 
 		wp_register_script(
 			'wc-axytoswc-payments-blocks',
@@ -91,7 +91,7 @@ final class AxytosBlocksGateway extends AbstractPaymentMethodType {
 			wp_set_script_translations(
 				'wc-axytoswc-payments-blocks',
 				'woocommerce-gateway-axytoswc',
-				plugin_dir_path( __FILE__ ) . 'languages/'
+				dirname( plugin_dir_path( __FILE__ ) ) . '/languages/'
 			);
 		}
 		return array( 'wc-axytoswc-payments-blocks' );
