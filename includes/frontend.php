@@ -22,14 +22,14 @@ function enqueue_frontend_assets() {
 
 	wp_enqueue_style(
 		'axytos-agreement-popup',
-		plugin_dir_url( dirname( __DIR__ ) ) . '/assets/css/agreement_popup.css',
+		plugin_dir_url( dirname( __FILE__ ) ) . '/assets/css/agreement_popup.css',
 		array(),
 		AXYTOS_PLUGIN_VERSION
 	);
 
 	wp_enqueue_script(
 		'axytos-agreement',
-		plugin_dir_url( dirname( __DIR__ ) ) . '/assets/axytos-agreement.js',
+		plugin_dir_url( dirname( __FILE__ ) ) . '/assets/axytos-agreement.js',
 		array( 'jquery' ),
 		AXYTOS_PLUGIN_VERSION,
 		true
