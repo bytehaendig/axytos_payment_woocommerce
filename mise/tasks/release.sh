@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 
 # Get the directory where this script is located
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_DIR="$(dirname "$SCRIPT_DIR")"
+PLUGIN_DIR="$(dirname $(dirname "$SCRIPT_DIR"))"
 PLUGIN_NAME="axytos-woocommerce"
 
 echo -e "${GREEN}Starting release build for Axytos WooCommerce Plugin${NC}"
