@@ -183,7 +183,7 @@ function createInvoiceData( $order, $invoice_number = null ) {
 		// TODO: clarify meaning of externalInvoiceDisplayName
 		'externalInvoiceDisplayName' => $externalInvoiceNumber,
 		'externalSubOrderId'         => '',
-		'date'                       => date( 'c', strtotime( $order->get_date_created() ) ), // Order creation date in ISO 8601
+		'date'                       => date( 'c' ), // Order creation date in ISO 8601
 		'dueDateOffsetDays'          => 14,
 		'basket'                     => createBasketData( $order, 'invoice' ),
 	);
