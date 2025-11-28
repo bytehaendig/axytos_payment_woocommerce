@@ -1,0 +1,14 @@
+Copyright (c) 2025 Bytehändig Software Manufaktur. All rights reserved.
+
+This source code is made available for transparency and security auditing purposes.
+
+You may:
+- View and study the source code
+- Report issues and suggest improvements
+
+You may not:
+- Redistribute this software or derivative works
+- Create competing products based on this code
+- Remove or modify copyright notices
+
+THE SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
